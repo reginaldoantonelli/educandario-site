@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Educandário Nossa Senhora Aparecida</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Inclusão do cabeçalho -->
+  <div id="header"></div>
+
+  <main>
+    <!-- Carrossel de eventos -->
+    <section class="carousel">
+      <div class="slides">
+        <div class="slide"><img src="Imagens/criancas 1.jpg" alt="Evento 1"></div>
+        <div class="slide"><img src="Imagens/criancas 2.jpg" alt="Evento 2"></div>
+        <div class="slide"><img src="Imagens/criancas 3.jpg" alt="Evento 3"></div>
+      </div>
+    </section>
+
+    <h1>Bem-vindo ao Educandário Nossa Senhora Aparecida</h1>
+    <p>
+      O Educandário Nossa Senhora Aparecida presta relevantes serviços sociais e educacionais,
+      atendendo crianças e famílias da comunidade há mais de 60 anos.
+    </p>
+  </main>
+
+  <!-- Inclusão do rodapé -->
+  <div id="footer"></div>
+
+  <script src="script.js"></script>
+  <script>
+    // Carrega header e footer externos
+    async function includeHTML(id, file) {
+      const el = document.getElementById(id);
+      const resp = await fetch(file);
+      if (resp.ok) el.innerHTML = await resp.text();
+    }
+    includeHTML("header", "header.html");
+    includeHTML("footer", "footer.html");
+  </script>
+</body>
+</html>
