@@ -3,43 +3,108 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Educandário Nossa Senhora Aparecida</title>
+  <title>Início - Educandário NSA</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <!-- Inclusão do cabeçalho -->
-  <div id="header"></div>
+  <header>
+    <div class="logo">
+      <a href="index.html">
+        <img src="imagens/logo.png" alt="Logo do Educandário NSA">
+      </a>
+    </div>
+    <nav>
+      <ul>
+        <li><a href="index.html">Início</a></li>        
+        <li><a href="historia.html">Nossa História</a></li>
+        <li><a href="quem-somos.html">Quem Somos</a></li>      
+        <li><a href="transparencia.html">Transparência</a></li>
+        <li><a href="galeria.html">Galeria</a></li>
+        <li><a href="contato.html">Contato</a></li>
+        <li><a href="doacao.html" class="btn-doacao">Doar</a></li>
+      </ul>
+    </nav>
+  </header>
 
-  <main>
-    <!-- Carrossel de eventos -->
-    <section class="carousel">
+  <!-- Carrossel -->
+    <section class="carrossel">
       <div class="slides">
-        <div class="slide"><img src="Imagens/criancas 1.jpg" alt="Evento 1"></div>
-        <div class="slide"><img src="Imagens/criancas 2.jpg" alt="Evento 2"></div>
-        <div class="slide"><img src="Imagens/criancas 3.jpg" alt="Evento 3"></div>
+        <div class="slide active">
+          <img src="imagens/imagem1.jpg" alt="Evento 1 - Educandário">
+        </div>
+        <div class="slide">
+          <img src="imagens/imagem2.jpg" alt="Evento 2 - Educandário">
+        </div>
+        <div class="slide">
+          <img src="imagens/imagem3.jpg" alt="Evento 3 - Educandário">
+        </div>
+      </div>
+
+      <!-- Botões -->
+      <button class="prev">&#10094;</button>
+      <button class="next">&#10095;</button>
+
+      <!-- Indicadores -->
+      <div class="dots">
+        <span class="dot active"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
       </div>
     </section>
-
+  <main>
     <h1>Bem-vindo ao Educandário Nossa Senhora Aparecida</h1>
-    <p>
-      O Educandário Nossa Senhora Aparecida presta relevantes serviços sociais e educacionais,
-      atendendo crianças e famílias da comunidade há mais de 60 anos.
-    </p>
+    <p>Conteúdo da página inicial...</p>
   </main>
 
-  <!-- Inclusão do rodapé -->
-  <div id="footer"></div>
+  <footer>
+    <p>&copy; 2025 Educandário NSA - Todos os direitos reservados</p>
+    <div class="redes-sociais">
+      <a href="https://www.facebook.com/educandarioensa" target="_blank">Facebook</a>
+      <a href="https://www.instagram.com/ensa_itapira" target="_blank">Instagram</a>
+    </div>
+  </footer>
 
-  <script src="script.js"></script>
-  <script>
-    // Carrega header e footer externos
-    async function includeHTML(id, file) {
-      const el = document.getElementById(id);
-      const resp = await fetch(file);
-      if (resp.ok) el.innerHTML = await resp.text();
-    }
-    includeHTML("header", "header.html");
-    includeHTML("footer", "footer.html");
-  </script>
+  <!-- Script do carrossel -->
+  <script>document.addEventListener("DOMContentLoaded", () => {
+  const slidesContainer = document.querySelector(".slides");
+  const slides = document.querySelectorAll(".slide");
+  const dots = document.querySelectorAll(".dot");
+  let slideIndex = 0;
+  const totalSlides = slides.length;
+
+  function updateSlide() {
+    slidesContainer.style.transform = `translateX(${-slideIndex * 100}%)`;
+    dots.forEach((dot, i) => dot.classList.toggle("active", i === slideIndex));
+  }
+
+  // Botões next/prev
+  document.querySelector(".next").addEventListener("click", () => {
+    slideIndex = (slideIndex + 1) % totalSlides;
+    updateSlide();
+  });
+
+  document.querySelector(".prev").addEventListener("click", () => {
+    slideIndex = (slideIndex - 1 + totalSlides) % totalSlides;
+    updateSlide();
+  });
+
+  // Clique nos dots
+  dots.forEach((dot, i) => {
+    dot.addEventListener("click", () => {
+      slideIndex = i;
+      updateSlide();
+    });
+  });
+
+  // Troca automática a cada 4 segundos
+  setInterval(() => {
+    slideIndex = (slideIndex + 1) % totalSlides;
+    updateSlide();
+  }, 3000);
+
+  // Inicializa
+  updateSlide();
+});
+</script>
 </body>
 </html>
