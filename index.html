@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Início - Educandário NSA</title>
   <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
 </head>
 <body>
   <header>
@@ -21,36 +22,36 @@
         <li><a href="transparencia.html">Transparência</a></li>
         <li><a href="galeria.html">Galeria</a></li>
         <li><a href="contato.html">Contato</a></li>
-        <li><a href="doacao.html" class="btn-doacao">Doar</a></li>
+        <!-- Botão Doar corrigido -->
+        <li><a href="#" id="doacaoPixBtn" class="btn-doacao">Doar</a></li>
       </ul>
     </nav>
   </header>
 
   <!-- Carrossel -->
-    <section class="carrossel">
-      <div class="slides">
-        <div class="slide active">
-          <img src="imagens/imagem1.jpg" alt="Evento 1 - Educandário">
-        </div>
-        <div class="slide">
-          <img src="imagens/imagem2.jpg" alt="Evento 2 - Educandário">
-        </div>
-        <div class="slide">
-          <img src="imagens/imagem3.jpg" alt="Evento 3 - Educandário">
-        </div>
+  <section class="carrossel">
+    <div class="slides">
+      <div class="slide active">
+        <img src="imagens/imagem1.jpg" alt="Evento 1 - Educandário">
       </div>
-
-      <!-- Botões -->
-      <button class="prev">&#10094;</button>
-      <button class="next">&#10095;</button>
-
-      <!-- Indicadores -->
-      <div class="dots">
-        <span class="dot active"></span>
-        <span class="dot"></span>
-        <span class="dot"></span>
+      <div class="slide">
+        <img src="imagens/imagem2.jpg" alt="Evento 2 - Educandário">
       </div>
-    </section>
+      <div class="slide">
+        <img src="imagens/imagem3.jpg" alt="Evento 3 - Educandário">
+      </div>
+    </div>
+
+    <button class="prev">&#10094;</button>
+    <button class="next">&#10095;</button>
+
+    <div class="dots">
+      <span class="dot active"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+    </div>
+  </section>
+
   <main>
     <h1>Bem-vindo ao Educandário Nossa Senhora Aparecida</h1>
     <p>Conteúdo da página inicial...</p>
@@ -64,47 +65,82 @@
     </div>
   </footer>
 
-  <!-- Script do carrossel -->
-  <script>document.addEventListener("DOMContentLoaded", () => {
-  const slidesContainer = document.querySelector(".slides");
-  const slides = document.querySelectorAll(".slide");
-  const dots = document.querySelectorAll(".dot");
-  let slideIndex = 0;
-  const totalSlides = slides.length;
+  <!-- POPUP (Modal PIX) -->
+  <div id="pixModal" class="modal">
+    <div class="modal-content">
+      <span id="closeModal" class="close">&times;</span>
+      <h2>Dados para Doação via PIX</h2>
+      <p><strong>Chave PIX:</strong> exemplo@pix.com</p>
+      <p><strong>Nome:</strong> Educandário Nossa Senhora Aparecida</p>
+      <div id="qrcode"></div>
+      <p class="alerta">⚠️ Antes de finalizar, verifique se os dados bancários estão corretos.</p>
+    </div>
+  </div>
 
-  function updateSlide() {
-    slidesContainer.style.transform = `translateX(${-slideIndex * 100}%)`;
-    dots.forEach((dot, i) => dot.classList.toggle("active", i === slideIndex));
-  }
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const slidesContainer = document.querySelector(".slides");
+      const slides = document.querySelectorAll(".slide");
+      const dots = document.querySelectorAll(".dot");
+      let slideIndex = 0;
+      const totalSlides = slides.length;
 
-  // Botões next/prev
-  document.querySelector(".next").addEventListener("click", () => {
-    slideIndex = (slideIndex + 1) % totalSlides;
-    updateSlide();
-  });
+      function updateSlide() {
+        slidesContainer.style.transform = `translateX(${-slideIndex * 100}%)`;
+        dots.forEach((dot, i) => dot.classList.toggle("active", i === slideIndex));
+      }
 
-  document.querySelector(".prev").addEventListener("click", () => {
-    slideIndex = (slideIndex - 1 + totalSlides) % totalSlides;
-    updateSlide();
-  });
+      document.querySelector(".next").addEventListener("click", () => {
+        slideIndex = (slideIndex + 1) % totalSlides;
+        updateSlide();
+      });
 
-  // Clique nos dots
-  dots.forEach((dot, i) => {
-    dot.addEventListener("click", () => {
-      slideIndex = i;
+      document.querySelector(".prev").addEventListener("click", () => {
+        slideIndex = (slideIndex - 1 + totalSlides) % totalSlides;
+        updateSlide();
+      });
+
+      dots.forEach((dot, i) => {
+        dot.addEventListener("click", () => {
+          slideIndex = i;
+          updateSlide();
+        });
+      });
+
+      setInterval(() => {
+        slideIndex = (slideIndex + 1) % totalSlides;
+        updateSlide();
+      }, 3000);
+
       updateSlide();
+
+      // ---- POPUP PIX ----
+      const btn = document.getElementById("doacaoPixBtn");
+      const modal = document.getElementById("pixModal");
+      const closeBtn = document.getElementById("closeModal");
+
+      btn.addEventListener("click", (e) => {
+        e.preventDefault(); // impede recarregar página
+        modal.style.display = "block";
+
+        const pixPayload = "00020126360014BR.GOV.BCB.PIX0114exemplo@pix.com520400005303986540510.005802BR5909Educand6009SAO PAULO62070503***6304ABCD";
+
+        document.getElementById("qrcode").innerHTML = "";
+        new QRCode(document.getElementById("qrcode"), {
+          text: pixPayload,
+          width: 200,
+          height: 200
+        });
+      });
+
+      closeBtn.addEventListener("click", () => {
+        modal.style.display = "none";
+      });
+
+      window.addEventListener("click", (event) => {
+        if (event.target === modal) modal.style.display = "none";
+      });
     });
-  });
-
-  // Troca automática a cada 4 segundos
-  setInterval(() => {
-    slideIndex = (slideIndex + 1) % totalSlides;
-    updateSlide();
-  }, 3000);
-
-  // Inicializa
-  updateSlide();
-});
-</script>
+  </script>
 </body>
 </html>

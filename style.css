@@ -46,10 +46,16 @@ nav a:hover {
 
 .btn-doacao {
   background-color: #ffd700;
-  color: #004080;
-  padding: 0.3rem 0.7rem;
-  border-radius: 4px;
+  color: #004080 !important;
+  padding: 0.4rem 0.9rem;
+  border-radius: 6px;
   font-weight: bold;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.btn-doacao:hover {
+  background-color: #ffcc00;
+  transform: scale(1.05);
 }
 
 main {
@@ -83,11 +89,11 @@ h1, h2 {
 /* Carrossel ocupa toda a largura real da tela */
 .carrossel {
   position: relative;
-  width: 100vw;   /* usa toda a largura da viewport */
-  height: 40vh;   /* altura proporcional à tela */
+  width: 100vw;
+  height: 40vh;
   margin: 0;
   left: 50%;
-  transform: translateX(-50%); /* centraliza */
+  transform: translateX(-50%);
   overflow: hidden;
 }
 
@@ -105,10 +111,11 @@ h1, h2 {
 .slide img {
   width: 100%;
   height: 100%;
-  object-fit: cover; /* cobre toda a tela */
-  }
+  object-fit: cover;
+  display: block;
+}
 
-/* Botões de navegação (só aparecem no hover) */
+/* Botões de navegação */
 .carrossel .prev,
 .carrossel .next {
   position: absolute;
@@ -195,5 +202,64 @@ footer {
 
   .btn-doacao {
     margin-top: 0.5rem;
+  }
+}
+
+/* ===== POPUP / MODAL PIX ===== */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.6);
+}
+
+.modal-content {
+  background-color: #fff;
+  margin: 10% auto;
+  padding: 20px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+  box-shadow: 0px 4px 10px rgba(0,0,0,0.25);
+  animation: aparecer 0.3s ease;
+}
+
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.close:hover {
+  color: #000;
+}
+
+#qrcode {
+  margin-top: 15px;
+}
+
+.alerta {
+  color: red;
+  font-weight: bold;
+  margin-top: 15px;
+}
+
+/* Animação suave */
+@keyframes aparecer {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
