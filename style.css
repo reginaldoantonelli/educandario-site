@@ -59,9 +59,78 @@ nav a:hover {
 }
 
 main {
-  padding: 2rem;
-  max-width: 960px;
+  padding: 6rem;
+  max-width: 1050px;
   margin: auto;
+}
+/* Seção Quem Somos */
+.quem-somos {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  font-family: Arial, Helvetica, sans-serif;
+  line-height: 1.7;
+  color: #333;
+}
+
+.quem-somos h1 {
+  font-size: 2.2rem;
+  text-align: center;
+  margin-bottom: 25px;
+  color: #004080; /* Azul institucional */
+}
+
+.quem-somos h2 {
+  font-size: 1.5rem;
+  margin-top: 30px;
+  margin-bottom: 10px;
+  color: #0066cc;
+  border-left: 4px solid #0066cc;
+  padding-left: 10px;
+}
+
+.quem-somos p {
+  margin-bottom: 15px;
+  text-align: justify;
+}
+
+.quem-somos ul {
+  list-style: none;
+  padding-left: 0;
+  margin-bottom: 20px;
+}
+
+.quem-somos ul li {
+  margin-bottom: 10px;
+  padding-left: 25px;
+  position: relative;
+}
+
+.quem-somos ul li::before {
+  content: "✔";
+  position: absolute;
+  left: 0;
+  color: #009688; /* Verde para destacar */
+  font-weight: bold;
+}
+
+.quem-somos strong {
+  color: #222;
+}
+
+.quem-somos em {
+  font-style: italic;
+  color: #555;
+}
+
+.quem-somos a {
+  color: #0066cc;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.quem-somos a:hover {
+  text-decoration: underline;
 }
 
 section {

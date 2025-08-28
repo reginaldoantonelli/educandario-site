@@ -6,27 +6,11 @@
   <title>Início - Educandário NSA</title>
   <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
+  <script src="doacao.js"></script>
+  <script src="script.js" defer></script>
 </head>
 <body>
-  <header>
-    <div class="logo">
-      <a href="index.html">
-        <img src="imagens/logo.png" alt="Logo do Educandário NSA">
-      </a>
-    </div>
-    <nav>
-      <ul>
-        <li><a href="index.html">Início</a></li>        
-        <li><a href="historia.html">Nossa História</a></li>
-        <li><a href="quem somos.html">Quem Somos</a></li>      
-        <li><a href="transparencia.html">Transparência</a></li>
-        <li><a href="galeria fotos.html">Galeria</a></li>
-        <li><a href="contato.html">Contato</a></li>
-        <!-- Botão Doar corrigido -->
-        <li><a href="#" id="doacaoPixBtn" class="btn-doacao">Doar</a></li>
-      </ul>
-    </nav>
-  </header>
+  <div id="header"></div>
 
   <!-- Carrossel -->
   <section class="carrossel">
@@ -54,93 +38,14 @@
 
   <main>
     <h1>Bem-vindo ao Educandário Nossa Senhora Aparecida</h1>
-    <p>Conteúdo da página inicial...</p>
+    <p>Há mais de 60 anos atuamos na comunidade itapirense, oferecendo serviços sociais e atendimento em creche para 250 crianças de 0 a 14 anos. 
+      Nosso compromisso é proporcionar convivência, desenvolvimento, solidariedade e fortalecimento de vínculos, em período integral e contra turno, contribuindo para a 
+      formação cidadã e o crescimento coletivo.</p>
   </main>
 
-  <footer>
-    <p>&copy; 2025 Educandário NSA - Todos os direitos reservados</p>
-    <div class="redes-sociais">
-      <a href="https://www.facebook.com/educandarioensa" target="_blank">Facebook</a>
-      <a href="https://www.instagram.com/ensa_itapira" target="_blank">Instagram</a>
-    </div>
-  </footer>
+  <div id="footer"></div>
 
-  <!-- POPUP (Modal PIX) -->
-  <div id="pixModal" class="modal">
-    <div class="modal-content">
-      <span id="closeModal" class="close">&times;</span>
-      <h2>Dados para Doação via PIX</h2>
-      <p><strong>Chave PIX:</strong> exemplo@pix.com</p>
-      <p><strong>Nome:</strong> Educandário Nossa Senhora Aparecida</p>
-      <div id="qrcode"></div>
-      <p class="alerta">⚠️ Antes de finalizar, verifique se os dados bancários estão corretos.</p>
-    </div>
-  </div>
-
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const slidesContainer = document.querySelector(".slides");
-      const slides = document.querySelectorAll(".slide");
-      const dots = document.querySelectorAll(".dot");
-      let slideIndex = 0;
-      const totalSlides = slides.length;
-
-      function updateSlide() {
-        slidesContainer.style.transform = `translateX(${-slideIndex * 100}%)`;
-        dots.forEach((dot, i) => dot.classList.toggle("active", i === slideIndex));
-      }
-
-      document.querySelector(".next").addEventListener("click", () => {
-        slideIndex = (slideIndex + 1) % totalSlides;
-        updateSlide();
-      });
-
-      document.querySelector(".prev").addEventListener("click", () => {
-        slideIndex = (slideIndex - 1 + totalSlides) % totalSlides;
-        updateSlide();
-      });
-
-      dots.forEach((dot, i) => {
-        dot.addEventListener("click", () => {
-          slideIndex = i;
-          updateSlide();
-        });
-      });
-
-      setInterval(() => {
-        slideIndex = (slideIndex + 1) % totalSlides;
-        updateSlide();
-      }, 3000);
-
-      updateSlide();
-
-      // ---- POPUP PIX ----
-      const btn = document.getElementById("doacaoPixBtn");
-      const modal = document.getElementById("pixModal");
-      const closeBtn = document.getElementById("closeModal");
-
-      btn.addEventListener("click", (e) => {
-        e.preventDefault(); // impede recarregar página
-        modal.style.display = "block";
-
-        const pixPayload = "00020126360014BR.GOV.BCB.PIX0114exemplo@pix.com520400005303986540510.005802BR5909Educand6009SAO PAULO62070503***6304ABCD";
-
-        document.getElementById("qrcode").innerHTML = "";
-        new QRCode(document.getElementById("qrcode"), {
-          text: pixPayload,
-          width: 200,
-          height: 200
-        });
-      });
-
-      closeBtn.addEventListener("click", () => {
-        modal.style.display = "none";
-      });
-
-      window.addEventListener("click", (event) => {
-        if (event.target === modal) modal.style.display = "none";
-      });
-    });
-  </script>
+  <!-- Aqui carrega o modal PIX -->
+  <div id="pixContainer"></div>
 </body>
 </html>
