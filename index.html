@@ -1,41 +1,12 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Início - Educandário NSA</title>
-  <link rel="stylesheet" href="style.css" />
-  <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
-  <script src="doacao.js"></script>
-  <script src="script.js" defer></script>
-</head>
-<body>
-  <div id="header"></div>
-
-  <!-- Carrossel -->
-  <section class="carrossel">
-    <div class="slides" id="carouselSlides">
-      <!-- As imagens do carrossel serão carregadas pelo script.js -->
-    </div>
-
-    <button class="prev" id="prevBtn">&#10094;</button>
-    <button class="next" id="nextBtn">&#10095;</button>
-
-    <div class="dots" id="carouselDots">
-      <!-- Os pontinhos serão criados pelo script.js -->
-    </div>
-  </section>
-
-  <main>
-    <h1>Bem-vindo ao Educandário Nossa Senhora Aparecida</h1>
-    <p>Há mais de 60 anos atuamos na comunidade itapirense, oferecendo serviços sociais e atendimento em creche para 250 crianças de 0 a 14 anos. 
-      Nosso compromisso é proporcionar convivência, desenvolvimento, solidariedade e fortalecimento de vínculos, em período integral e contra turno, contribuindo para a 
-      formação cidadã e o crescimento coletivo.</p>
-  </main>
-
-  <div id="footer"></div>
-
-  <!-- Aqui carrega o modal PIX -->
-  <div id="pixContainer"></div>
-</body>
+<!doctype html>
+<html lang="pt-br"> <head>
+    <meta charset="UTF-8" />
+    <base href="/" /> <link rel="icon" type="image/jpeg" href="/logo-educandario.jpeg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Educandário N. S. Aparecida</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>

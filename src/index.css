@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+body {
+  @apply antialiased text-slate-800 bg-slate-50;
+  font-family: 'Inter', sans-serif;
+}
+
+/* No seu arquivo CSS global */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1; /* slate-300 */
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8; /* slate-400 */
+}
