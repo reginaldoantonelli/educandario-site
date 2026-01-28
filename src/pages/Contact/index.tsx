@@ -34,12 +34,12 @@ const Contact: React.FC = () => {
     };
 
     return (
-        <main className="pt-20 bg-slate-50 min-h-screen">
+        <main className="pt-20 bg-slate-50 dark:bg-slate-950 min-h-screen transition-colors duration-300">
         {/* Cabeçalho */}
-        <section className="bg-white border-b border-slate-200 py-16">
+        <section className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 py-16">
             <div className="max-w-7xl mx-auto px-4 text-center">
-            <h1 className="text-4xl md:text-5xl font-black text-slate-900 mb-4">Vamos conversar?</h1>
-            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+            <h1 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white mb-4">Vamos conversar?</h1>
+            <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
                 Escolha o canal de sua preferência. Estamos prontos para tirar suas dúvidas sobre doações, voluntariado ou matrículas.
             </p>
             </div>
@@ -50,15 +50,15 @@ const Contact: React.FC = () => {
 
             {/* Necessidades Urgentes */}
             <div className="mb-10">
-                <div className="bg-white border border-orange-100 rounded-3xl shadow-sm p-6 md:p-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div className="bg-white dark:bg-slate-800 border border-orange-100 dark:border-orange-900/50 rounded-3xl shadow-sm p-6 md:p-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div className="flex gap-3 items-start">
-                        <div className="p-3 rounded-2xl bg-orange-50 text-orange-600">
+                        <div className="p-3 rounded-2xl bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400">
                             <AlertCircle className="w-6 h-6" />
                         </div>
                         <div className="space-y-2">
-                            <p className="text-xs font-semibold uppercase tracking-wide text-orange-600">Necessidade urgente</p>
-                            <h2 className="text-xl font-bold text-slate-900">{urgentNeed.title}</h2>
-                            <p className="text-slate-600 text-sm md:text-base">{urgentNeed.description}</p>
+                            <p className="text-xs font-semibold uppercase tracking-wide text-orange-600 dark:text-orange-400">Necessidade urgente</p>
+                            <h2 className="text-xl font-bold text-slate-900 dark:text-white">{urgentNeed.title}</h2>
+                            <p className="text-slate-600 dark:text-slate-300 text-sm md:text-base">{urgentNeed.description}</p>
                             <div className="flex flex-wrap gap-3 text-sm text-slate-700">
                                 <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 text-orange-700 border border-orange-100">
                                     <Calendar className="w-4 h-4" /> {urgentNeed.window}
@@ -86,25 +86,25 @@ const Contact: React.FC = () => {
                 
                 {/* Coluna 1: Redes Sociais */}
                 <div className="space-y-4">
-                <h2 className="text-xl font-bold text-slate-800 mb-6">Redes Sociais</h2>
+                <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-6">Redes Sociais</h2>
                 {socialLinks.map((social) => (
                     <a
                     key={social.name}
                     href={social.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-between p-4 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all group"
+                    className="flex items-center justify-between p-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-all group"
                     >
                     <div className="flex items-center gap-4">
                         <div className={`${social.color} text-white p-3 rounded-xl`}>
                         {social.icon}
                         </div>
                         <div>
-                        <p className="text-sm font-medium text-slate-500">{social.name}</p>
-                        <p className="font-bold text-slate-800">{social.handle}</p>
+                        <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{social.name}</p>
+                        <p className="font-bold text-slate-800 dark:text-white">{social.handle}</p>
                         </div>
                     </div>
-                    <span className="text-slate-300 group-hover:text-blue-600 transition-colors">→</span>
+                    <span className="text-slate-300 dark:text-slate-600 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">→</span>
                     </a>
                 ))}
                 </div>
@@ -180,33 +180,33 @@ const Contact: React.FC = () => {
         
         {/* Como ajudar agora */}
         <div className="max-w-7xl mx-auto px-4 mt-14">
-            <h2 className="text-2xl font-bold text-slate-900 mb-6">Como ajudar agora</h2>
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">Como ajudar agora</h2>
             <div className="grid md:grid-cols-3 gap-6">
-                <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
-                    <div className="flex items-center gap-2 text-slate-800 font-semibold mb-3">
-                        <Package className="w-5 h-5 text-blue-700" />
+                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-sm">
+                    <div className="flex items-center gap-2 text-slate-800 dark:text-white font-semibold mb-3">
+                        <Package className="w-5 h-5 text-blue-700 dark:text-blue-400" />
                         Doações físicas
                     </div>
-                    <p className="text-sm text-slate-600">Entregue mantimentos, roupas e itens de higiene diretamente na sede.</p>
-                    <p className="text-sm font-semibold text-slate-800 mt-3">Rua José Pereira, 780 - Vila Bazani</p>
-                    <p className="text-xs text-slate-500">Horário: 07h às 17h (seg a sex)</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-300">Entregue mantimentos, roupas e itens de higiene diretamente na sede.</p>
+                    <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 mt-3">Rua José Pereira, 780 - Vila Bazani</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Horário: 07h às 17h (seg a sex)</p>
                 </div>
-                <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
-                    <div className="flex items-center gap-2 text-slate-800 font-semibold mb-3">
-                        <Banknote className="w-5 h-5 text-blue-700" />
+                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-sm">
+                    <div className="flex items-center gap-2 text-slate-800 dark:text-white font-semibold mb-3">
+                        <Banknote className="w-5 h-5 text-blue-700 dark:text-blue-400" />
                         Doações financeiras
                     </div>
-                    <p className="text-sm text-slate-600">Transfira via PIX ou dados bancários. Transparência e prestação de contas garantidas.</p>
-                    <p className="text-sm font-semibold text-slate-800 mt-3">PIX: contato@educandarionsa.com.br</p>
-                    <p className="text-xs text-slate-500">Banco do Brasil · Ag. 0000 · C/C 000000-0 · CNPJ 00.000.000/0000-00</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-300">Transfira via PIX ou dados bancários. Transparência e prestação de contas garantidas.</p>
+                    <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 mt-3">PIX: contato@educandarionsa.com.br</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Banco do Brasil · Ag. 0000 · C/C 000000-0 · CNPJ 00.000.000/0000-00</p>
                 </div>
-                <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
-                    <div className="flex items-center gap-2 text-slate-800 font-semibold mb-3">
-                        <HandHeart className="w-5 h-5 text-blue-700" />
+                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-sm">
+                    <div className="flex items-center gap-2 text-slate-800 dark:text-white font-semibold mb-3">
+                        <HandHeart className="w-5 h-5 text-blue-700 dark:text-blue-400" />
                         Voluntariado
                     </div>
-                    <p className="text-sm text-slate-600">Doe tempo e habilidades: oficinas, esporte, comunicação ou apoio administrativo.</p>
-                    <p className="text-sm font-semibold text-slate-800 mt-3">Fale com a equipe pelo WhatsApp</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-300">Doe tempo e habilidades: oficinas, esporte, comunicação ou apoio administrativo.</p>
+                    <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 mt-3">Fale com a equipe pelo WhatsApp</p>
                     <a
                         href="https://wa.me/551938631972"
                         target="_blank"

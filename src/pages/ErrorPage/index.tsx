@@ -4,8 +4,8 @@ import { ArrowLeft, Compass, Home, Info, Phone, Search } from 'lucide-react';
 
 const ErrorPage: React.FC = () => {
     return (
-        <main className="min-h-screen bg-slate-50 flex items-center justify-center px-4 py-20">
-            <div className="max-w-4xl w-full bg-white border border-slate-200 shadow-xl rounded-3xl overflow-hidden">
+        <main className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center px-4 py-20 transition-colors duration-300">
+            <div className="max-w-4xl w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xl rounded-3xl overflow-hidden">
                 <div className="bg-linear-to-r from-blue-900 via-blue-800 to-blue-700 text-white p-10">
                     <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-100">Erro 404</p>
                     <h1 className="mt-3 text-4xl md:text-5xl font-black leading-tight">Página não encontrada</h1>
@@ -16,48 +16,48 @@ const ErrorPage: React.FC = () => {
 
                 <div className="p-10 grid md:grid-cols-3 gap-6">
                     <div className="md:col-span-2 space-y-4">
-                        <div className="flex items-center gap-3 text-slate-700">
-                            <Compass className="text-blue-700" size={20} />
+                        <div className="flex items-center gap-3 text-slate-700 dark:text-slate-300">
+                            <Compass className="text-blue-700 dark:text-blue-400" size={20} />
                             <span className="font-semibold">Siga por aqui</span>
                         </div>
                         <div className="grid sm:grid-cols-2 gap-3">
-                            <Link to="/" className="flex items-center justify-between p-4 rounded-2xl border border-slate-200 hover:border-blue-600 hover:shadow-md transition-all">
+                            <Link to="/" className="flex items-center justify-between p-4 rounded-2xl border border-slate-200 dark:border-slate-700 hover:border-blue-600 dark:hover:border-blue-500 hover:shadow-md transition-all">
                                 <div>
-                                    <p className="text-sm text-slate-500">Início</p>
-                                    <p className="font-bold text-slate-800">Voltar à Home</p>
+                                    <p className="text-sm text-slate-500 dark:text-slate-400">Início</p>
+                                    <p className="font-bold text-slate-800 dark:text-white">Voltar à Home</p>
                                 </div>
-                                <Home size={18} className="text-blue-700" />
+                                <Home size={18} className="text-blue-700 dark:text-blue-400" />
                             </Link>
-                            <Link to="/sobre" className="flex items-center justify-between p-4 rounded-2xl border border-slate-200 hover:border-blue-600 hover:shadow-md transition-all">
+                            <Link to="/sobre" className="flex items-center justify-between p-4 rounded-2xl border border-slate-200 dark:border-slate-700 hover:border-blue-600 dark:hover:border-blue-500 hover:shadow-md transition-all">
                                 <div>
-                                    <p className="text-sm text-slate-500">Institucional</p>
-                                    <p className="font-bold text-slate-800">Conhecer o Educandário</p>
+                                    <p className="text-sm text-slate-500 dark:text-slate-400">Institucional</p>
+                                    <p className="font-bold text-slate-800 dark:text-white">Conhecer o Educandário</p>
                                 </div>
-                                <Info size={18} className="text-blue-700" />
+                                <Info size={18} className="text-blue-700 dark:text-blue-400" />
                             </Link>
-                            <Link to="/transparencia" className="flex items-center justify-between p-4 rounded-2xl border border-slate-200 hover:border-blue-600 hover:shadow-md transition-all">
+                            <Link to="/transparencia" className="flex items-center justify-between p-4 rounded-2xl border border-slate-200 dark:border-slate-700 hover:border-blue-600 dark:hover:border-blue-500 hover:shadow-md transition-all">
                                 <div>
-                                    <p className="text-sm text-slate-500">Prestação de contas</p>
-                                    <p className="font-bold text-slate-800">Ver Transparência</p>
+                                    <p className="text-sm text-slate-500 dark:text-slate-400">Prestação de contas</p>
+                                    <p className="font-bold text-slate-800 dark:text-white">Ver Transparência</p>
                                 </div>
-                                <Search size={18} className="text-blue-700" />
+                                <Search size={18} className="text-blue-700 dark:text-blue-400" />
                             </Link>
-                            <Link to="/contato" className="flex items-center justify-between p-4 rounded-2xl border border-slate-200 hover:border-blue-600 hover:shadow-md transition-all">
+                            <Link to="/contato" className="flex items-center justify-between p-4 rounded-2xl border border-slate-200 dark:border-slate-700 hover:border-blue-600 dark:hover:border-blue-500 hover:shadow-md transition-all">
                                 <div>
-                                    <p className="text-sm text-slate-500">Fale conosco</p>
-                                    <p className="font-bold text-slate-800">Contato e matrículas</p>
+                                    <p className="text-sm text-slate-500 dark:text-slate-400">Fale conosco</p>
+                                    <p className="font-bold text-slate-800 dark:text-white">Contato e matrículas</p>
                                 </div>
-                                <Phone size={18} className="text-blue-700" />
+                                <Phone size={18} className="text-blue-700 dark:text-blue-400" />
                             </Link>
                         </div>
                     </div>
 
-                    <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 flex flex-col gap-4">
+                    <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 flex flex-col gap-4">
                         <div className="flex items-center gap-3">
-                            <ArrowLeft size={18} className="text-blue-700" />
-                            <p className="font-semibold text-slate-800">Precisa de ajuda?</p>
+                            <ArrowLeft size={18} className="text-blue-700 dark:text-blue-400" />
+                            <p className="font-semibold text-slate-800 dark:text-white">Precisa de ajuda?</p>
                         </div>
-                        <p className="text-sm text-slate-600">
+                        <p className="text-sm text-slate-600 dark:text-slate-300">
                             Se o link veio de um material antigo, é possível que a página tenha sido movida. Use os atalhos ou volte para a Home.
                         </p>
                         <a
@@ -70,7 +70,7 @@ const ErrorPage: React.FC = () => {
                         </a>
                         <Link
                             to="/"
-                            className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 hover:border-blue-600 text-slate-800 hover:text-blue-700 font-semibold py-3 px-4 transition-colors"
+                            className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 dark:border-slate-600 hover:border-blue-600 dark:hover:border-blue-500 text-slate-800 dark:text-white hover:text-blue-700 dark:hover:text-blue-400 font-semibold py-3 px-4 transition-colors"
                         >
                             <Home size={16} /> Voltar para a Home
                         </Link>

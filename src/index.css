@@ -1,8 +1,26 @@
 @import "tailwindcss";
 
+/* Tailwind v4: Ativa dark mode via classe */
+@custom-variant dark (&:where(.dark, .dark *));
+
 body {
-  @apply antialiased text-slate-800 bg-slate-50;
+  @apply antialiased text-slate-800 bg-slate-50 transition-colors duration-300;
   font-family: 'Inter', sans-serif;
+}
+
+.dark body {
+  @apply bg-slate-950 text-slate-100;
+}
+
+.dark {
+  color-scheme: dark;
+}
+
+/* Animação shimmer para skeleton */
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 /* No seu arquivo CSS global */

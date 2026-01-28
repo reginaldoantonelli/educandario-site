@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Play } from 'lucide-react';
+import heroIlustracao from '@/assets/fachada-ilustracao.webp';
 
 const Hero: React.FC = () => {
     return (
@@ -8,7 +9,7 @@ const Hero: React.FC = () => {
         {/* Imagem de Fundo com Overlay */}
         <div className="absolute inset-0 z-0">
             <img
-            src="https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&q=80" 
+            src={heroIlustracao}
             alt="Crianças do Educandário"
             className="w-full h-full object-cover opacity-60"
             />

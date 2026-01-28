@@ -38,18 +38,18 @@ const ImpactStats: React.FC = () => {
                     {stats.map((stat, index) => (
                         <div 
                             key={index} 
-                            className="bg-white rounded-2xl md:rounded-3xl p-4 md:p-8 shadow-xl border border-slate-100 flex flex-col items-center text-center justify-center min-h-35 md:min-h-50"
+                            className="bg-white dark:bg-slate-800 rounded-2xl md:rounded-3xl p-4 md:p-8 shadow-xl border border-slate-100 dark:border-slate-700 flex flex-col items-center text-center justify-center min-h-35 md:min-h-50 transition-colors duration-300"
                             >
-                            <div className="bg-orange-50 p-2 md:p-3 rounded-xl mb-2 md:mb-4">
+                            <div className="bg-orange-50 dark:bg-orange-900/30 p-2 md:p-3 rounded-xl mb-2 md:mb-4">
                                 {/* Renderiza o ícone aqui, ajustando o tamanho */}
                                 {stat.icon}
                             </div>
                             
-                            <span className="text-2xl md:text-4xl font-black text-slate-900 leading-none">
+                            <span className="text-2xl md:text-4xl font-black text-slate-900 dark:text-white leading-none">
                                 {stat.value}
                             </span>
                             
-                            <p className="text-[10px] md:text-sm font-bold uppercase tracking-wider text-slate-500 mt-1 md:mt-2">
+                            <p className="text-[10px] md:text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mt-1 md:mt-2">
                                 {stat.label}
                             </p>
                         </div>

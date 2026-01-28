@@ -40,7 +40,7 @@ const DonationModal: React.FC<DonationModalProps> = ({ open, onClose }) => {
             onClick={onClose}
         >
             <div
-                className="w-full max-w-3xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden max-h-[calc(100vh-48px)] overflow-y-auto"
+                className="w-full max-w-3xl bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden max-h-[calc(100vh-48px)] overflow-y-auto"
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="flex items-start justify-between gap-4 bg-linear-to-r from-blue-900 via-blue-800 to-blue-700 text-white px-8 py-6">
@@ -62,19 +62,19 @@ const DonationModal: React.FC<DonationModalProps> = ({ open, onClose }) => {
 
                 <div className="p-8 space-y-6">
                     <div className="grid md:grid-cols-2 gap-4">
-                        <div className="p-5 rounded-2xl border border-slate-200 bg-slate-50">
-                            <div className="flex items-center gap-2 text-slate-700 font-semibold mb-3">
+                        <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-700">
+                            <div className="flex items-center gap-2 text-slate-700 dark:text-slate-200 font-semibold mb-3">
                                 <HeartHandshake size={18} className="text-orange-500" />
                                 <span>PIX imediato</span>
                             </div>
-                            <div className="flex items-center justify-between gap-3 bg-white border border-slate-200 rounded-xl px-4 py-3">
+                            <div className="flex items-center justify-between gap-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-3">
                                 <div>
-                                    <p className="text-xs text-slate-500">Chave PIX</p>
-                                    <p className="font-semibold text-slate-800 break-all">{pixKey}</p>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400">Chave PIX</p>
+                                    <p className="font-semibold text-slate-800 dark:text-white break-all">{pixKey}</p>
                                 </div>
                                 <button
                                     onClick={handleCopy}
-                                    className="flex items-center gap-1 text-sm font-semibold text-blue-700 hover:text-blue-900"
+                                    className="flex items-center gap-1 text-sm font-semibold text-blue-700 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300"
                                 >
                                     {copied ? (
                                         <>
@@ -87,31 +87,31 @@ const DonationModal: React.FC<DonationModalProps> = ({ open, onClose }) => {
                                     )}
                                 </button>
                             </div>
-                            <p className="text-xs text-slate-500 mt-2">Confirme a chave oficial antes de concluir a doação.</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">Confirme a chave oficial antes de concluir a doação.</p>
                         </div>
 
-                        <div className="p-5 rounded-2xl border border-slate-200">
-                            <div className="flex items-center gap-2 text-slate-700 font-semibold mb-3">
-                                <Banknote size={18} className="text-blue-700" />
+                        <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-700">
+                            <div className="flex items-center gap-2 text-slate-700 dark:text-slate-200 font-semibold mb-3">
+                                <Banknote size={18} className="text-blue-700 dark:text-blue-400" />
                                 <span>Dados bancários</span>
                             </div>
-                            <div className="space-y-1 text-sm text-slate-700">
+                            <div className="space-y-1 text-sm text-slate-700 dark:text-slate-300">
                                 <p className="font-semibold">Favorecido: Educandário Nossa Senhora Aparecida</p>
                                 <p>Banco do Brasil (001)</p>
                                 <p>Agência: 0000</p>
                                 <p>Conta: 000000-0</p>
                                 <p>CNPJ: 00.000.000/0000-00</p>
                             </div>
-                            <p className="text-xs text-slate-500 mt-2">Preencha com os dados oficiais antes de publicar.</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">Preencha com os dados oficiais antes de publicar.</p>
                         </div>
                     </div>
 
-                    <div className="p-5 rounded-2xl border border-slate-200 bg-slate-50">
-                        <div className="flex items-center gap-2 text-slate-700 font-semibold mb-3">
-                            <ShoppingBag size={18} className="text-blue-700" />
+                    <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-700">
+                        <div className="flex items-center gap-2 text-slate-700 dark:text-slate-200 font-semibold mb-3">
+                            <ShoppingBag size={18} className="text-blue-700 dark:text-blue-400" />
                             <span>Mantimentos prioritários</span>
                         </div>
-                        <ul className="grid sm:grid-cols-2 gap-2 text-sm text-slate-700">
+                        <ul className="grid sm:grid-cols-2 gap-2 text-sm text-slate-700 dark:text-slate-300">
                             <li>Leite integral e fórmulas infantis</li>
                             <li>Arroz, feijão, macarrão</li>
                             <li>Proteínas não perecíveis (sardinha, atum)</li>
@@ -131,7 +131,7 @@ const DonationModal: React.FC<DonationModalProps> = ({ open, onClose }) => {
                         </Link>
                         <button
                             onClick={onClose}
-                            className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-slate-300 text-slate-800 font-semibold hover:border-slate-400 transition-colors"
+                            className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-200 font-semibold hover:border-slate-400 dark:hover:border-slate-500 transition-colors"
                         >
                             Fechar
                         </button>
