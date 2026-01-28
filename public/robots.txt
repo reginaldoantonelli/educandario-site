@@ -1,0 +1,8 @@
+# robots.txt para Educandário Nossa Senhora Aparecida
+# https://www.educandarioitapira.org.br/
+
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://www.educandarioitapira.org.br/sitemap.xml

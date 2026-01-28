@@ -10,8 +10,12 @@ const Hero: React.FC = () => {
         <div className="absolute inset-0 z-0">
             <img
             src={heroIlustracao}
-            alt="Crianças do Educandário"
+            alt="Fachada do Educandário Nossa Senhora Aparecida com crianças"
             className="w-full h-full object-cover opacity-60"
+            width={1920}
+            height={1080}
+            fetchPriority="high"
+            loading="eager"
             />
             <div className="absolute inset-0 bg-linear-to-r from-blue-900/90 to-transparent md:from-blue-900/80" />
         </div>
@@ -34,7 +38,7 @@ const Hero: React.FC = () => {
             <div className="mt-10 flex flex-col sm:flex-row gap-4">
                 <Link
                 to="/contato"
-                className="flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-8 py-4 rounded-xl font-bold text-lg transition-all transform hover:scale-105 shadow-xl shadow-orange-500/20"
+                className="flex items-center justify-center gap-2 bg-orange-700 hover:bg-orange-800 text-white px-8 py-4 rounded-xl font-bold text-lg transition-all transform hover:scale-105 shadow-xl shadow-orange-700/20"
                 >
                 Quero Contribuir
                 <ArrowRight size={20} />

@@ -1,5 +1,11 @@
 import React, { useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import imgPedagogico from '@/assets/project/img-apoio-pedagogico.webp';
+import imgInclusaoDigital from '@/assets/project/img-inclusao_digital.webp';
+import imgJardinagem from '@/assets/project/img-oficina-jardinagem.webp';
+import imgBibliotecaAtiva from '@/assets/project/img-biblioteca-ativa.webp';
+import imgCapoeira from '@/assets/project/img-oficina-capoeira.webp';
+
 
 interface Project {
     title: string;
@@ -58,6 +64,9 @@ const ImageWithSkeleton: React.FC<{ src: string; alt: string; className?: string
                 className={`${className} transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
                 onLoad={() => setIsLoaded(true)}
                 loading="lazy"
+                decoding="async"
+                width={800}
+                height={600}
             />
         </>
     );
@@ -67,31 +76,31 @@ const projects: Project[] = [
     {
         title: "Inclusão Digital",
         description: "Aulas de informática básica e avançada para preparar nossos alunos para o futuro tecnológico.",
-        image: "https://images.unsplash.com/photo-1531297484001-80022131f5a1?auto=format&fit=crop&q=80",
+        image: imgInclusaoDigital,
         tag: "Educação"
     },
     {
         title: "Oficina de Jardinagem",
         description: "Ensinamos o respeito à natureza e técnicas de cultivo sustentável em nossa própria horta.",
-        image: "https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&q=80",
+        image: imgJardinagem,
         tag: "Meio Ambiente"
     },
     {
         title: "Biblioteca Ativa",
         description: "Incentivo à leitura com um acervo diversificado e atividades lúdicas de interpretação.",
-        image: "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&q=80",
+        image: imgBibliotecaAtiva,
         tag: "Cultura"
     },
     {
         title: "Oficina de Capoeira",
         description: "Expressão cultural e disciplina através do esporte e da música ancestral.",
-        image: "https://images.unsplash.com/photo-1524594152303-9fd13543fe6e?auto=format&fit=crop&q=80",
+        image: imgCapoeira,
         tag: "Cultura"
     },
     {
         title: "Apoio Pedagógico",
         description: "Reforço escolar focado em alfabetização e raciocínio lógico no contraturno.",
-        image: "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&q=80",
+        image: imgPedagogico,
         tag: "Educação"
     }
     ];

@@ -64,7 +64,7 @@ const ErrorPage: React.FC = () => {
                             href="https://wa.me/551938631972"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center justify-center gap-2 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 transition-colors shadow-md"
+                            className="inline-flex items-center justify-center gap-2 rounded-xl bg-orange-700 hover:bg-orange-800 text-white font-bold py-3 px-4 transition-colors shadow-md"
                         >
                             <Phone size={16} /> WhatsApp do Educandário
                         </a>

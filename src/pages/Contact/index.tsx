@@ -74,7 +74,7 @@ const Contact: React.FC = () => {
                             href="https://wa.me/551938631972"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold w-full sm:w-auto text-sm"
+                            className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-orange-700 hover:bg-orange-800 text-white font-bold w-full sm:w-auto text-sm"
                         >
                             <MessageCircle className="w-4 h-4" /> Avisar pelo WhatsApp
                         </a>
@@ -148,7 +148,7 @@ const Contact: React.FC = () => {
                     href="https://www.google.com/maps/dir//Educand%C3%A1rio+Nossa+Senhora+Aparecida+-+R.+Jos%C3%A9+Pereira,+780+-+Vila+Bazani,+Itapira+-+SP"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-full mt-10 bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded-2xl transition-colors shadow-lg flex items-center justify-center gap-2"
+                    className="w-full mt-10 bg-orange-700 hover:bg-orange-800 text-white font-bold py-4 rounded-2xl transition-colors shadow-lg flex items-center justify-center gap-2"
                 >
                     <Navigation size={20} />
                     Como Chegar

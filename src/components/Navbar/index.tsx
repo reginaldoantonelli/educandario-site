@@ -109,13 +109,16 @@ const Navbar: React.FC = () => {
                                 src={imgLogo} 
                                 alt="Logo Educandário N. S. Aparecida"
                                 className="w-full h-full object-contain rounded-full shadow-sm"
+                                width={48}
+                                height={48}
+                                decoding="async"
                             />
                         </div>
                         <div className="flex flex-col leading-tight">
                             <span className="text-xl font-extrabold text-slate-800 dark:text-white tracking-tight">
                                 Educandário
                             </span>
-                            <span className="text-sm font-bold text-orange-500 uppercase tracking-widest">
+                            <span className="text-sm font-bold text-orange-700 dark:text-orange-400 uppercase tracking-widest">
                                 N. S. Aparecida
                             </span>
                         </div>
@@ -200,21 +203,21 @@ const Navbar: React.FC = () => {
                         {/* Controles de Acessibilidade */}
                         <div className="flex items-center gap-1">
                             {/* Botões de Tamanho de Fonte */}
-                            <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-full p-1">
+                            <div className="flex items-center bg-slate-200 dark:bg-slate-700 rounded-full p-1">
                                 <button
                                     onClick={decreaseFontSize}
                                     disabled={fontSize <= 80}
-                                    className="px-2 py-1 text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-blue-700 dark:hover:text-blue-400 disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-l-full"
+                                    className="px-2 py-1 text-sm font-bold text-slate-700 dark:text-slate-200 hover:text-blue-700 dark:hover:text-blue-400 disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-l-full"
                                     aria-label="Diminuir tamanho do texto"
                                     title="Diminuir tamanho do texto"
                                 >
                                     A-
                                 </button>
-                                <span className="text-xs text-slate-500 dark:text-slate-400 px-1 select-none" aria-live="polite" aria-atomic="true">{fontSize}%</span>
+                                <span className="text-xs text-slate-700 dark:text-slate-300 px-1 select-none font-medium" aria-live="polite" aria-atomic="true">{fontSize}%</span>
                                 <button
                                     onClick={increaseFontSize}
                                     disabled={fontSize >= 150}
-                                    className="px-2 py-1 text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-blue-700 dark:hover:text-blue-400 disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-r-full"
+                                    className="px-2 py-1 text-sm font-bold text-slate-700 dark:text-slate-200 hover:text-blue-700 dark:hover:text-blue-400 disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-r-full"
                                     aria-label="Aumentar tamanho do texto"
                                     title="Aumentar tamanho do texto"
                                 >
@@ -225,7 +228,7 @@ const Navbar: React.FC = () => {
                             {/* Botão Dark Mode */}
                             <button
                                 onClick={toggleDarkMode}
-                                className="p-2.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-yellow-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                                className="p-2.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-yellow-400 hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                                 aria-label="Alternar entre modo claro e escuro"
                                 title={isDarkMode ? 'Ativar modo claro' : 'Ativar modo escuro'}
                             >
@@ -233,7 +236,7 @@ const Navbar: React.FC = () => {
                             </button>
                         </div>
                         
-                        <button onClick={() => setIsDonationOpen(true)} className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2.5 rounded-full font-bold flex items-center gap-2 transition-all shadow-lg shadow-orange-500/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+                        <button onClick={() => setIsDonationOpen(true)} className="bg-orange-700 hover:bg-orange-800 text-white px-6 py-2.5 rounded-full font-bold flex items-center gap-2 transition-all shadow-lg shadow-orange-700/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
                             <Heart size={18} fill="currentColor" /> DOE AGORA
                         </button>
                     </div>
@@ -241,11 +244,11 @@ const Navbar: React.FC = () => {
                     {/* Botão Mobile */}
                     <div className="lg:hidden flex items-center gap-1">
                         {/* Botões de Fonte Mobile */}
-                        <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-full p-0.5">
+                        <div className="flex items-center bg-slate-200 dark:bg-slate-700 rounded-full p-0.5">
                             <button
                                 onClick={decreaseFontSize}
                                 disabled={fontSize <= 80}
-                                className="px-1.5 py-0.5 text-xs font-bold text-slate-600 dark:text-slate-300 disabled:opacity-40 transition-colors"
+                                className="px-1.5 py-0.5 text-xs font-bold text-slate-700 dark:text-slate-200 disabled:opacity-40 transition-colors"
                                 aria-label="Diminuir tamanho do texto"
                             >
                                 A-
@@ -253,7 +256,7 @@ const Navbar: React.FC = () => {
                             <button
                                 onClick={increaseFontSize}
                                 disabled={fontSize >= 150}
-                                className="px-1.5 py-0.5 text-xs font-bold text-slate-600 dark:text-slate-300 disabled:opacity-40 transition-colors"
+                                className="px-1.5 py-0.5 text-xs font-bold text-slate-700 dark:text-slate-200 disabled:opacity-40 transition-colors"
                                 aria-label="Aumentar tamanho do texto"
                             >
                                 A+
@@ -261,7 +264,7 @@ const Navbar: React.FC = () => {
                         </div>
                         <button
                             onClick={toggleDarkMode}
-                            className="p-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-yellow-400 transition-colors"
+                            className="p-2 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-yellow-400 transition-colors"
                             aria-label="Alternar entre modo claro e escuro"
                         >
                             {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
@@ -315,7 +318,7 @@ const Navbar: React.FC = () => {
                         <Link to="/contato" onClick={(e) => handleNavClick(e, '/contato')} className="block px-4 py-3 text-lg font-black text-slate-800 dark:text-white border-b border-slate-50 dark:border-slate-800">CONTATO</Link>
                         
                         <div className="pt-6">
-                            <button onClick={() => { setIsDonationOpen(true); setIsOpen(false); }} className="w-full bg-orange-500 text-white py-4 rounded-2xl font-black flex justify-center items-center gap-2 shadow-xl shadow-orange-200">
+                            <button onClick={() => { setIsDonationOpen(true); setIsOpen(false); }} className="w-full bg-orange-700 text-white py-4 rounded-2xl font-black flex justify-center items-center gap-2 shadow-xl shadow-orange-400">
                                 <Heart size={20} fill="currentColor" /> DOE AGORA
                             </button>
                         </div>

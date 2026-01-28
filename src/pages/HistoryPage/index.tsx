@@ -74,6 +74,9 @@ const HistoryPage: React.FC = () => {
                             alt="Igreja Matriz Antiga"
                             className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 ease-out group-hover:scale-105"
                             loading="lazy"
+                            decoding="async"
+                            width={800}
+                            height={600}
                         />
                         {/* Ícone de lupa */}
                         <div className="absolute top-4 right-4 z-20 p-2 bg-white/80 dark:bg-slate-900/80 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-lg">
@@ -153,6 +156,9 @@ const HistoryPage: React.FC = () => {
                         alt="Padre Mateus Ruiz Domingues"
                         className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 ease-out group-hover:scale-105"
                         loading="lazy"
+                        decoding="async"
+                        width={600}
+                        height={800}
                     />
                     {/* Ícone de lupa */}
                     <div className="absolute top-4 right-4 z-20 p-2 bg-white/80 dark:bg-slate-900/80 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-lg">

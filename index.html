@@ -1,9 +1,41 @@
 <!doctype html>
-<html lang="pt-br"> <head>
+<html lang="pt-br">
+  <head>
     <meta charset="UTF-8" />
-    <base href="/" /> <link rel="icon" type="image/jpeg" href="/logo-educandario.jpeg" />
+    <base href="/" />
+    <link rel="icon" type="image/jpeg" href="/logo-educandario.jpeg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Educandário N. S. Aparecida</title>
+    
+    <!-- SEO Meta Tags -->
+    <title>Educandário N. S. Aparecida | Transformando Vidas em Itapira</title>
+    <meta name="description" content="Desde 1959, o Educandário Nossa Senhora Aparecida oferece apoio pedagógico, oficinas e inclusão digital para mais de 260 crianças em Itapira. Saiba como ajudar!" />
+    <meta name="keywords" content="Educandário Itapira, doação Itapira, apoio pedagógico, ONG Itapira, ajuda crianças" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://www.educandarioitapira.org.br/" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://www.educandarioitapira.org.br/" />
+    <meta property="og:title" content="Educandário N. S. Aparecida | Transformando Vidas" />
+    <meta property="og:description" content="Apoie nossos projetos de educação e inclusão digital para crianças em Itapira. Sua doação transforma o futuro!" />
+    <meta property="og:image" content="https://www.educandarioitapira.org.br/og-image.jpg" />
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:title" content="Educandário N. S. Aparecida" />
+    <meta property="twitter:description" content="Transformando vidas em Itapira através da educação e carinho desde 1959." />
+    
+    <meta name="theme-color" content="#1e3a8a" />
+    
+    <!-- Preload da imagem LCP (Hero) - Carrega antes do JS -->
+    <link rel="preload" as="image" href="/src/assets/fachada-ilustracao.webp" type="image/webp" fetchpriority="high" />
+    
+    <!-- Preconnect para domínios externos (melhora LCP) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    
+    <!-- Google Fonts com font-display: swap -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
   </head>
   <body>
     <div id="root"></div>

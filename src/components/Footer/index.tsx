@@ -28,10 +28,10 @@ const Footer: React.FC = () => {
                 Transformando o futuro de crianças e adolescentes em Itapira através da educação, cultura e assistência social há mais de 60 anos.
                 </p>
                 <div className="flex gap-4">
-                <a href="https://www.facebook.com/aparecida.ensa.1" target="_blank" rel="noreferrer" className="p-2 bg-slate-800 rounded-full hover:bg-blue-700 transition-colors text-white">
+                <a href="https://www.facebook.com/aparecida.ensa.1" target="_blank" rel="noreferrer" className="p-2 bg-slate-800 rounded-full hover:bg-blue-700 transition-colors text-white" aria-label="Facebook do Educandário">
                     <Facebook size={20} />
                 </a>
-                <a href="https://www.instagram.com/educandarionsa" target="_blank" rel="noreferrer" className="p-2 bg-slate-800 rounded-full hover:bg-pink-600 transition-colors text-white">
+                <a href="https://www.instagram.com/educandarionsa" target="_blank" rel="noreferrer" className="p-2 bg-slate-800 rounded-full hover:bg-pink-600 transition-colors text-white" aria-label="Instagram do Educandário">
                     <Instagram size={20} />
                 </a>
                 </div>
@@ -82,7 +82,7 @@ const Footer: React.FC = () => {
                 </h4>
                 <p className="text-xs mb-4">Sua doação ajuda a manter nossas oficinas e alimentação das crianças.</p>
                 <button
-                    className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-xl transition-colors text-sm uppercase"
+                    className="w-full bg-orange-700 hover:bg-orange-800 text-white font-bold py-3 rounded-xl transition-colors text-sm uppercase"
                     onClick={() => setDonationOpen(true)}
                     aria-haspopup="dialog"
                 >
