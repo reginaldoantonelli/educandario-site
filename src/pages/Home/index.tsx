@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 import Hero from '@/components/Hero';
 import ImpactStats from '@/components/ImpactStats';
 import ProjectCards from '@/components/ProjectCards';
-import imgFachada from '@/assets/foto-fachada-educandario..jpg';
+import imgFachada from '@/assets/foto-fachada-educandario..webp';
 
 const Home: React.FC = () => {
     const { hash } = useLocation();

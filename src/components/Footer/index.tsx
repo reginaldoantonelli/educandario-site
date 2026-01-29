@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Facebook, Instagram, Mail, MapPin, Phone, Heart, Clock } from 'lucide-react';
 import DonationModal from '@/components/DonationModel/DonationModal';
-import imgLogo from '@/assets/logo-educandario.jpeg';
+import imgLogo from '@/assets/logo-educandario.webp';
 
 const Footer: React.FC = () => {
     const [donationOpen, setDonationOpen] = useState(false);

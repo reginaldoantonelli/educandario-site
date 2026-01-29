@@ -13,4 +13,21 @@ export default defineConfig({
     },
   },
   plugins: [react(), tailwindcss()],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom'],
+          'router': ['react-router-dom'],
+        },
+      },
+    },
+    // Otimização de bundle
+    target: 'esnext',
+    minify: 'esbuild',
+  },
+  // Otimização de dependências
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react-router-dom'],
+  },
 })

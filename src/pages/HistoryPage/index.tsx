@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { History, Landmark, Heart, ZoomIn, X } from 'lucide-react';
-import padreMateus from '@/assets/foto-padremateus.jpg';
-import fotoMatrizAntiga from '@/assets/igreja-matriz-antiga.jpg';
+import padreMateus from '@/assets/foto-padremateus.webp';
+import fotoMatrizAntiga from '@/assets/igreja-matriz-antiga.webp';
 
 const HistoryPage: React.FC = () => {
     const [expandedImage, setExpandedImage] = useState<{ src: string; alt: string } | null>(null);

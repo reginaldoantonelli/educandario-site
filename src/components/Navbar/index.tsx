@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Menu, X, Heart, ChevronDown, History, Scale, Info, Moon, Sun } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import DonationModal from '@/components/DonationModel/DonationModal';
-import imgLogo from '@/assets/logo-educandario.jpeg';
+import imgLogo from '@/assets/logo-educandario.webp';
 
 const Navbar: React.FC = () => {
     const [isOpen, setIsOpen] = useState<boolean>(false);

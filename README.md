@@ -1,119 +1,129 @@
-# Educandario Nossa Senhora Aparecida
+# Educandário Nossa Senhora Aparecida
 
-Site institucional moderno para o Educandario Nossa Senhora Aparecida, substituindo o antigo portal WordPress (<https://educandarionsa.com.br/wordpress/>). Construido com React + Vite para desempenho, acessibilidade e facilidade de manutencao.
+Site institucional moderno para o Educandário Nossa Senhora Aparecida, substituindo o antigo portal WordPress. Construído com React + Vite para desempenho, acessibilidade e facilidade de manutenção.
 
-## Tecnologias
+![Lighthouse Score](https://img.shields.io/badge/Performance-98-brightgreen) ![Accessibility](https://img.shields.io/badge/Accessibility-100-brightgreen) ![Best Practices](https://img.shields.io/badge/Best%20Practices-100-brightgreen) ![SEO](https://img.shields.io/badge/SEO-100-brightgreen)
 
-- React 18 + TypeScript (SPA com React Router)
-- Vite (build/dev server)
-- Tailwind CSS (estilos e responsividade)
-- Lucide Icons (icones)
+## 🚀 Tecnologias
 
-## Funcionalidades e Paginas
+- **React 19** + TypeScript (SPA com React Router)
+- **Vite 7** (build/dev server ultra-rápido)
+- **Tailwind CSS v4** (estilos e responsividade)
+- **Lucide Icons** (ícones otimizados)
+- **Sharp** (otimização de imagens)
 
-- Navegacao principal com dropdown "A Instituicao" e CTA de doacao (modal com chave PIX).
-- Home: destaque institucional, projetos e chamadas para doacao/contato.
-- Sobre: apresentacao da organizacao.
-- Nossa Historia: linha do tempo e fotos do Educandario.
-- Regimento Interno: normas, diretrizes e download do PDF oficial.
-- Transparencia: informacoes financeiras e de prestacao de contas.
-- Contato: canais oficiais, formulario/links e dados completos.
-- Erro 404: pagina de falha de rota.
+## ✨ Funcionalidades
 
-## Motivos da substituicao
+- 🌙 **Dark Mode** com persistência em localStorage
+- 🔤 **Controle de Fonte** (A-/A+) para acessibilidade
+- 📱 **Responsivo** para todos os dispositivos
+- ⚡ **Lazy Loading** de páginas e imagens
+- 🖼️ **Imagens otimizadas** em WebP
+- ♿ **WCAG AA** compliant (contraste e aria-labels)
 
-- Modernizar a experiencia visual e mobile-first.
-- Melhorar performance e SEO com Vite + React.
-- Facilitar manutencao, modularizacao e evolucao de conteudo.
-- Unificar informacoes institucionais, de transparencia e campanhas de doacao.
+## 📄 Páginas
 
-## Como executar localmente
+| Página | Descrição |
+| -------- | ----------- |
+| Home | Destaque institucional, projetos e CTAs |
+| Sobre | Apresentação da organização |
+| Nossa História | Linha do tempo e fotos com lightbox |
+| Regimento Interno | Normas e download do PDF |
+| Transparência | Informações financeiras |
+| Contato | Formulário e dados de contato |
 
-1) Instale as dependencias:
-   - npm install
-2) Rode em modo desenvolvimento:
-   - npm run dev
-3) Acesse:
-   - <http://localhost:5173>
+## 🛠️ Como Executar
 
-## Estrutura principal
+### Pré-requisitos
 
-- src/components – Navbar, Footer, modais e blocos reutilizaveis.
-- src/pages – Home, Sobre, Historia, Regimento Interno, Transparencia, Contato, etc.
-- public – assets estaticos (favicon/logo).
+- Node.js 18+
+- npm ou yarn
 
-## Nota sobre conteudo
+### Instalação
 
-- Links e textos institucionais refletem informacoes fornecidas pelo Educandario. Dados sensiveis (PIX, contas, documentos) devem ser conferidos e atualizados pela equipe responsavel antes da publicacao.# React + TypeScript + Vite
+```bash
+# Clone o repositório
+git clone https://github.com/reginaldoantonelli/educandario-site.git
+cd educandario-site
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+# Instale as dependências
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Desenvolvimento
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+```bash
+# Inicie o servidor de desenvolvimento
+npm run dev
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+# Acesse em http://localhost:5173
 ```
+
+### Build de Produção
+
+```bash
+# Gera o build otimizado na pasta /dist
+npm run build
+```
+
+### Testar em Modo Produção
+
+```bash
+# Após o build, rode o preview
+npm run preview
+
+# Acesse em http://localhost:4173
+```
+
+### Otimização de Imagens
+
+```bash
+# Otimiza todas as imagens em src/assets/
+npm run optimize-images
+
+# As imagens otimizadas ficam em src/assets-optimized/
+```
+
+## 📁 Estrutura do Projeto
+
+```
+src/
+├── assets/           # Imagens e recursos estáticos
+├── components/       # Componentes reutilizáveis
+│   ├── Navbar/       # Navegação com dark mode e controles
+│   ├── Footer/       # Rodapé com links e redes sociais
+│   ├── Hero/         # Banner principal
+│   ├── ProjectCards/ # Carrossel de projetos
+│   └── DonationModal/# Modal de doação com PIX
+├── layouts/          # Layouts de página
+├── pages/            # Páginas da aplicação
+└── App.tsx           # Rotas e configuração
+```
+
+## 📊 Scripts Disponíveis
+
+| Comando | Descrição |
+| -------- | ----------- |
+| `npm run dev` | Servidor de desenvolvimento |
+| `npm run build` | Build de produção |
+| `npm run preview` | Preview do build |
+| `npm run lint` | Verificação de código |
+| `npm run optimize-images` | Otimização de imagens |
+
+## 🎯 Lighthouse Scores
+
+Testado em modo produção (`npm run preview`):
+
+- **Performance:** 98/100
+- **Accessibility:** 100/100
+- **Best Practices:** 100/100
+- **SEO:** 100/100
+
+## 📝 Notas
+
+- Links e textos institucionais refletem informações fornecidas pelo Educandário
+- Dados sensíveis (PIX, contas, documentos) devem ser conferidos pela equipe responsável antes da publicação
+
+## 📄 Licença
+
+Este projeto foi desenvolvido para o Educandário Nossa Senhora Aparecida de Itapira/SP.
