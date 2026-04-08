@@ -2,7 +2,7 @@ import { lazy, Suspense } from 'react';
 import { createBrowserRouter } from 'react-router-dom';
 import DefaultLayout from '@/layouts/DefaultLayout';
 
-// Lazy load das páginas para reduzir TBT
+// Adicione o lazy load para a nova página
 const Home = lazy(() => import('@/pages/Home'));
 const Transparency = lazy(() => import('@/pages/Transparency'));
 const About = lazy(() => import('@/pages/About'));
@@ -10,59 +10,31 @@ const Contact = lazy(() => import('@/pages/Contact'));
 const ErrorPage = lazy(() => import('@/pages/ErrorPage'));
 const HistoryPage = lazy(() => import('@/pages/HistoryPage'));
 const RegimentoInterno = lazy(() => import('@/pages/RegimentoInterno'));
-
-// Componente de loading enquanto a página carrega
-const PageLoader = () => (
-  <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
-    <div className="flex flex-col items-center gap-4">
-      <div className="w-12 h-12 border-4 border-blue-200 dark:border-blue-800 border-t-blue-600 dark:border-t-blue-400 rounded-full animate-spin" />
-      <p className="text-slate-600 dark:text-slate-400 font-medium">Carregando...</p>
-    </div>
-  </div>
-);
-
-// Wrapper para Suspense
-const LazyPage = ({ children }: { children: React.ReactNode }) => (
-  <Suspense fallback={<PageLoader />}>
-    {children}
-  </Suspense>
-);
+const Login = lazy(() => import('@/pages/Login')); // <-- NOVA ROTA
 
 const router = createBrowserRouter([
   {
     path: '/',
     element: <DefaultLayout />,
-    errorElement: <LazyPage><ErrorPage /></LazyPage>,
+    errorElement: <Suspense fallback={<div>Loading...</div>}><ErrorPage /></Suspense>,
     children: [
-      {
-        path: '/',
-        element: <LazyPage><Home /></LazyPage>
-      },
-      {
-        path: '/transparencia',
-        element: <LazyPage><Transparency /></LazyPage>
-      },
-      {
-        path: '/sobre',
-        element: <LazyPage><About /></LazyPage>
-      },
-      {
-        path: '/contato',
-        element: <LazyPage><Contact /></LazyPage>
-      },
-      {
-        path: '/historia',
-        element: <LazyPage><HistoryPage /></LazyPage>
-      },
-      {
-        path: '/regimento-interno',
-        element: <LazyPage><RegimentoInterno /></LazyPage>
-      },
-      {
-        path: '*',
-        element: <LazyPage><ErrorPage /></LazyPage>
-      }
+      { path: '/', element: <Suspense fallback={<div>Loading...</div>}><Home /></Suspense> },
+      { path: '/transparencia', element: <Suspense fallback={<div>Loading...</div>}><Transparency /></Suspense> },
+      { path: '/sobre', element: <Suspense fallback={<div>Loading...</div>}><About /></Suspense> },
+      { path: '/contato', element: <Suspense fallback={<div>Loading...</div>}><Contact /></Suspense> },
+      { path: '/historia', element: <Suspense fallback={<div>Loading...</div>}><HistoryPage /></Suspense> },
+      { path: '/regimento-interno', element: <Suspense fallback={<div>Loading...</div>}><RegimentoInterno /></Suspense> },
     ]
+  },
+  // Rota de Login FORA do DefaultLayout (Tela cheia, sem Navbar/Footer)
+  {
+    path: '/admin',
+    element: <Suspense fallback={<div>Loading...</div>}><Login /></Suspense>
+  },
+  // Rota de Erro Genérica
+  {
+    path: '*',
+    element: <Suspense fallback={<div>Loading...</div>}><ErrorPage /></Suspense>
   }
 ]);
 
