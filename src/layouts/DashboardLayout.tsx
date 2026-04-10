@@ -6,11 +6,11 @@ import {
     Settings, 
     LogOut, 
     Menu, 
-    Bell,
     User,
     Sun,
     Moon
     } from 'lucide-react';
+import NotificationPanel from '@/components/NotificationPanel';
 
     const DashboardLayout: React.FC = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -19,12 +19,24 @@ import {
         try {
             if (savedProfile) {
                 const profile = JSON.parse(savedProfile);
-                return profile.displayName || 'Admin Iago';
+                return profile.displayName || 'Iago';
             }
         } catch (error) {
             console.error('Erro ao carregar perfil:', error);
         }
-        return 'Admin Iago';
+        return 'Iago';
+    });
+    const [userRole, setUserRole] = useState(() => {
+        const savedProfile = localStorage.getItem('adminProfile');
+        try {
+            if (savedProfile) {
+                const profile = JSON.parse(savedProfile);
+                return profile.role || 'Admin';
+            }
+        } catch (error) {
+            console.error('Erro ao carregar role:', error);
+        }
+        return 'Admin';
     });
     const [avatarUrl, setAvatarUrl] = useState<string | null>(() => {
         return localStorage.getItem('adminAvatar');
@@ -50,6 +62,9 @@ import {
             const customEvent = event as CustomEvent;
             if (customEvent.detail?.displayName) {
                 setDisplayName(customEvent.detail.displayName);
+            }
+            if (customEvent.detail?.role) {
+                setUserRole(customEvent.detail.role);
             }
         };
 
@@ -154,11 +169,8 @@ import {
             </button>
 
             <div className="flex items-center gap-4 ml-auto">
-                {/* Notificações Símbolicas */}
-                <button className="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all relative">
-                <Bell size={20} />
-                <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
-                </button>
+                {/* Painel de Notificações */}
+                <NotificationPanel />
 
                 {/* Botão Dark Mode */}
                 <button 
@@ -172,8 +184,11 @@ import {
                 {/* Perfil do Usuário */}
                 <div className="flex items-center gap-3 pl-4 border-l border-slate-200 dark:border-slate-800">
                 <div className="text-right hidden sm:block">
-                    <p className="text-sm font-bold text-slate-900 dark:text-white">{displayName}</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 uppercase font-semibold">Desenvolvedor</p>
+                    <div className="flex items-center gap-2">
+                        <p className="text-sm font-bold text-slate-900 dark:text-white">{displayName}</p>
+                        <span className="px-2.5 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs font-semibold rounded-full">{userRole}</span>
+                    </div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 uppercase font-semibold mt-1">Desenvolvedor</p>
                 </div>
                 <div className="w-10 h-10 bg-linear-to-br from-blue-400 to-cyan-400 rounded-full flex items-center justify-center text-slate-600 dark:text-slate-400 overflow-hidden border-2 border-white dark:border-slate-700 shadow-md">
                     {avatarUrl ? (

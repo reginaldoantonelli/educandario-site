@@ -1,80 +1,45 @@
 import React, { useState, useRef } from 'react';
 import { User, Mail, Shield, Lock, Eye, EyeOff, Check, AlertCircle, History, Upload, Trash2 } from 'lucide-react';
+import { useUserProfile } from '@/hooks/useUserProfile';
+import { usePortalSettings } from '@/hooks/usePortalSettings';
+import { useAuditLogs } from '@/hooks/useAuditLogs';
 
 const Settings: React.FC = () => {
-    // Valores padrão
-    const defaultProfile = {
-        displayName: 'Admin Iago',
-        email: 'iago@educandario.com.br'
-    };
-
-    const defaultPortal = {
-        description: 'Instituição dedicada à promoção de educação de qualidade e inclusão social, com foco em transparência e responsabilidade com a comunidade.',
-        website: 'https://www.educandario.com.br',
-        phone: '(11) 3456-7890'
-    };
-
-    // Estado do Perfil (carregado do localStorage)
-    const [profileData, setProfileData] = useState(() => {
-        const savedProfile = localStorage.getItem('adminProfile');
-        try {
-            if (savedProfile) {
-                return JSON.parse(savedProfile);
-            }
-        } catch (error) {
-            console.error('Erro ao carregar perfil do localStorage', error);
-        }
-        return defaultProfile;
-    });
-
-    // Estado do Avatar (carregado do localStorage)
-    const [avatarUrl, setAvatarUrl] = useState<string | null>(() => {
-        return localStorage.getItem('adminAvatar');
-    });
+    // Hooks de dados
+    const { profile, loading: profileLoading, error: profileError, updateProfile, uploadAvatar, removeAvatar: removeAvatarService, clearError: clearProfileError } = useUserProfile();
+    const { settings: portalSettings, loading: portalLoading, error: portalError, updateSettings, clearError: clearPortalError } = usePortalSettings();
+    const { logs: auditLogs, loading: auditLoading, error: auditError, clearError: clearAuditError } = useAuditLogs();
 
     // Referência para o input file
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // Estado da Descrição do Portal (carregado do localStorage)
-    const [portalData, setPortalData] = useState(() => {
-        const savedPortal = localStorage.getItem('adminPortal');
-        try {
-            if (savedPortal) {
-                return JSON.parse(savedPortal);
-            }
-        } catch (error) {
-            console.error('Erro ao carregar portal do localStorage', error);
-        }
-        return defaultPortal;
-    });
-
-    // Estado de Segurança
+    // Estado de segurança local (não persiste - apenas para UI)
     const [securityData, setSecurityData] = useState({
         twoFAEnabled: false,
         lastPasswordChange: '15 de março de 2026'
     });
 
-    // Estado de logs de auditoria (persiste em localStorage)
-    const [auditLogs, setAuditLogs] = useState<Array<{ id: string; action: string; timestamp: string }>>(() => {
-        const savedLogs = localStorage.getItem('auditLogs');
-        try {
-            if (savedLogs) {
-                return JSON.parse(savedLogs);
-            }
-        } catch (error) {
-            console.error('Erro ao carregar logs do localStorage', error);
-        }
-        return [];
-    });
-
-    // Estado de edição
+    // Estados de edição local (apenas para UI)
     const [editingProfile, setEditingProfile] = useState(false);
     const [editingPortal, setEditingPortal] = useState(false);
     const [showPasswordModal, setShowPasswordModal] = useState(false);
     const [showCurrentPassword, setShowCurrentPassword] = useState(false);
     const [showNewPassword, setShowNewPassword] = useState(false);
 
-    // Estado de formulário de senha
+    // Estados de dados para edição de perfil
+    const [editingProfileData, setEditingProfileData] = useState({
+        displayName: profile?.displayName || '',
+        email: profile?.email || ''
+    });
+
+    // Estados de dados para edição de portal
+    const [editingPortalData, setEditingPortalData] = useState({
+        description: portalSettings?.description || '',
+        website: portalSettings?.website || '',
+        phone: portalSettings?.phone || ''
+    });
+
+    // Estados de formulário local
     const [passwordForm, setPasswordForm] = useState({
         currentPassword: '',
         newPassword: '',
@@ -84,128 +49,121 @@ const Settings: React.FC = () => {
     const [passwordError, setPasswordError] = useState('');
     const [passwordSuccess, setPasswordSuccess] = useState(false);
 
-    // Estados de feedback do Perfil
-    const [profileError, setProfileError] = useState('');
+    // Estados de feedback local
     const [profileSuccess, setProfileSuccess] = useState(false);
-
-    // Estados de feedback do Portal
-    const [portalError, setPortalError] = useState('');
     const [portalSuccess, setPortalSuccess] = useState(false);
-
-    // Estado de feedback do 2FA
     const [twoFASuccess, setTwoFASuccess] = useState('');
     const [twoFAMessage, setTwoFAMessage] = useState('');
 
-    // Função para adicionar log de auditoria
-    const addAuditLog = (action: string) => {
-        const now = new Date();
-        const formattedDate = now.toLocaleDateString('pt-BR');
-        const formattedTime = now.toLocaleTimeString('pt-BR');
-        const newLog = {
-            id: Date.now().toString(),
-            action,
-            timestamp: `${formattedDate} às ${formattedTime}`
-        };
-
-        const updatedLogs = [newLog, ...auditLogs].slice(0, 10); // Mantém apenas os 10 últimos
-        setAuditLogs(updatedLogs);
-        localStorage.setItem('auditLogs', JSON.stringify(updatedLogs));
-    };
-
-    // Função para lidar com upload de avatar
-    const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Handler para upload de avatar
+    const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (file) {
-            // Validar tipo de arquivo
+        if (!file) return;
+
+        try {
+            clearProfileError();
+
+            // Validar tipo
             if (!file.type.startsWith('image/')) {
-                setProfileError('Por favor, selecione uma imagem válida (PNG, JPG, etc.)');
-                return;
+                throw new Error('Por favor, selecione uma imagem válida (PNG, JPG, etc.)');
             }
 
             // Validar tamanho (máx 5MB)
             if (file.size > 5 * 1024 * 1024) {
-                setProfileError('A imagem não pode exceder 5MB');
-                return;
+                throw new Error('A imagem não pode exceder 5MB');
             }
 
-            // Converter para Base64
+            // Converter para Base64 e fazer upload
             const reader = new FileReader();
-            reader.onload = (event) => {
-                const result = event.target?.result as string;
-                setAvatarUrl(result);
-                localStorage.setItem('adminAvatar', result);
-                setProfileError('');
-                setProfileSuccess(true);
-                addAuditLog(`📷 Foto de perfil atualizada`);
-                window.dispatchEvent(new CustomEvent('avatarUpdated'));
-                setTimeout(() => setProfileSuccess(false), 3000);
+            reader.onload = async (event) => {
+                try {
+                    const result = event.target?.result as string;
+                    await uploadAvatar(result);
+                    setProfileSuccess(true);
+                    setTimeout(() => setProfileSuccess(false), 3000);
+                } catch (error) {
+                    console.error('Erro ao fazer upload do avatar:', error);
+                }
             };
             reader.readAsDataURL(file);
+        } catch (error) {
+            const errorMsg = error instanceof Error ? error.message : 'Erro ao validar imagem';
+            console.error('Erro ao fazer upload:', errorMsg);
         }
     };
 
-    // Função para remover avatar
-    const handleRemoveAvatar = () => {
-        setAvatarUrl(null);
-        localStorage.removeItem('adminAvatar');
-        if (fileInputRef.current) {
-            fileInputRef.current.value = '';
+    // Handler para remover avatar
+    const handleRemoveAvatar = async () => {
+        try {
+            clearProfileError();
+            await removeAvatarService();
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
+            setProfileSuccess(true);
+            setTimeout(() => setProfileSuccess(false), 3000);
+        } catch (error) {
+            console.error('Erro ao remover avatar:', error);
         }
-        addAuditLog(`📷 Foto de perfil removida`);
-        window.dispatchEvent(new CustomEvent('avatarUpdated'));
-        setProfileSuccess(true);
-        setTimeout(() => setProfileSuccess(false), 3000);
     };
 
     // Handlers de Perfil
     const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
-        setProfileData(prev => ({ ...prev, [name]: value }));
+        setEditingProfileData(prev => ({
+            ...prev,
+            [name]: value
+        }));
     };
 
-    const handleSaveProfile = () => {
-        if (!profileData.displayName.trim() || !profileData.email.trim()) {
-            setProfileError('Todos os campos são obrigatórios');
-            setTimeout(() => setProfileError(''), 4000);
+    const handleSaveProfile = async () => {
+        if (!editingProfileData.displayName.trim() || !editingProfileData.email.trim()) {
+            console.error('Todos os campos são obrigatórios');
             return;
         }
         
-        // Salvar no localStorage
-        localStorage.setItem('adminProfile', JSON.stringify(profileData));
-        
-        // Disparar evento customizado para atualizar o header
-        window.dispatchEvent(new CustomEvent('profileUpdated', { detail: profileData }));
-        
-        // Adicionar log de auditoria
-        addAuditLog(`Perfil atualizado: ${profileData.displayName}`);
-        
-        setProfileSuccess(true);
-        setTimeout(() => setProfileSuccess(false), 3000);
-        setEditingProfile(false);
+        try {
+            clearProfileError();
+            await updateProfile({
+                displayName: editingProfileData.displayName,
+                email: editingProfileData.email
+            });
+            setProfileSuccess(true);
+            setTimeout(() => setProfileSuccess(false), 3000);
+            setEditingProfile(false);
+        } catch (error) {
+            console.error('Erro ao salvar perfil:', error);
+        }
     };
 
     // Handlers de Portal
     const handlePortalChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
-        setPortalData(prev => ({ ...prev, [name]: value }));
+        setEditingPortalData(prev => ({
+            ...prev,
+            [name]: value
+        }));
     };
 
-    const handleSavePortal = () => {
-        if (!portalData.description.trim()) {
-            setPortalError('A descrição é obrigatória');
-            setTimeout(() => setPortalError(''), 4000);
+    const handleSavePortal = async () => {
+        if (!editingPortalData.description.trim()) {
+            console.error('A descrição é obrigatória');
             return;
         }
         
-        // Salvar no localStorage
-        localStorage.setItem('adminPortal', JSON.stringify(portalData));
-        
-        // Adicionar log de auditoria
-        addAuditLog('Configurações do portal atualizadas');
-        
-        setPortalSuccess(true);
-        setTimeout(() => setPortalSuccess(false), 3000);
-        setEditingPortal(false);
+        try {
+            clearPortalError();
+            await updateSettings({
+                description: editingPortalData.description,
+                website: editingPortalData.website,
+                phone: editingPortalData.phone
+            });
+            setPortalSuccess(true);
+            setTimeout(() => setPortalSuccess(false), 3000);
+            setEditingPortal(false);
+        } catch (error) {
+            console.error('Erro ao salvar configurações do portal:', error);
+        }
     };
 
     // Handlers de Segurança
@@ -215,9 +173,6 @@ const Settings: React.FC = () => {
             ...prev,
             twoFAEnabled: newStatus
         }));
-        
-        // Adicionar log de auditoria
-        addAuditLog(`Autenticação de Dois Fatores ${newStatus ? 'ativada' : 'desativada'}`);
         
         setTwoFAMessage(newStatus ? 'ativada' : 'desativada');
         setTwoFASuccess('true');
@@ -289,8 +244,8 @@ const Settings: React.FC = () => {
                                 {/* Avatar Display */}
                                 <div className="relative">
                                     <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-linear-to-br from-blue-400 to-cyan-400 flex items-center justify-center shadow-lg overflow-hidden border-4 border-white dark:border-slate-800 hover:shadow-2xl transition-all">
-                                        {avatarUrl ? (
-                                            <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                                        {profile?.avatar ? (
+                                            <img src={profile.avatar} alt="Avatar" className="w-full h-full object-cover" />
                                         ) : (
                                             <User className="text-white" size={48} />
                                         )}
@@ -310,7 +265,7 @@ const Settings: React.FC = () => {
                                 <div className="flex-1">
                                     <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white mb-2">Foto de Perfil</h3>
                                     <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-3">
-                                        {avatarUrl ? 'Clique no ícone de câmera para atualizar' : 'Adicione uma foto de perfil para personalizar sua conta'}
+                                        {profile?.avatar ? 'Clique no ícone de câmera para atualizar' : 'Adicione uma foto de perfil para personalizar sua conta'}
                                     </p>
                                     
                                     {/* Botões de Ação */}
@@ -322,7 +277,7 @@ const Settings: React.FC = () => {
                                             <Upload size={14} />
                                             Enviar
                                         </button>
-                                        {avatarUrl && (
+                                        {profile?.avatar && (
                                             <button
                                                 onClick={handleRemoveAvatar}
                                                 className="flex items-center justify-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-semibold bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition-all"
@@ -359,7 +314,7 @@ const Settings: React.FC = () => {
                                         <input
                                             type="text"
                                             name="displayName"
-                                            value={profileData.displayName}
+                                            value={editingProfileData.displayName}
                                             onChange={handleProfileChange}
                                             className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                                             placeholder="Seu nome"
@@ -372,7 +327,7 @@ const Settings: React.FC = () => {
                                         <input
                                             type="email"
                                             name="email"
-                                            value={profileData.email}
+                                            value={editingProfileData.email}
                                             onChange={handleProfileChange}
                                             className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                                             placeholder="seu@email.com"
@@ -382,7 +337,13 @@ const Settings: React.FC = () => {
                                     {/* Botões de Ação */}
                                     <div className="flex gap-3 pt-4 sm:pt-6 border-t border-slate-100 dark:border-slate-800/50">
                                         <button
-                                            onClick={() => setEditingProfile(false)}
+                                            onClick={() => {
+                                                setEditingProfile(false);
+                                                setEditingProfileData({
+                                                    displayName: profile?.displayName || '',
+                                                    email: profile?.email || ''
+                                                });
+                                            }}
                                             className="flex-1 px-4 py-2.5 text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg font-medium text-sm transition-colors"
                                         >
                                             Cancelar
@@ -415,7 +376,7 @@ const Settings: React.FC = () => {
                                                 <User className="text-slate-400" size={18} />
                                                 <div>
                                                     <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Nome</p>
-                                                    <p className="text-sm sm:text-base font-semibold text-slate-900 dark:text-white">{profileData.displayName}</p>
+                                                    <p className="text-sm sm:text-base font-semibold text-slate-900 dark:text-white">{profile?.displayName || 'N/A'}</p>
                                                 </div>
                                             </div>
                                         </div>
@@ -425,7 +386,17 @@ const Settings: React.FC = () => {
                                                 <Mail className="text-slate-400" size={18} />
                                                 <div>
                                                     <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">E-mail</p>
-                                                    <p className="text-sm sm:text-base font-semibold text-slate-900 dark:text-white">{profileData.email}</p>
+                                                    <p className="text-sm sm:text-base font-semibold text-slate-900 dark:text-white">{profile?.email || 'N/A'}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-center justify-between p-3 sm:p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800/30">
+                                            <div className="flex items-center gap-3">
+                                                <Shield className="text-blue-600 dark:text-blue-400" size={18} />
+                                                <div>
+                                                    <p className="text-xs sm:text-sm text-blue-600 dark:text-blue-400">Cargo</p>
+                                                    <p className="text-sm sm:text-base font-semibold text-blue-700 dark:text-blue-300">{profile?.role || 'Usuário'}</p>
                                                 </div>
                                             </div>
                                         </div>
@@ -443,7 +414,13 @@ const Settings: React.FC = () => {
 
                                     {/* Botão de Edição */}
                                     <button
-                                        onClick={() => setEditingProfile(true)}
+                                        onClick={() => {
+                                            setEditingProfileData({
+                                                displayName: profile?.displayName || '',
+                                                email: profile?.email || ''
+                                            });
+                                            setEditingProfile(true);
+                                        }}
                                         className="w-full px-4 py-2.5 text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-lg font-medium text-sm transition-colors"
                                     >
                                         Editar Perfil
@@ -477,7 +454,7 @@ const Settings: React.FC = () => {
                                         <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Descrição</label>
                                         <textarea
                                             name="description"
-                                            value={portalData.description}
+                                            value={editingPortalData.description}
                                             onChange={handlePortalChange}
                                             rows={4}
                                             className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all resize-none"
@@ -491,7 +468,7 @@ const Settings: React.FC = () => {
                                         <input
                                             type="url"
                                             name="website"
-                                            value={portalData.website}
+                                            value={editingPortalData.website}
                                             onChange={handlePortalChange}
                                             className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
                                             placeholder="https://..."
@@ -504,7 +481,7 @@ const Settings: React.FC = () => {
                                         <input
                                             type="tel"
                                             name="phone"
-                                            value={portalData.phone}
+                                            value={editingPortalData.phone}
                                             onChange={handlePortalChange}
                                             className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
                                             placeholder="(11) 0000-0000"
@@ -514,7 +491,14 @@ const Settings: React.FC = () => {
                                     {/* Botões de Ação */}
                                     <div className="flex gap-3 pt-4 sm:pt-6 border-t border-slate-100 dark:border-slate-800/50">
                                         <button
-                                            onClick={() => setEditingPortal(false)}
+                                            onClick={() => {
+                                                setEditingPortal(false);
+                                                setEditingPortalData({
+                                                    description: portalSettings?.description || '',
+                                                    website: portalSettings?.website || '',
+                                                    phone: portalSettings?.phone || ''
+                                                });
+                                            }}
                                             className="flex-1 px-4 py-2.5 text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg font-medium text-sm transition-colors"
                                         >
                                             Cancelar
@@ -544,17 +528,17 @@ const Settings: React.FC = () => {
                                     <div className="space-y-4 sm:space-y-5">
                                         <div className="p-3 sm:p-4 bg-slate-50 dark:bg-slate-950/50 rounded-lg">
                                             <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-2">Descrição</p>
-                                            <p className="text-sm sm:text-base text-slate-900 dark:text-white leading-relaxed">{portalData.description}</p>
+                                            <p className="text-sm sm:text-base text-slate-900 dark:text-white leading-relaxed">{portalSettings?.description || 'N/A'}</p>
                                         </div>
 
                                         <div className="grid grid-cols-2 gap-3 sm:gap-4">
                                             <div className="p-3 sm:p-4 bg-slate-50 dark:bg-slate-950/50 rounded-lg">
                                                 <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-1">Website</p>
-                                                <p className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white truncate">{portalData.website}</p>
+                                                <p className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white truncate">{portalSettings?.website || 'N/A'}</p>
                                             </div>
                                             <div className="p-3 sm:p-4 bg-slate-50 dark:bg-slate-950/50 rounded-lg">
                                                 <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-1">Telefone</p>
-                                                <p className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white">{portalData.phone}</p>
+                                                <p className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white">{portalSettings?.phone || 'N/A'}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -571,7 +555,14 @@ const Settings: React.FC = () => {
 
                                     {/* Botão de Edição */}
                                     <button
-                                        onClick={() => setEditingPortal(true)}
+                                        onClick={() => {
+                                            setEditingPortalData({
+                                                description: portalSettings?.description || '',
+                                                website: portalSettings?.website || '',
+                                                phone: portalSettings?.phone || ''
+                                            });
+                                            setEditingPortal(true);
+                                        }}
                                         className="w-full px-4 py-2.5 text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/30 rounded-lg font-medium text-sm transition-colors"
                                     >
                                         Editar Portal
@@ -701,7 +692,7 @@ const Settings: React.FC = () => {
 
                         {/* Conteúdo */}
                         <div className="p-4 sm:p-6 lg:p-8">
-                            {auditLogs.length > 0 ? (
+                            {auditLogs && auditLogs.length > 0 ? (
                                 <div className="space-y-2 sm:space-y-3">
                                     {auditLogs.map((log) => (
                                         <div key={log.id} className="flex items-start gap-3 p-3 sm:p-4 bg-slate-50 dark:bg-slate-950/50 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-900/50 transition-colors">
