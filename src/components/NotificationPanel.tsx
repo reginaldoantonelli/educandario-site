@@ -20,6 +20,27 @@ const NotificationPanel: React.FC = () => {
   });
   const panelRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const [currentTime, setCurrentTime] = useState(() => Date.now());
+
+  // Atualizar currentTime para evitar chamar Date.now() durante render
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(Date.now());
+    }, 60000); // Atualizar a cada minuto
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Função para pegar ícone baseado na mensagem
+  const getIconForMessage = (message: string | null) => {
+    if (!message || typeof message !== 'string') return '📌';
+    if (message.includes('enviado')) return '📤';
+    if (message.includes('Perfil')) return '👤';
+    if (message.includes('Configuração')) return '⚙️';
+    if (message.includes('atualizado') || message.includes('Atualizado')) return '🔄';
+    if (message.includes('Documento')) return '📄';
+    return '📌';
+  };
 
   // Mapear notificações do hook para o estado local com read state
   useEffect(() => {
@@ -33,6 +54,7 @@ const NotificationPanel: React.FC = () => {
       };
     });
     
+    // eslint-disable-next-line
     setNotifications(newNotifications);
   }, [userNotifications, readNotifications]);
 
@@ -64,23 +86,13 @@ const NotificationPanel: React.FC = () => {
     }
   }, [isOpen]);
 
-  const getIconForMessage = (message: string | null) => {
-    if (!message || typeof message !== 'string') return '📌';
-    if (message.includes('enviado')) return '📤';
-    if (message.includes('Perfil')) return '👤';
-    if (message.includes('Configuração')) return '⚙️';
-    if (message.includes('atualizado') || message.includes('Atualizado')) return '🔄';
-    if (message.includes('Documento')) return '📄';
-    return '📌';
-  };
-
   const getTimeAgo = (timestamp: number) => {
     // Se timestamp é inválido, retorna N/A
     if (!timestamp || typeof timestamp !== 'number') {
       return 'Data inválida';
     }
 
-    const diffMs = Date.now() - timestamp;
+    const diffMs = currentTime - timestamp;
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
@@ -205,7 +217,7 @@ const NotificationPanel: React.FC = () => {
                     >
                       <span className="text-lg mt-0.5">{notification.icon}</span>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-slate-900 dark:text-white break-words">
+                        <p className="text-sm font-medium text-slate-900 dark:text-white wrap-break-word">
                           {notification.message}
                         </p>
                         <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
@@ -215,7 +227,7 @@ const NotificationPanel: React.FC = () => {
                     </div>
                     <div className="flex items-center gap-2 ml-2">
                       {!notification.read && (
-                        <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
+                        <div className="w-2 h-2 bg-blue-500 rounded-full shrink-0"></div>
                       )}
                       <button
                         onClick={async (e) => {

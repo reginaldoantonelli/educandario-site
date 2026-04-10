@@ -87,6 +87,7 @@ export function TransparencyAdmin() {
 ### 2️⃣ Exemplos de Operações
 
 #### Listar Documentos
+
 ```typescript
 const { documents, loading } = useDocuments();
 
@@ -97,6 +98,7 @@ const { documents, loading } = useDocuments();
 ```
 
 #### Criar Documento
+
 ```typescript
 const { createDocument } = useDocuments();
 
@@ -109,6 +111,7 @@ const newDoc = await createDocument({
 ```
 
 #### Deletar Documento
+
 ```typescript
 const { deleteDocument } = useDocuments();
 
@@ -145,6 +148,7 @@ export function SettingsHistory() {
 ## 🔐 Tipos Disponíveis
 
 ### Document
+
 ```typescript
 interface Document {
   id: number | string;
@@ -160,6 +164,7 @@ interface Document {
 ```
 
 ### AuditLog
+
 ```typescript
 interface AuditLog {
   id: string;
@@ -171,6 +176,7 @@ interface AuditLog {
 ```
 
 ### Category
+
 ```typescript
 interface Category {
   id: string;
@@ -239,6 +245,7 @@ export function TransparencyAdmin() {
 ```
 
 **Problemas:**
+
 - Componente muito grande
 - Lógica misturada com UI
 - Difícil de testar
@@ -268,6 +275,7 @@ export function TransparencyAdmin() {
 ```
 
 **Benefícios:**
+
 - ✅ Componente limpo e legível
 - ✅ Lógica centralizada
 - ✅ Fácil de testar
@@ -278,6 +286,7 @@ export function TransparencyAdmin() {
 ## 🧪 Como Testar
 
 ### Testar Hook
+
 ```typescript
 import { renderHook, act } from '@testing-library/react';
 import { useDocuments } from '@/hooks/useDocuments';
@@ -294,6 +303,7 @@ test('deve deletar documento', async () => {
 ```
 
 ### Testar Service
+
 ```typescript
 import { documentService } from '@/services/documentService';
 
@@ -330,21 +340,26 @@ Ver `MIGRATION_PLAN.md` para instruções detalhadas.
 ## 🎓 Princípios de Design
 
 ### 1. Separation of Concerns
+
 - **Types:** Definem estrutura
 - **Services:** Acessam dados
 - **Hooks:** Gerenciam estado
 - **Components:** Renderizam UI
 
 ### 2. Abstraction
+
 Services abstraem localStorage/Supabase. Componentes não sabem diferença.
 
 ### 3. Reusability
+
 Hooks podem ser usados em múltiplos componentes.
 
 ### 4. Type Safety
+
 TypeScript garante que tipos estejam corretos.
 
 ### 5. Error Handling
+
 Estados de erro e loading em todo lugar.
 
 ---
@@ -365,15 +380,19 @@ Estados de erro e loading em todo lugar.
 ## ❓ FAQ
 
 ### P: Posso usar `useDocuments` em outro componente?
+
 **R:** Sim! Qualquer componente pode importar e usar o hook. Todo estado é isolado por instância.
 
 ### P: E se eu precisar de um novo serviço?
+
 **R:** Crie `src/services/novoService.ts` seguindo o mesmo padrão. Depois crie `src/hooks/useNovo.ts`.
 
 ### P: Como migro de localStorage para Supabase?
+
 **R:** Ver `MIGRATION_PLAN.md`. Resumo: trocar os `await`s em `documentService.ts`.
 
 ### P: TypeScript é obrigatório?
+
 **R:** Recomendado! Mas funcionará com JavaScript também (usando JSDoc).
 
 ---
@@ -381,6 +400,7 @@ Estados de erro e loading em todo lugar.
 ## 🤝 Contribuindo
 
 Se adicionar novo tipo ou serviço:
+
 1. Adicionar a `src/types/index.ts`
 2. Criar serviço correspondente em `src/services/`
 3. Criar hook correspondente em `src/hooks/`

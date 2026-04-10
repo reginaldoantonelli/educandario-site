@@ -38,6 +38,8 @@ const EditDocumentModal: React.FC<EditDocumentModalProps> = ({
 
     useEffect(() => {
         if (document) {
+            // Sincronizar estado do formulário quando o documento muda (padrão comum para formulários controlados)
+            // eslint-disable-next-line
             setFormData({
                 nome: document.nome,
                 categoria: document.categoria,
@@ -88,7 +90,7 @@ const EditDocumentModal: React.FC<EditDocumentModalProps> = ({
                     <button
                         onClick={onClose}
                         disabled={isLoading}
-                        className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
                         title="Fechar"
                     >
                         <X size={20} />

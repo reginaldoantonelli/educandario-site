@@ -22,6 +22,7 @@
 Este documento descreve a estrutura de banco de dados PostgreSQL necessária para migrar o aplicativo Educandário de localStorage para Supabase.
 
 **Dados Atuais em localStorage:**
+
 - ✅ `adminProfile` - Perfil do usuário
 - ✅ `adminPortal` - Configurações do portal
 - ✅ `adminAvatar` - Foto de perfil (Base64)
@@ -48,6 +49,7 @@ CREATE TABLE profiles (
 ```
 
 **Campos:**
+
 | Campo | Tipo | Descrição |
 |-------|------|-----------|
 | `id` | UUID | ID do usuário (referencia auth.users) |
@@ -58,6 +60,7 @@ CREATE TABLE profiles (
 | `updated_at` | TIMESTAMP | Data da última atualização (automático) |
 
 **Exemplo de Dados:**
+
 ```
 ┌──────────────────────────────────────────────────────────────┐
 │ profiles                                                     │
@@ -69,6 +72,7 @@ CREATE TABLE profiles (
 ```
 
 **Migrando de:**
+
 ```javascript
 // localStorage atual
 {
@@ -95,6 +99,7 @@ CREATE TABLE audit_logs (
 ```
 
 **Campos:**
+
 | Campo | Tipo | Descrição |
 |-------|------|-----------|
 | `id` | UUID | ID único do log |
@@ -104,6 +109,7 @@ CREATE TABLE audit_logs (
 | `created_at` | TIMESTAMP | Quando foi registrado no BD |
 
 **Tipos de Ações Registradas:**
+
 - ✏️ "Perfil atualizado: Admin Iago"
 - 📤 "Arquivo enviado: Balancete_2025_Q4.pdf (Financeiro)"
 - 🗑️ "Arquivo removido: Plano_Anual_2025.pdf"
@@ -116,6 +122,7 @@ CREATE TABLE audit_logs (
 - 🔑 "Senha alterada"
 
 **Exemplo de Dados:**
+
 ```
 ┌────────────┬──────────────┬────────────────────────────────┬─────────────────┐
 │ id         │ user_id      │ action                         │ timestamp       │
@@ -128,6 +135,7 @@ CREATE TABLE audit_logs (
 ```
 
 **Migrando de:**
+
 ```javascript
 // localStorage atual (máx 10 entradas)
 {
@@ -143,6 +151,7 @@ CREATE TABLE audit_logs (
 ```
 
 **Diferença Principal:**
+
 - localStorage: máx 10 entradas (limite manual)
 - PostgreSQL: **histórico ilimitado** ✨
 
@@ -165,6 +174,7 @@ CREATE TABLE categories (
 ```
 
 **Campos:**
+
 | Campo | Tipo | Descrição |
 |-------|------|-----------|
 | `id` | UUID | ID único da categoria |
@@ -178,6 +188,7 @@ CREATE TABLE categories (
 | `updated_at` | TIMESTAMP | Data da última atualização |
 
 **Exemplo de Dados:**
+
 ```
 ┌────────┬──────────────┬───────────┬──────────────────────┬─────────────────┐
 │ id     │ category_key │ title     │ short_title          │ display_order   │
@@ -215,6 +226,7 @@ CREATE TABLE documents (
 ```
 
 **Campos:**
+
 | Campo | Tipo | Descrição |
 |-------|------|-----------|
 | `id` | UUID | ID único do documento |
@@ -228,6 +240,7 @@ CREATE TABLE documents (
 | `updated_at` | TIMESTAMP | Data da última modificação |
 
 **Exemplo de Dados:**
+
 ```
 ┌────────┬──────────┬──────────────────────────────────┬──────────┬──────────────┐
 │ id     │ cat_id   │ title                            │ year     │ visibility   │
@@ -245,6 +258,7 @@ CREATE TABLE documents (
 ```
 
 **Relacionamento com Categories:**
+
 - Um documento pertence a UMA categoria
 - Uma categoria contém MÚLTIPLOS documentos
 - Categoria governa a página onde aparece (sidebar)
@@ -265,6 +279,7 @@ CREATE TABLE portal_settings (
 ```
 
 **Campos:**
+
 | Campo | Tipo | Descrição |
 |-------|------|-----------|
 | `id` | UUID | ID único |
@@ -275,6 +290,7 @@ CREATE TABLE portal_settings (
 | `updated_at` | TIMESTAMP | Última atualização |
 
 **Exemplo de Dados:**
+
 ```
 ┌────────┬──────────────┬─────────────────────────────┬──────────────────┐
 │ id     │ user_id      │ description                 │ website          │
@@ -284,6 +300,7 @@ CREATE TABLE portal_settings (
 ```
 
 **Migrando de:**
+
 ```javascript
 // localStorage atual
 {
@@ -309,6 +326,7 @@ CREATE TABLE user_preferences (
 ```
 
 **Campos:**
+
 | Campo | Tipo | Descrição |
 |-------|------|-----------|
 | `id` | UUID | ID único |
@@ -317,6 +335,7 @@ CREATE TABLE user_preferences (
 | `updated_at` | TIMESTAMP | Última atualização |
 
 **Exemplo de Dados:**
+
 ```
 ┌────────┬──────────────┬───────┐
 │ id     │ user_id      │ theme │
@@ -326,6 +345,7 @@ CREATE TABLE user_preferences (
 ```
 
 **Migrando de:**
+
 ```javascript
 // localStorage atual
 {
@@ -359,12 +379,14 @@ CREATE TABLE user_preferences (
 ```
 
 **Legenda:**
+
 - `1:1` = Um usuário para um registro
 - `1:N` = Um usuário para vários registros
 - `N:1` = Vários documentos para uma categoria
 - `FK` = Foreign Key (chave estrangeira)
 
 **Explicação:**
+
 - Um usuário → UM perfil
 - Um usuário → VÁRIOS logs de auditoria
 - Um usuário → VÁRIOS categorias (admin pode criar/editar categorias)
@@ -373,6 +395,7 @@ CREATE TABLE user_preferences (
 - Um usuário → UMA preferência de tema
 
 **Fluxo Visível na Página Pública:**
+
 ```
 CATEGORIES (na página pública)
     ├─ Institucional (shortTitle)
@@ -687,6 +710,7 @@ const { data, error } = await supabase
 **Total de 6 tabelas · Relacionadas à auth.users**
 
 **Principais Benefícios com Categorias:**
+
 - ✅ Página pública dinâmica (não hardcoded)
 - ✅ Admin controla categorias
 - ✅ Documentos aparecem automaticamente na página pública

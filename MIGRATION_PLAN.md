@@ -55,6 +55,7 @@ src/
 ### Exemplo 1: Listar Documentos
 
 **Antes:**
+
 ```typescript
 const [documents, setDocuments] = useState([
   { id: 1, nome: 'Estatuto.pdf', categoria: 'Juridico', ... },
@@ -62,6 +63,7 @@ const [documents, setDocuments] = useState([
 ```
 
 **Depois:**
+
 ```typescript
 import { useDocuments } from '@/hooks/useDocuments';
 
@@ -85,6 +87,7 @@ export function TransparencyAdmin() {
 ### Exemplo 2: Deletar Documento
 
 **Antes:**
+
 ```typescript
 const handleConfirmDelete = () => {
   setDocuments(docs.filter(d => d.id !== id));
@@ -93,6 +96,7 @@ const handleConfirmDelete = () => {
 ```
 
 **Depois:**
+
 ```typescript
 const { deleteDocument } = useDocuments();
 
@@ -124,16 +128,19 @@ const handleConfirmDelete = async () => {
 ### Fase 1: SETUP SUPABASE (1-2h)
 
 **O que fazer:**
+
 1. Criar conta em supabase.com
 2. Criar projeto
 3. Copiar URL e ANON_KEY
 4. Adicionar ao arquivo `.env`:
+
    ```
    REACT_APP_SUPABASE_URL=https://your-project.supabase.co
    REACT_APP_SUPABASE_ANON_KEY=your-anon-key
    ```
 
 **Arquivo afetado:**
+
 - `src/services/supabaseClient.ts` (já existe, pronto)
 
 ---
@@ -207,6 +214,7 @@ USING (auth.uid() = user_id);
 **arquivo:** `src/services/documentService.ts`
 
 De:
+
 ```typescript
 async getDocuments(): Promise<Document[]> {
   const saved = localStorage.getItem(DOCUMENTS_KEY);
@@ -215,6 +223,7 @@ async getDocuments(): Promise<Document[]> {
 ```
 
 Para:
+
 ```typescript
 async getDocuments(): Promise<Document[]> {
   const { data, error } = await supabase
@@ -227,6 +236,7 @@ async getDocuments(): Promise<Document[]> {
 ```
 
 **Mudanças Similares:**
+
 - `createDocument()` → INSERT
 - `updateDocument()` → UPDATE
 - `deleteDocument()` → DELETE
@@ -296,12 +306,14 @@ async function migrateData() {
 ## 🔧 Checklist de Migração
 
 ### Antes de Começar
+
 - [ ] Fazer backup dos dados atuais (localStorage)
 - [ ] Ler SUPABASE_DATABASE_SCHEMA.md
 - [ ] Criar conta Supabase
 - [ ] Copiar credenciais para .env.local
 
 ### Durante Migração
+
 - [ ] Criar tabelas no Supabase
 - [ ] Testes de inserção manualmente
 - [ ] Configurar RLS
@@ -312,6 +324,7 @@ async function migrateData() {
 - [ ] Verificar auditoria
 
 ### Após Migração
+
 - [ ] Deploy em produção
 - [ ] Monitorar logs
 - [ ] Manter backup de localStorage por 1 semana

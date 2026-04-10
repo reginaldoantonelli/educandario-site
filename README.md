@@ -25,6 +25,7 @@ Site e plataforma administrativa moderna para o Educandário Nossa Senhora Apare
 ## ✨ Funcionalidades Principais
 
 ### 🎨 Interface & UX
+
 - ✅ **Dark Mode Nativo** com persistência em localStorage
 - ✅ **Tema Claro/Escuro** com transições suaves
 - ✅ **Responsivo** (Mobile First) - 100% em todos dispositivos
@@ -32,12 +33,14 @@ Site e plataforma administrativa moderna para o Educandário Nossa Senhora Apare
 - ✅ **WCAG AA Compliant** - Acessibilidade para todos
 
 ### ⚡ Performance
+
 - ✅ **Lazy Loading** de componentes e imagens
 - ✅ **Imagens Otimizadas** em WebP com fallback
 - ✅ **Code Splitting** automático via Vite
 - ✅ **Lighthouse Score 98+** em todas métrics
 
 ### 🔐 Área Administrativa
+
 - ✅ **Página de Login** com validação e feedback visual
 - ✅ **Autenticação Segura** com estado de carregamento
 - ✅ **Checkbox "Lembrar-me"** (Persistent sessions)
@@ -47,6 +50,7 @@ Site e plataforma administrativa moderna para o Educandário Nossa Senhora Apare
 - ✅ **Proteção de Conta** - sem link de auto-registro
 
 ### 📱 Componentes
+
 - ✅ **Navbar** com navegação, tema e acessibilidade
 - ✅ **Footer** com info de contato e redes sociais
 - ✅ **Hero Section** com CTA destacado
@@ -105,6 +109,7 @@ Site e plataforma administrativa moderna para o Educandário Nossa Senhora Apare
 ## 🛠️ Setup & Execução
 
 ### Pré-requisitos
+
 ```
 ✓ Node.js 18.0.0 ou superior
 ✓ npm 9.0.0+ ou yarn 4.0.0+
@@ -219,11 +224,13 @@ educandario-site/
 ## 🎨 Tecnologias de Estilo
 
 ### Tailwind CSS v4
+
 - **Utility-First**: Classes pequenas e reutilizáveis
 - **Dark Mode**: Ativo-automático via classe `dark`
 - **Responsive**: Breakpoints Mobile-First (sm, md, lg, xl)
 
 ### Exemplo de Uso
+
 ```jsx
 <div className="bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
   {/* Claro em light mode, escuro em dark mode */}
@@ -235,6 +242,7 @@ educandario-site/
 ## 🔍 Performance & Otimizações
 
 ### Lighthouse Metrics
+
 | Métrica | Score | Target |
 |---------|-------|--------|
 | Performance | 98 | >90 ✅ |
@@ -243,6 +251,7 @@ educandario-site/
 | SEO | 100 | >90 ✅ |
 
 ### Estratégias Aplicadas
+
 1. **Code Splitting**: Carregamento sob demanda de componentes
 2. **Image Optimization**: WebP com lazy loading
 3. **Tree Shaking**: Remove código não utilizado
@@ -256,6 +265,7 @@ educandario-site/
 ### Opções de Deploy
 
 #### Vercel (Recomendado)
+
 ```bash
 npm i -g vercel
 vercel
@@ -263,12 +273,14 @@ vercel
 ```
 
 #### Netlify
+
 ```bash
 npm run build
 # Fazer upload da pasta /dist
 ```
 
 #### Docker
+
 ```dockerfile
 FROM node:18-alpine
 WORKDIR /app
@@ -283,11 +295,13 @@ CMD ["npm", "run", "preview"]
 ## 🤝 Contribuindo
 
 ### Como Reportar Issues
+
 1. Abra uma issue no GitHub
 2. Descreva o problema com prints/vídeos
 3. Especifique browser e SO
 
 ### Como Fazer PR
+
 ```bash
 # 1. Fork o repositório
 # 2. Crie uma branch
@@ -301,6 +315,7 @@ git push origin feat/sua-feature
 ```
 
 ### Padrões de Código
+
 - ✅ TypeScript com tipos explícitos
 - ✅ Componentes funcionais com Hooks
 - ✅ Nomes descritivos em inglês
@@ -340,7 +355,7 @@ VITE_GA_ID=UA-XXXXXXXXX-X
 
 - **Issues**: [GitHub Issues](https://github.com/reginaldoantonelli/educandario-site/issues)
 - **Discussões**: [GitHub Discussions](https://github.com/reginaldoantonelli/educandario-site/discussions)
-- **Email**: contato@educandario.org
+- **Email**: <contato@educandario.org>
 
 ---
 
@@ -359,6 +374,7 @@ Desenvolvido com ❤️ por **Reginaldo Antonelli**
 ---
 
 **Última atualização**: Abril de 2026
+
 ```
 
 ## 📊 Scripts Disponíveis
