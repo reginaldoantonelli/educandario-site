@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Bell, X, Trash2, AlertCircle, Check } from 'lucide-react';
-import { useAuditLogs } from '@/hooks/useAuditLogs';
+import { useUserNotifications } from '@/hooks/useUserNotifications';
 
 interface Notification {
   id: string;
@@ -8,61 +8,42 @@ interface Notification {
   timestamp: number;
   read: boolean;
   icon: string;
-  logId?: string;
 }
 
 const NotificationPanel: React.FC = () => {
-  const { logs, fetchLogs, deleteLog } = useAuditLogs();
+  const { notifications: userNotifications, fetchNotifications, deleteNotification, markAsRead, clearReadNotifications } = useUserNotifications();
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [readNotifications, setReadNotifications] = useState<Set<string>>(() => {
     const saved = localStorage.getItem('readNotifications');
     return saved ? new Set(JSON.parse(saved)) : new Set();
   });
-  const [removedNotifications, setRemovedNotifications] = useState<Set<string>>(() => {
-    const saved = localStorage.getItem('removedNotifications');
-    return saved ? new Set(JSON.parse(saved)) : new Set();
-  });
   const panelRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
-  // Gerar ID estável para notificação
-  const generateNotificationId = (log: any, index: number): string => {
-    // Usar o ID do log se disponível, senão usar o timestamp + mensagem
-    if (log.id) return `log-${log.id}`;
-    const message = typeof log === 'string' ? log : (log as any).action || 'Ação realizada';
-    const timestamp = log.created_at || log.timestamp || Date.now();
-    return `notif-${timestamp}-${message.substring(0, 20)}`;
-  };
-
-  // Converter logs em notificações
+  // Mapear notificações do hook para o estado local com read state
   useEffect(() => {
-    const newNotifications: Notification[] = logs.slice(0, 8).map((log, index) => {
-      const message = typeof log === 'string' ? log : (log as any).action || 'Ação realizada';
-      const id = generateNotificationId(log, index);
-      const timestamp = log.created_at ? new Date(log.created_at).getTime() : Date.now() - (index * 60000);
-      
+    const newNotifications: Notification[] = userNotifications.map((notif) => {
       return {
-        id,
-        message,
-        timestamp,
-        read: readNotifications.has(id),
-        icon: getIconForMessage(message),
-        logId: log.id
+        id: notif.id,
+        message: notif.message,
+        timestamp: notif.timestamp,
+        read: readNotifications.has(notif.id),
+        icon: getIconForMessage(notif.message),
       };
-    }).filter(notif => !removedNotifications.has(notif.id));
+    });
     
     setNotifications(newNotifications);
-  }, [logs, readNotifications, removedNotifications]);
+  }, [userNotifications, readNotifications]);
 
-  // Poll para recarregar logs a cada 30 segundos
+  // Poll para recarregar notificações a cada 30 segundos
   useEffect(() => {
     const interval = setInterval(() => {
-      fetchLogs();
+      fetchNotifications();
     }, 30000);
 
     return () => clearInterval(interval);
-  }, [fetchLogs]);
+  }, [fetchNotifications]);
 
   // Fechar ao clicar fora
   useEffect(() => {
@@ -106,11 +87,17 @@ const NotificationPanel: React.FC = () => {
     return new Date(timestamp).toLocaleDateString('pt-BR');
   };
 
-  const handleMarkAsRead = (id: string) => {
+  const handleMarkAsRead = async (id: string) => {
     const newRead = new Set(readNotifications);
     newRead.add(id);
     setReadNotifications(newRead);
     localStorage.setItem('readNotifications', JSON.stringify(Array.from(newRead)));
+    
+    try {
+      await markAsRead(id);
+    } catch (error) {
+      console.error('Erro ao marcar como lido:', error);
+    }
   };
 
   const handleMarkAllAsRead = () => {
@@ -120,26 +107,16 @@ const NotificationPanel: React.FC = () => {
   };
 
   const handleClearAll = async () => {
-    // Remove notificações que já foram lidas
-    const readNotificationIds = notifications.filter(n => n.read).map(n => n.id);
+    // Limpar localStorage primeiro
+    setReadNotifications(new Set());
+    localStorage.setItem('readNotifications', JSON.stringify([]));
     
-    // Deletar cada log do backend via ID do log
-    for (const notification of notifications.filter(n => n.read)) {
-      if (notification.logId) {
-        try {
-          await deleteLog(notification.logId);
-        } catch (error) {
-          console.error(`Erro ao deletar log ${notification.logId}:`, error);
-        }
-      }
+    // Deletar notificações lidas via hook
+    try {
+      await clearReadNotifications();
+    } catch (error) {
+      console.error('Erro ao limpar notificações:', error);
     }
-    
-    // Limpar localStorage
-    const newRemoved = new Set(removedNotifications);
-    readNotificationIds.forEach(id => newRemoved.add(id));
-    
-    setRemovedNotifications(newRemoved);
-    localStorage.setItem('removedNotifications', JSON.stringify(Array.from(newRemoved)));
   };
 
   const unreadCount = notifications.filter(n => !n.read).length;
@@ -223,12 +200,10 @@ const NotificationPanel: React.FC = () => {
                       <button
                         onClick={async (e) => {
                           e.stopPropagation();
-                          if (notification.logId) {
-                            try {
-                              await deleteLog(notification.logId);
-                            } catch (error) {
-                              console.error('Erro ao deletar notificação:', error);
-                            }
+                          try {
+                            await deleteNotification(notification.id);
+                          } catch (error) {
+                            console.error('Erro ao deletar notificação:', error);
                           }
                         }}
                         className="p-1 text-slate-400 hover:text-red-600 dark:hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"
