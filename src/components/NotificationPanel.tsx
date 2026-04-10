@@ -8,10 +8,11 @@ interface Notification {
   timestamp: number;
   read: boolean;
   icon: string;
+  logId?: string;
 }
 
 const NotificationPanel: React.FC = () => {
-  const { logs } = useAuditLogs();
+  const { logs, fetchLogs, deleteLog } = useAuditLogs();
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [readNotifications, setReadNotifications] = useState<Set<string>>(() => {
@@ -25,20 +26,43 @@ const NotificationPanel: React.FC = () => {
   const panelRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
+  // Gerar ID estável para notificação
+  const generateNotificationId = (log: any, index: number): string => {
+    // Usar o ID do log se disponível, senão usar o timestamp + mensagem
+    if (log.id) return `log-${log.id}`;
+    const message = typeof log === 'string' ? log : (log as any).action || 'Ação realizada';
+    const timestamp = log.created_at || log.timestamp || Date.now();
+    return `notif-${timestamp}-${message.substring(0, 20)}`;
+  };
+
   // Converter logs em notificações
   useEffect(() => {
     const newNotifications: Notification[] = logs.slice(0, 8).map((log, index) => {
       const message = typeof log === 'string' ? log : (log as any).action || 'Ação realizada';
+      const id = generateNotificationId(log, index);
+      const timestamp = log.created_at ? new Date(log.created_at).getTime() : Date.now() - (index * 60000);
+      
       return {
-        id: `notif-${index}-${message}`,
-        message: message,
-        timestamp: Date.now() - (index * 60000), // Simula timestamps progressivos
-        read: readNotifications.has(`notif-${index}-${message}`),
-        icon: getIconForMessage(message)
+        id,
+        message,
+        timestamp,
+        read: readNotifications.has(id),
+        icon: getIconForMessage(message),
+        logId: log.id
       };
     }).filter(notif => !removedNotifications.has(notif.id));
+    
     setNotifications(newNotifications);
   }, [logs, readNotifications, removedNotifications]);
+
+  // Poll para recarregar logs a cada 30 segundos
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchLogs();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [fetchLogs]);
 
   // Fechar ao clicar fora
   useEffect(() => {
@@ -95,12 +119,22 @@ const NotificationPanel: React.FC = () => {
     localStorage.setItem('readNotifications', JSON.stringify(Array.from(allIds)));
   };
 
-  const handleClearAll = () => {
-    // Remove apenas as notificações que já foram lidas
-    const readNotificationIds = notifications
-      .filter(n => n.read)
-      .map(n => n.id);
+  const handleClearAll = async () => {
+    // Remove notificações que já foram lidas
+    const readNotificationIds = notifications.filter(n => n.read).map(n => n.id);
     
+    // Deletar cada log do backend via ID do log
+    for (const notification of notifications.filter(n => n.read)) {
+      if (notification.logId) {
+        try {
+          await deleteLog(notification.logId);
+        } catch (error) {
+          console.error(`Erro ao deletar log ${notification.logId}:`, error);
+        }
+      }
+    }
+    
+    // Limpar localStorage
     const newRemoved = new Set(removedNotifications);
     readNotificationIds.forEach(id => newRemoved.add(id));
     
@@ -164,12 +198,14 @@ const NotificationPanel: React.FC = () => {
                 {notifications.map((notification) => (
                   <div
                     key={notification.id}
-                    className={`px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group cursor-pointer ${
+                    className={`px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group cursor-pointer flex justify-between items-start ${
                       !notification.read ? 'bg-blue-50 dark:bg-blue-900/10' : ''
                     }`}
-                    onClick={() => handleMarkAsRead(notification.id)}
                   >
-                    <div className="flex gap-3 items-start">
+                    <div 
+                      className="flex-1 flex gap-3 items-start"
+                      onClick={() => handleMarkAsRead(notification.id)}
+                    >
                       <span className="text-lg mt-0.5">{notification.icon}</span>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-slate-900 dark:text-white break-words">
@@ -179,9 +215,27 @@ const NotificationPanel: React.FC = () => {
                           {getTimeAgo(notification.timestamp)}
                         </p>
                       </div>
+                    </div>
+                    <div className="flex items-center gap-2 ml-2">
                       {!notification.read && (
-                        <div className="w-2 h-2 bg-blue-500 rounded-full mt-1.5 flex-shrink-0"></div>
+                        <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
                       )}
+                      <button
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          if (notification.logId) {
+                            try {
+                              await deleteLog(notification.logId);
+                            } catch (error) {
+                              console.error('Erro ao deletar notificação:', error);
+                            }
+                          }
+                        }}
+                        className="p-1 text-slate-400 hover:text-red-600 dark:hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"
+                        title="Remover notificação"
+                      >
+                        <Trash2 size={14} />
+                      </button>
                     </div>
                   </div>
                 ))}

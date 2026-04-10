@@ -8,7 +8,7 @@ const Settings: React.FC = () => {
     // Hooks de dados
     const { profile, loading: profileLoading, error: profileError, updateProfile, uploadAvatar, removeAvatar: removeAvatarService, clearError: clearProfileError } = useUserProfile();
     const { settings: portalSettings, loading: portalLoading, error: portalError, updateSettings, clearError: clearPortalError } = usePortalSettings();
-    const { logs: auditLogs, loading: auditLoading, error: auditError, clearError: clearAuditError } = useAuditLogs();
+    const { logs: auditLogs, loading: auditLoading, error: auditError, clearError: clearAuditError, fetchLogs } = useAuditLogs();
 
     // Referência para o input file
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -79,6 +79,8 @@ const Settings: React.FC = () => {
                 try {
                     const result = event.target?.result as string;
                     await uploadAvatar(result);
+                    // Recarregar o histórico de atividades
+                    await fetchLogs();
                     setProfileSuccess(true);
                     setTimeout(() => setProfileSuccess(false), 3000);
                 } catch (error) {
@@ -100,6 +102,8 @@ const Settings: React.FC = () => {
             if (fileInputRef.current) {
                 fileInputRef.current.value = '';
             }
+            // Recarregar o histórico de atividades
+            await fetchLogs();
             setProfileSuccess(true);
             setTimeout(() => setProfileSuccess(false), 3000);
         } catch (error) {
@@ -128,6 +132,8 @@ const Settings: React.FC = () => {
                 displayName: editingProfileData.displayName,
                 email: editingProfileData.email
             });
+            // Recarregar o histórico de atividades
+            await fetchLogs();
             setProfileSuccess(true);
             setTimeout(() => setProfileSuccess(false), 3000);
             setEditingProfile(false);
@@ -158,6 +164,8 @@ const Settings: React.FC = () => {
                 website: editingPortalData.website,
                 phone: editingPortalData.phone
             });
+            // Recarregar o histórico de atividades
+            await fetchLogs();
             setPortalSuccess(true);
             setTimeout(() => setPortalSuccess(false), 3000);
             setEditingPortal(false);

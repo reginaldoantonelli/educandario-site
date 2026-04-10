@@ -78,6 +78,20 @@ export class AuditService {
   }
 
   /**
+   * Deletar um log específico
+   */
+  async deleteLog(logId: string): Promise<void> {
+    try {
+      const logs = await this.getLogs();
+      const updated = logs.filter(log => log.id !== logId);
+      localStorage.setItem(AUDIT_LOGS_KEY, JSON.stringify(updated));
+    } catch (error) {
+      console.error('Erro ao deletar log:', error);
+      throw this.handleError(error, 'deletar log');
+    }
+  }
+
+  /**
    * Formatar timestamp em pt-BR
    */
   private formatTimestamp(date: Date): string {
