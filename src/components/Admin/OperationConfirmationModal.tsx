@@ -9,6 +9,7 @@ interface OperationConfirmationModalProps {
     label: string;
     onClose: () => void;
     onCloseAll?: () => void;
+    isLoading?: boolean;
 }
 
 const OperationConfirmationModal: React.FC<OperationConfirmationModalProps> = ({
@@ -18,7 +19,8 @@ const OperationConfirmationModal: React.FC<OperationConfirmationModalProps> = ({
     documentName,
     label,
     onClose,
-    onCloseAll
+    onCloseAll,
+    isLoading = false
 }) => {
     if (!isOpen) return null;
 
@@ -73,13 +75,29 @@ const OperationConfirmationModal: React.FC<OperationConfirmationModalProps> = ({
                 <div className="p-6 border-t border-slate-200 dark:border-slate-800">
                     <button
                         onClick={() => {
-                            onClose();
-                            onCloseAll?.();
+                            if (!isLoading) {
+                                onClose();
+                                onCloseAll?.();
+                            }
                         }}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium text-sm transition-all"
+                        disabled={isLoading}
+                        className={`w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm transition-all ${
+                            isLoading
+                                ? 'bg-green-500 cursor-not-allowed text-white'
+                                : 'bg-green-600 hover:bg-green-700 text-white'
+                        }`}
                     >
-                        <Check size={16} />
-                        Pronto
+                        {isLoading ? (
+                            <>
+                                <span className="inline-flex w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                Processando...
+                            </>
+                        ) : (
+                            <>
+                                <Check size={16} />
+                                Pronto
+                            </>
+                        )}
                     </button>
                 </div>
             </div>

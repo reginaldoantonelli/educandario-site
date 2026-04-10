@@ -28,6 +28,7 @@ const Dashboard: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [showConfirmation, setShowConfirmation] = useState(false);
     const [uploadedDocumentName, setUploadedDocumentName] = useState('');
+    const [isUploadProcessing, setIsUploadProcessing] = useState(false);
     const { documents, createDocument } = useDocuments();
 
     // Estado para rastrear o último upload (compartilhado com Transparência)
@@ -123,6 +124,11 @@ const Dashboard: React.FC = () => {
     const recentDocs = documents
         .slice(0, 5);
 
+    // Função para contar documentos públicos
+    const getPublicDocumentsCount = () => {
+        return documents.filter(doc => doc.visibilidade === 'public').length;
+    };
+
     // Funções do Modal
     const openModal = () => setIsModalOpen(true);
     const closeModal = () => setIsModalOpen(false);
@@ -135,6 +141,7 @@ const Dashboard: React.FC = () => {
             visibilidade: visibilityMap[uploadData.visibilidade] || 'public'
         };
         
+        setIsUploadProcessing(true);
         const result = await createDocument(newDocument);
         if (result) {
             // Mostra confirmação de sucesso
@@ -146,6 +153,7 @@ const Dashboard: React.FC = () => {
             setLastUploadTime(now);
             localStorage.setItem('lastDocumentUpload', now.toString());
         }
+        setIsUploadProcessing(false);
     };
 
     return (
@@ -184,7 +192,7 @@ const Dashboard: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
                 <MetricCard 
                     title="Documentos Públicos" 
-                    value="14" 
+                    value={getPublicDocumentsCount().toString()} 
                     icon={<FileText size={24} className="text-blue-600 dark:text-blue-400" />} 
                     trend="Ativos no site"
                 />
@@ -326,6 +334,7 @@ const Dashboard: React.FC = () => {
                 setShowConfirmation(false);
                 setIsModalOpen(false);
             }}
+            isLoading={isUploadProcessing}
         />
         </div>
     );

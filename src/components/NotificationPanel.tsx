@@ -110,20 +110,30 @@ const NotificationPanel: React.FC = () => {
     }
   };
 
-  const handleMarkAllAsRead = () => {
+  const handleMarkAllAsRead = async () => {
     const allIds = new Set(notifications.map(n => n.id));
     setReadNotifications(allIds);
     localStorage.setItem('readNotifications', JSON.stringify(Array.from(allIds)));
+    
+    // Marcar como lido no backend para cada notificação
+    try {
+      for (const notification of notifications) {
+        if (!notification.read) {
+          await markAsRead(notification.id);
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao marcar notificações como lidas:', error);
+    }
   };
 
   const handleClearAll = async () => {
-    // Limpar localStorage primeiro
-    setReadNotifications(new Set());
-    localStorage.setItem('readNotifications', JSON.stringify([]));
-    
     // Deletar notificações lidas via hook
     try {
       await clearReadNotifications();
+      // Limpar localStorage apenas após sucesso
+      setReadNotifications(new Set());
+      localStorage.setItem('readNotifications', JSON.stringify([]));
     } catch (error) {
       console.error('Erro ao limpar notificações:', error);
     }

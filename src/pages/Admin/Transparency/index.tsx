@@ -19,6 +19,8 @@ const TransparencyAdmin: React.FC = () => {
     const [uploadedDocumentName, setUploadedDocumentName] = useState('');
     const [showEditConfirmation, setShowEditConfirmation] = useState(false);
     const [editedDocumentName, setEditedDocumentName] = useState('');
+    const [isEditProcessing, setIsEditProcessing] = useState(false);
+    const [isUploadProcessing, setIsUploadProcessing] = useState(false);
     const [showAdvancedFilter, setShowAdvancedFilter] = useState(false);
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [documentToDelete, setDocumentToDelete] = useState<number | null>(null);
@@ -90,6 +92,7 @@ const TransparencyAdmin: React.FC = () => {
             visibilidade: visibilityMap[uploadData.visibilidade] || 'public'
         };
         
+        setIsUploadProcessing(true);
         const result = await createDocument(newDocument);
         if (result) {
             // Mostra confirmação de sucesso
@@ -101,6 +104,7 @@ const TransparencyAdmin: React.FC = () => {
             setLastUploadTime(now);
             localStorage.setItem('lastDocumentUpload', now.toString());
         }
+        setIsUploadProcessing(false);
     };
 
     // Função para visualizar documento
@@ -149,6 +153,7 @@ const TransparencyAdmin: React.FC = () => {
             visibilidade: visibilityMap[updatedDocument.visibilidade] || visibilityMap['Público']
         };
 
+        setIsEditProcessing(true);
         const success = await updateDocument(docIdToUpdate, updates, title);
         if (success) {
             // Mostra confirmação de sucesso
@@ -157,6 +162,7 @@ const TransparencyAdmin: React.FC = () => {
             setEditModalOpen(false);
             setDocumentToEdit(null);
         }
+        setIsEditProcessing(false);
     };
 
     // Conversor de dados: Document type → formato da UI
@@ -586,6 +592,7 @@ const TransparencyAdmin: React.FC = () => {
                 setShowConfirmation(false);
                 setIsModalOpen(false);
             }}
+            isLoading={isUploadProcessing}
         />
         
         {/* Modal de Confirmação de Exclusão */}
@@ -621,6 +628,7 @@ const TransparencyAdmin: React.FC = () => {
             label="O documento foi atualizado como:"
             onClose={() => setShowEditConfirmation(false)}
             onCloseAll={() => setShowEditConfirmation(false)}
+            isLoading={isEditProcessing}
         />
         </div>
     );
