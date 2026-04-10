@@ -1,6 +1,6 @@
-import React, { useState, useMemo } from 'react';
-import { FileText, Plus, Trash2, Eye, Lock, Globe, Filter, X, Search, Edit } from 'lucide-react';
-import UploadModal from '@/components/admin/UploadModal'; // Supondo que moveu o modal para components
+import React, { useState, useMemo, useEffect } from 'react';
+import { FileText, Plus, Trash2, Eye, Lock, Globe, Filter, X, Search, Edit, ChevronLeft, ChevronRight, Clock } from 'lucide-react';
+import UploadModal from '@/components/Admin/UploadModal';
 import ConfirmDeleteModal from '@/components/admin/ConfirmDeleteModal';
 import EditDocumentModal from '@/components/admin/EditDocumentModal';
 
@@ -13,6 +13,65 @@ const TransparencyAdmin: React.FC = () => {
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [documentToEdit, setDocumentToEdit] = useState<number | null>(null);
     const [isSaving, setIsSaving] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 6;
+    
+    // Estado para rastrear o último upload
+    const [lastUploadTime, setLastUploadTime] = useState<number | null>(() => {
+        const saved = localStorage.getItem('lastTransparencyUpload');
+        return saved ? parseInt(saved) : null;
+    });
+    
+    // Estado para forçar atualizações do tempo decorrido a cada 30 segundos
+    const [currentTime, setCurrentTime] = useState(() => Date.now());
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrentTime(Date.now());
+        }, 30000); // Atualiza a cada 30 segundos
+
+        return () => clearInterval(interval);
+    }, []);
+    
+    // Função para calcular tempo decorrido desde o último upload
+    const getTimeAgo = (timestamp: number) => {
+        const diffMs = currentTime - timestamp;
+        const diffMins = Math.floor(diffMs / 60000);
+        const diffHours = Math.floor(diffMs / 3600000);
+        const diffDays = Math.floor(diffMs / 86400000);
+
+        if (diffMins < 1) return 'agora mesmo';
+        if (diffMins < 60) return `há ${diffMins} min`;
+        if (diffHours < 24) return `há ${diffHours}h`;
+        if (diffDays < 7) return `há ${diffDays}d`;
+        return new Date(timestamp).toLocaleDateString('pt-BR');
+    };
+    
+    // Função para adicionar log de auditoria (compartilhado com Settings)
+    const addAuditLog = (action: string) => {
+        const now = new Date();
+        const formattedDate = now.toLocaleDateString('pt-BR');
+        const formattedTime = now.toLocaleTimeString('pt-BR');
+        const newLog = {
+            id: Date.now().toString(),
+            action,
+            timestamp: `${formattedDate} às ${formattedTime}`
+        };
+
+        // Carrega logs existentes do localStorage (chave compartilhada com Settings)
+        const savedLogs = localStorage.getItem('auditLogs');
+        let existingLogs: Array<{ id: string; action: string; timestamp: string }> = [];
+        try {
+            if (savedLogs) {
+                existingLogs = JSON.parse(savedLogs);
+            }
+        } catch (error) {
+            console.error('Erro ao carregar logs do localStorage', error);
+        }
+
+        const updatedLogs = [newLog, ...existingLogs].slice(0, 10); // Mantém apenas os 10 últimos
+        localStorage.setItem('auditLogs', JSON.stringify(updatedLogs));
+    };
     
     // Estados dos filtros
     const [filters, setFilters] = useState({
@@ -51,6 +110,13 @@ const TransparencyAdmin: React.FC = () => {
         };
         
         setDocuments([newDocument, ...documents]);
+        
+        // Atualiza o timestamp do último upload
+        const now = Date.now();
+        setLastUploadTime(now);
+        localStorage.setItem('lastTransparencyUpload', now.toString());
+        
+        addAuditLog(`📤 Arquivo enviado: ${uploadData.arquivo.name} (${uploadData.categoria})`);
     };
 
     // Função para visualizar documento
@@ -72,9 +138,15 @@ const TransparencyAdmin: React.FC = () => {
         if (documentToDelete !== null) {
             setIsDeleting(true);
             
+            // Encontra o documento a ser deletado para logar
+            const docToDelete = documents.find(doc => doc.id === documentToDelete);
+            
             // Simula delay de exclusão
             setTimeout(() => {
                 setDocuments(documents.filter(doc => doc.id !== documentToDelete));
+                if (docToDelete) {
+                    addAuditLog(`🗑️ Arquivo removido: ${docToDelete.nome}`);
+                }
                 setIsDeleting(false);
                 setDeleteModalOpen(false);
                 setDocumentToDelete(null);
@@ -94,9 +166,13 @@ const TransparencyAdmin: React.FC = () => {
 
         // Simula delay de salvamento
         setTimeout(() => {
+            const oldDocument = documents.find(doc => doc.id === updatedDocument.id);
             setDocuments(documents.map(doc => 
                 doc.id === updatedDocument.id ? updatedDocument : doc
             ));
+            if (oldDocument) {
+                addAuditLog(`✏️ Arquivo editado: ${updatedDocument.nome}`);
+            }
             setIsSaving(false);
             setEditModalOpen(false);
             setDocumentToEdit(null);
@@ -119,6 +195,29 @@ const TransparencyAdmin: React.FC = () => {
             return buscaMatch && categoriaMatch && visibilidadeMatch && anoMatch;
         });
     }, [documents, filters]);
+
+    // Lógica de Paginação
+    const totalPages = Math.ceil(documentosFiltrados.length / itemsPerPage);
+    
+    // Derivar página válida (resetar se exceder totalPages após filtro)
+    const validCurrentPage = currentPage > totalPages ? 1 : currentPage;
+    const startIndex = (validCurrentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const documentosPaginados = documentosFiltrados.slice(startIndex, endIndex);
+
+    const handlePreviousPage = () => {
+        setCurrentPage(prev => Math.max(prev - 1, 1));
+    };
+
+    const handleNextPage = () => {
+        setCurrentPage(prev => Math.min(prev + 1, totalPages || 1));
+    };
+
+    const handlePageInput = (page: string) => {
+        const pageNum = parseInt(page) || 1;
+        const validPage = Math.max(1, Math.min(pageNum, totalPages || 1));
+        setCurrentPage(validPage);
+    };
 
     // Limpar filtros
     const limparFiltros = () => {
@@ -151,25 +250,40 @@ const TransparencyAdmin: React.FC = () => {
     };
 
     return (
-        <div className="space-y-4 sm:space-y-6 p-4 sm:p-0">
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 bg-white dark:bg-slate-900 p-4 sm:p-8 rounded-2xl sm:rounded-4xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div className="space-y-4 sm:space-y-6 p-4 md:p-6 lg:p-8">
+        <div className="flex flex-col sm:flex-row md:flex-row md:justify-between md:items-center gap-4 bg-white dark:bg-slate-900 p-4 md:p-6 lg:p-8 rounded-2xl md:rounded-2xl lg:rounded-4xl border border-slate-200 dark:border-slate-800 shadow-sm">
             <div className="min-w-0 flex-1">
-            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Gestão de Transparência</h1>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mt-1 sm:mt-0">Controle total sobre os documentos públicos da instituição.</p>
+            <h1 className="text-xl sm:text-2xl md:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Gestão de Transparência</h1>
+            <p className="text-xs sm:text-sm md:text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">Controle total sobre os documentos públicos da instituição.</p>
             </div>
-            <button 
-            onClick={() => setIsModalOpen(true)}
-            className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-bold flex items-center justify-center sm:justify-start gap-2 transition-all shadow-lg shadow-blue-500/20 text-sm sm:text-base shrink-0"
-            >
-            <Plus size={20} /> Novo PDF
-            </button>
+            <div className="flex flex-col sm:flex-row gap-3 md:gap-4 items-start md:items-center">
+                {/* Indicador de Último Upload */}
+                {lastUploadTime && (
+                    <div className="flex items-center gap-2 px-3 md:px-4 py-2 md:py-2.5 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800/50 rounded-lg">
+                        <div className="relative flex items-center justify-center">
+                            <Clock size={16} className="text-green-600 dark:text-green-400" />
+                            <div className="absolute inset-0 rounded-full animate-pulse bg-green-400/20"></div>
+                        </div>
+                        <div className="flex flex-col">
+                            <span className="text-xs font-semibold text-green-700 dark:text-green-300">Último upload</span>
+                            <span className="text-xs text-green-600 dark:text-green-400">{getTimeAgo(lastUploadTime)}</span>
+                        </div>
+                    </div>
+                )}
+                <button 
+                onClick={() => setIsModalOpen(true)}
+                className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white px-4 md:px-6 py-2.5 md:py-3 rounded-xl font-bold flex items-center justify-center md:justify-start gap-2 transition-all shadow-lg shadow-blue-500/20 text-sm md:text-base shrink-0"
+                >
+                <Plus size={20} /> Novo PDF
+                </button>
+            </div>
         </div>
 
         {/* Botão de Filtro Avançado */}
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 px-4 sm:px-0">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
             <button 
                 onClick={() => setShowAdvancedFilter(!showAdvancedFilter)}
-                className={`flex items-center justify-center sm:justify-start gap-2 px-3 sm:px-4 py-2 rounded-xl font-semibold transition-all text-sm sm:text-base ${
+                className={`flex items-center justify-start gap-2 px-3 md:px-4 py-2 rounded-xl font-semibold transition-all text-sm md:text-base whitespace-nowrap ${
                     showAdvancedFilter 
                         ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' 
                         : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
@@ -183,15 +297,15 @@ const TransparencyAdmin: React.FC = () => {
                     </span>
                 )}
             </button>
-            <span className="text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-400 text-center sm:text-left order-last sm:order-0 px-4 sm:px-0">
+            <span className="text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-400 whitespace-nowrap">
                 {documentosFiltrados.length} de {documents.length} documentos
             </span>
         </div>
 
         {/* Painel de Filtros Avançados */}
         {showAdvancedFilter && (
-            <div className="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl sm:rounded-4xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4 mx-4 sm:mx-0">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <div className="bg-white dark:bg-slate-900 p-4 md:p-6 lg:p-8 rounded-2xl md:rounded-2xl lg:rounded-4xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
                     {/* Busca por Nome */}
                     <div className="space-y-2">
                         <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
@@ -265,7 +379,7 @@ const TransparencyAdmin: React.FC = () => {
         )}
 
         {/* Tabela de Gestão de PDFs - Desktop */}
-        <div className="hidden md:block bg-white dark:bg-slate-900 rounded-2xl sm:rounded-4xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+        <div className="hidden lg:block bg-white dark:bg-slate-900 rounded-2xl lg:rounded-4xl border border-slate-200 dark:border-slate-800 overflow-x-auto shadow-sm">
             <table className="w-full text-left border-collapse">
             <thead>
                 <tr className="bg-slate-50/50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-widest">
@@ -276,8 +390,8 @@ const TransparencyAdmin: React.FC = () => {
                 </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {documentosFiltrados.length > 0 ? (
-                    documentosFiltrados.map((doc) => (
+                {documentosPaginados.length > 0 ? (
+                    documentosPaginados.map((doc) => (
                     <tr key={doc.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors group">
                         <td className="px-4 sm:px-8 py-4 sm:py-5">
                         <div className="flex items-center gap-3">
@@ -336,19 +450,19 @@ const TransparencyAdmin: React.FC = () => {
             </table>
         </div>
 
-        {/* Cards para Mobile - Substituem a Tabela */}
-        <div className="md:hidden space-y-3 px-4 sm:px-0">
-            {documentosFiltrados.length > 0 ? (
-                documentosFiltrados.map((doc) => (
+        {/* Cards para Mobile e Tablet - Substituem a Tabela */}
+        <div className="lg:hidden space-y-3">
+            {documentosPaginados.length > 0 ? (
+                documentosPaginados.map((doc) => (
                     <div key={doc.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
                         {/* Header do Card */}
                         <div className="flex items-start gap-3 mb-3">
                             <FileText className="text-red-500 shrink-0 mt-1" size={20} />
                             <div className="flex-1 min-w-0">
-                                <h3 className="font-bold text-slate-900 dark:text-white truncate text-sm">{doc.nome}</h3>
+                                <h3 className="font-bold text-slate-900 dark:text-white truncate text-sm md:text-base">{doc.nome}</h3>
                                 <div className="flex items-center gap-2 mt-2 flex-wrap">
-                                    <span className="text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-2 py-1 rounded">{doc.categoria}</span>
-                                    <span className="text-xs text-slate-500 dark:text-slate-400">{doc.ano}</span>
+                                    <span className="text-xs md:text-sm font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-2 py-1 rounded">{doc.categoria}</span>
+                                    <span className="text-xs md:text-sm text-slate-500 dark:text-slate-400">{doc.ano}</span>
                                 </div>
                             </div>
                         </div>
@@ -362,7 +476,7 @@ const TransparencyAdmin: React.FC = () => {
                             <div className="flex gap-2 justify-start">
                                 <button 
                                     onClick={() => handleEdit(doc.id)}
-                                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors text-sm font-semibold"
+                                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors text-sm md:text-base font-semibold"
                                     title="Editar"
                                 >
                                     <Edit size={16}/>
@@ -370,7 +484,7 @@ const TransparencyAdmin: React.FC = () => {
                                 </button>
                                 <button 
                                     onClick={() => handleView(doc.nome)}
-                                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors text-sm font-semibold"
+                                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors text-sm md:text-base font-semibold"
                                     title="Visualizar"
                                 >
                                     <Eye size={16}/>
@@ -378,7 +492,7 @@ const TransparencyAdmin: React.FC = () => {
                                 </button>
                                 <button 
                                     onClick={() => openDeleteModal(doc.id)}
-                                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors text-sm font-semibold"
+                                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors text-sm md:text-base font-semibold"
                                     title="Excluir"
                                 >
                                     <Trash2 size={16}/>
@@ -396,6 +510,57 @@ const TransparencyAdmin: React.FC = () => {
                 </div>
             )}
         </div>
+
+        {/* Barra de Paginação */}
+        {documentosFiltrados.length > 0 && (
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 shadow-sm">
+                {/* Info de Itens */}
+                <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                    <FileText size={16} className="text-slate-400" />
+                    <span>
+                        Mostrando <span className="font-semibold text-slate-900 dark:text-white">{startIndex + 1}</span> de{' '}
+                        <span className="font-semibold text-slate-900 dark:text-white">{documentosFiltrados.length}</span> documentos
+                    </span>
+                </div>
+
+                {/* Controles de Paginação */}
+                <div className="flex items-center gap-2 justify-between sm:justify-end">
+                    {/* Botão Anterior */}
+                    <button
+                        onClick={handlePreviousPage}
+                        disabled={validCurrentPage === 1}
+                        className="p-2 text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors"
+                        title="Página anterior"
+                    >
+                        <ChevronLeft size={18} />
+                    </button>
+
+                    {/* Página Atual com Input */}
+                    <div className="flex items-center gap-2">
+                        <span className="text-xs text-slate-500 dark:text-slate-400">Página</span>
+                        <input
+                            type="number"
+                            min="1"
+                            max={totalPages || 1}
+                            value={validCurrentPage}
+                            onChange={(e) => handlePageInput(e.target.value)}
+                            className="w-12 px-2 py-1 text-center text-sm font-semibold bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                        />
+                        <span className="text-xs text-slate-500 dark:text-slate-400">de {totalPages}</span>
+                    </div>
+
+                    {/* Botão Próximo */}
+                    <button
+                        onClick={handleNextPage}
+                        disabled={validCurrentPage === totalPages}
+                        className="p-2 text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors"
+                        title="Próxima página"
+                    >
+                        <ChevronRight size={18} />
+                    </button>
+                </div>
+            </div>
+        )}
 
         <UploadModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onUpload={handleUpload} />
         

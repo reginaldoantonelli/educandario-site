@@ -14,6 +14,21 @@ import {
 
     const DashboardLayout: React.FC = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [displayName, setDisplayName] = useState(() => {
+        const savedProfile = localStorage.getItem('adminProfile');
+        try {
+            if (savedProfile) {
+                const profile = JSON.parse(savedProfile);
+                return profile.displayName || 'Admin Iago';
+            }
+        } catch (error) {
+            console.error('Erro ao carregar perfil:', error);
+        }
+        return 'Admin Iago';
+    });
+    const [avatarUrl, setAvatarUrl] = useState<string | null>(() => {
+        return localStorage.getItem('adminAvatar');
+    });
 
     // Links da Sidebar baseados no layout aprovado
     const menuItems = [
@@ -27,6 +42,32 @@ import {
         const savedTheme = localStorage.getItem('theme');
         return savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches);
     });
+
+    // --- SINCRONIZAR PERFIL COM HEADER ---
+    useEffect(() => {
+        // Listener para atualizações de perfil via CustomEvent
+        const handleProfileUpdate = (event: Event) => {
+            const customEvent = event as CustomEvent;
+            if (customEvent.detail?.displayName) {
+                setDisplayName(customEvent.detail.displayName);
+            }
+        };
+
+        // Listener para atualizações de avatar
+        const handleAvatarUpdate = () => {
+            const savedAvatar = localStorage.getItem('adminAvatar');
+            setAvatarUrl(savedAvatar);
+        };
+
+        window.addEventListener('profileUpdated', handleProfileUpdate);
+        window.addEventListener('avatarUpdated', handleAvatarUpdate);
+
+        return () => {
+            window.removeEventListener('profileUpdated', handleProfileUpdate);
+            window.removeEventListener('avatarUpdated', handleAvatarUpdate);
+        };
+    }, []);
+    // ---------------------------
 
     useEffect(() => {
         if (isDark) {
@@ -131,11 +172,15 @@ import {
                 {/* Perfil do Usuário */}
                 <div className="flex items-center gap-3 pl-4 border-l border-slate-200 dark:border-slate-800">
                 <div className="text-right hidden sm:block">
-                    <p className="text-sm font-bold text-slate-900 dark:text-white">Admin Iago</p>
+                    <p className="text-sm font-bold text-slate-900 dark:text-white">{displayName}</p>
                     <p className="text-xs text-slate-500 dark:text-slate-400 uppercase font-semibold">Desenvolvedor</p>
                 </div>
-                <div className="w-10 h-10 bg-slate-200 dark:bg-slate-800 rounded-full flex items-center justify-center text-slate-600 dark:text-slate-400">
-                    <User size={20} />
+                <div className="w-10 h-10 bg-linear-to-br from-blue-400 to-cyan-400 rounded-full flex items-center justify-center text-slate-600 dark:text-slate-400 overflow-hidden border-2 border-white dark:border-slate-700 shadow-md">
+                    {avatarUrl ? (
+                        <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover" />
+                    ) : (
+                        <User size={20} className="text-white" />
+                    )}
                 </div>
                 </div>
             </div>

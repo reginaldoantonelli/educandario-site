@@ -16,6 +16,7 @@ const Login = lazy(() => import('@/pages/Login'));
 const DashboardLayout = lazy(() => import('@/layouts/DashboardLayout')); // <-- Novo Layout
 const Dashboard = lazy(() => import('@/pages/Admin/Dashboard')); // <-- Nova Página
 const TransparencyAdmin = lazy(() => import('@/pages/Admin/Transparency')); // <-- Nova Página
+const Settings = lazy(() => import('@/pages/Admin/Settings')); // <-- Página de Configurações
 
 const router = createBrowserRouter([
   {
@@ -56,7 +57,7 @@ const router = createBrowserRouter([
       },
       {
         path: 'configuracoes',
-        element: <Suspense fallback={<div>Loading...</div>}><div className="text-white p-8">Configurações do Perfil em breve</div></Suspense>
+        element: <Suspense fallback={<div>Loading...</div>}><Settings /></Suspense>
       }
     ]
   },

@@ -84,9 +84,10 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpload }) 
             return;
         }
 
-        // Arquivo válido
+        // Arquivo válido - extrai o nome sem a extensão .pdf
         setFileError('');
-        setFormData({ ...formData, arquivo: file });
+        const fileName = file.name.replace(/\.pdf$/i, '');
+        setFormData({ ...formData, arquivo: file, nome: fileName });
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -168,7 +169,7 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpload }) 
                     </div>
                     <button
                         onClick={closeModal}
-                        className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors flex-shrink-0"
+                        className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors shrink-0"
                         title="Fechar"
                     >
                         <X size={20} />
