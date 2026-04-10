@@ -527,202 +527,217 @@ const Settings: React.FC = () => {
                                         />
                                     </div>
 
-                                    {/* Divider */}
-                                    <div className="border-t border-slate-200 dark:border-slate-700/50 my-2" />
-
                                     {/* Seção: Informações de Contato */}
-                                    <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-3">📞 Informações de Contato</div>
+                                    <div className="border-t border-slate-200 dark:border-slate-700/50 mt-6 pt-6">
+                                        <div className="p-4 sm:p-5 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 rounded-r-lg mb-4">
+                                            <h3 className="text-sm font-bold text-blue-900 dark:text-blue-100 flex items-center gap-2">
+                                                <span className="text-lg">📞</span> Informações de Contato
+                                            </h3>
+                                        </div>
 
-                                    {/* Website */}
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Website</label>
-                                        <input
-                                            type="url"
-                                            name="website"
-                                            value={editingPortalData.website}
-                                            onChange={handlePortalChange}
-                                            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
-                                            placeholder="https://..."
-                                        />
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+                                            {/* Website */}
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Website</label>
+                                                <input
+                                                    type="url"
+                                                    name="website"
+                                                    value={editingPortalData.website}
+                                                    onChange={handlePortalChange}
+                                                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                                                    placeholder="https://..."
+                                                />
+                                            </div>
+
+                                            {/* Email */}
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">E-mail</label>
+                                                <input
+                                                    type="email"
+                                                    name="email"
+                                                    value={editingPortalData.email}
+                                                    onChange={handlePortalChange}
+                                                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                                                    placeholder="email@example.com"
+                                                />
+                                            </div>
+
+                                            {/* Telefone Fixo */}
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Telefone Fixo</label>
+                                                <input
+                                                    type="tel"
+                                                    name="phone"
+                                                    value={editingPortalData.phone}
+                                                    onChange={handlePortalChange}
+                                                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                                                    placeholder="(11) 0000-0000"
+                                                />
+                                            </div>
+
+                                            {/* WhatsApp/Celular */}
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">WhatsApp / Celular</label>
+                                                <input
+                                                    type="tel"
+                                                    name="phone2"
+                                                    value={editingPortalData.phone2}
+                                                    onChange={handlePortalChange}
+                                                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                                                    placeholder="(19) 0000-0000"
+                                                />
+                                            </div>
+
+                                            {/* Endereço - Full Width */}
+                                            <div className="col-span-1 sm:col-span-2 space-y-2">
+                                                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Endereço</label>
+                                                <input
+                                                    type="text"
+                                                    name="address"
+                                                    value={editingPortalData.address}
+                                                    onChange={handlePortalChange}
+                                                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                                                    placeholder="Rua..., Número - Cidade/Estado"
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
-
-                                    {/* Email */}
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">E-mail</label>
-                                        <input
-                                            type="email"
-                                            name="email"
-                                            value={editingPortalData.email}
-                                            onChange={handlePortalChange}
-                                            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
-                                            placeholder="email@example.com"
-                                        />
-                                    </div>
-
-                                    {/* Telefone Fixo */}
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Telefone Fixo</label>
-                                        <input
-                                            type="tel"
-                                            name="phone"
-                                            value={editingPortalData.phone}
-                                            onChange={handlePortalChange}
-                                            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
-                                            placeholder="(11) 0000-0000"
-                                        />
-                                    </div>
-
-                                    {/* WhatsApp/Celular */}
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">WhatsApp / Celular</label>
-                                        <input
-                                            type="tel"
-                                            name="phone2"
-                                            value={editingPortalData.phone2}
-                                            onChange={handlePortalChange}
-                                            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
-                                            placeholder="(19) 0000-0000"
-                                        />
-                                    </div>
-
-                                    {/* Endereço */}
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Endereço</label>
-                                        <input
-                                            type="text"
-                                            name="address"
-                                            value={editingPortalData.address}
-                                            onChange={handlePortalChange}
-                                            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
-                                            placeholder="Rua..., Número - Cidade/Estado"
-                                        />
-                                    </div>
-
-                                    {/* Divider */}
-                                    <div className="border-t border-slate-200 dark:border-slate-700/50 my-2" />
 
                                     {/* Seção: Redes Sociais */}
-                                    <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-3">📱 Redes Sociais</div>
+                                    <div className="border-t border-slate-200 dark:border-slate-700/50 mt-6 pt-6">
+                                        <div className="p-4 sm:p-5 bg-gradient-to-r from-pink-50 to-rose-50 dark:from-pink-900/20 dark:to-rose-900/20 border-l-4 border-pink-500 rounded-r-lg mb-4">
+                                            <h3 className="text-sm font-bold text-pink-900 dark:text-pink-100 flex items-center gap-2">
+                                                <span className="text-lg">📱</span> Redes Sociais
+                                            </h3>
+                                        </div>
 
-                                    {/* Instagram */}
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Instagram - URL</label>
-                                        <input
-                                            type="text"
-                                            name="instagram"
-                                            value={editingPortalData.instagram}
-                                            onChange={handlePortalChange}
-                                            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
-                                            placeholder="https://instagram.com/usuario ou apenas usuario"
-                                        />
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+                                            {/* Instagram */}
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Instagram - URL</label>
+                                                <input
+                                                    type="text"
+                                                    name="instagram"
+                                                    value={editingPortalData.instagram}
+                                                    onChange={handlePortalChange}
+                                                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all"
+                                                    placeholder="https://instagram.com/usuario"
+                                                />
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Instagram - Nome de Exibição</label>
+                                                <input
+                                                    type="text"
+                                                    name="instagramHandle"
+                                                    value={editingPortalData.instagramHandle}
+                                                    onChange={handlePortalChange}
+                                                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all"
+                                                    placeholder="@usuario"
+                                                />
+                                            </div>
+
+                                            {/* Facebook */}
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Facebook - URL</label>
+                                                <input
+                                                    type="text"
+                                                    name="facebook"
+                                                    value={editingPortalData.facebook}
+                                                    onChange={handlePortalChange}
+                                                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all"
+                                                    placeholder="https://www.facebook.com/usuario"
+                                                />
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Facebook - Nome de Exibição</label>
+                                                <input
+                                                    type="text"
+                                                    name="facebookHandle"
+                                                    value={editingPortalData.facebookHandle}
+                                                    onChange={handlePortalChange}
+                                                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all"
+                                                    placeholder="@usuario"
+                                                />
+                                            </div>
+
+                                            {/* PIX - Full Width */}
+                                            <div className="col-span-1 sm:col-span-2 space-y-2">
+                                                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">PIX</label>
+                                                <input
+                                                    type="text"
+                                                    name="pixKey"
+                                                    value={editingPortalData.pixKey}
+                                                    onChange={handlePortalChange}
+                                                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all"
+                                                    placeholder="chave-pix@example.com ou CPF/CNPJ"
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
-
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Instagram - Nome de Exibição</label>
-                                        <input
-                                            type="text"
-                                            name="instagramHandle"
-                                            value={editingPortalData.instagramHandle}
-                                            onChange={handlePortalChange}
-                                            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
-                                            placeholder="@usuario (como será exibido no site)"
-                                        />
-                                    </div>
-
-                                    {/* Facebook */}
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Facebook - URL</label>
-                                        <input
-                                            type="text"
-                                            name="facebook"
-                                            value={editingPortalData.facebook}
-                                            onChange={handlePortalChange}
-                                            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
-                                            placeholder="https://www.facebook.com/usuario ou apenas usuario"
-                                        />
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Facebook - Nome de Exibição</label>
-                                        <input
-                                            type="text"
-                                            name="facebookHandle"
-                                            value={editingPortalData.facebookHandle}
-                                            onChange={handlePortalChange}
-                                            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
-                                            placeholder="@usuario (como será exibido no site)"
-                                        />
-                                    </div>
-
-                                    {/* PIX */}
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">PIX</label>
-                                        <input
-                                            type="text"
-                                            name="pixKey"
-                                            value={editingPortalData.pixKey}
-                                            onChange={handlePortalChange}
-                                            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
-                                            placeholder="chave-pix@example.com ou CPF/CNPJ"
-                                        />
-                                    </div>
-
-                                    {/* Divider */}
-                                    <div className="border-t border-slate-200 dark:border-slate-700/50 my-2" />
 
                                     {/* Seção: Necessidade Urgente */}
-                                    <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-3">🚨 Necessidade Urgente Atual</div>
+                                    <div className="border-t border-slate-200 dark:border-slate-700/50 mt-6 pt-6">
+                                        <div className="p-4 sm:p-5 bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 border-l-4 border-red-500 rounded-r-lg mb-4">
+                                            <h3 className="text-sm font-bold text-red-900 dark:text-red-100 flex items-center gap-2">
+                                                <span className="text-lg">🚨</span> Necessidade Urgente Atual
+                                            </h3>
+                                        </div>
 
-                                    {/* Título da Necessidade */}
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Título</label>
-                                        <input
-                                            type="text"
-                                            name="urgentNeedTitle"
-                                            value={editingPortalData.urgentNeedTitle}
-                                            onChange={handlePortalChange}
-                                            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
-                                            placeholder="Título da necessidade urgente..."
-                                        />
-                                    </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+                                            {/* Título da Necessidade */}
+                                            <div className="col-span-1 sm:col-span-2 space-y-2">
+                                                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Título</label>
+                                                <input
+                                                    type="text"
+                                                    name="urgentNeedTitle"
+                                                    value={editingPortalData.urgentNeedTitle}
+                                                    onChange={handlePortalChange}
+                                                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all"
+                                                    placeholder="Título da necessidade urgente..."
+                                                />
+                                            </div>
 
-                                    {/* Descrição */}
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Descrição</label>
-                                        <textarea
-                                            name="urgentNeedDescription"
-                                            value={editingPortalData.urgentNeedDescription}
-                                            onChange={handlePortalChange}
-                                            rows={2}
-                                            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all resize-none"
-                                            placeholder="Descrição detalhada da necessidade..."
-                                        />
-                                    </div>
+                                            {/* Descrição */}
+                                            <div className="col-span-1 sm:col-span-2 space-y-2">
+                                                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Descrição</label>
+                                                <textarea
+                                                    name="urgentNeedDescription"
+                                                    value={editingPortalData.urgentNeedDescription}
+                                                    onChange={handlePortalChange}
+                                                    rows={2}
+                                                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all resize-none"
+                                                    placeholder="Descrição detalhada da necessidade..."
+                                                />
+                                            </div>
 
-                                    {/* Janela de Entrega */}
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Janela de Entrega</label>
-                                        <input
-                                            type="text"
-                                            name="urgentNeedWindow"
-                                            value={editingPortalData.urgentNeedWindow}
-                                            onChange={handlePortalChange}
-                                            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
-                                            placeholder="Ex: Entrega ideal: 10 a 13/03, 8h às 16h"
-                                        />
-                                    </div>
+                                            {/* Janela de Entrega */}
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Janela de Entrega</label>
+                                                <input
+                                                    type="text"
+                                                    name="urgentNeedWindow"
+                                                    value={editingPortalData.urgentNeedWindow}
+                                                    onChange={handlePortalChange}
+                                                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all"
+                                                    placeholder="Ex: 10 a 13/03, 8h às 16h"
+                                                />
+                                            </div>
 
-                                    {/* Local de Entrega */}
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Local de Entrega</label>
-                                        <input
-                                            type="text"
-                                            name="urgentNeedDelivery"
-                                            value={editingPortalData.urgentNeedDelivery}
-                                            onChange={handlePortalChange}
-                                            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
-                                            placeholder="Enderço para entrega dessa necessidade..."
-                                        />
+                                            {/* Local de Entrega */}
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Local de Entrega</label>
+                                                <input
+                                                    type="text"
+                                                    name="urgentNeedDelivery"
+                                                    value={editingPortalData.urgentNeedDelivery}
+                                                    onChange={handlePortalChange}
+                                                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all"
+                                                    placeholder="Endereço para entrega dessa necessidade..."
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
 
                                     {/* Botões de Ação */}
@@ -774,53 +789,105 @@ const Settings: React.FC = () => {
                             ) : (
                                 <>
                                     {/* Visualização */}
-                                    <div className="space-y-4 sm:space-y-5">
-                                        <div className="p-3 sm:p-4 bg-slate-50 dark:bg-slate-950/50 rounded-lg">
-                                            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-2">Descrição</p>
+                                    <div className="space-y-5 sm:space-y-6">
+                                        {/* Descrição */}
+                                        <div className="p-4 sm:p-5 bg-slate-50 dark:bg-slate-950/50 rounded-lg border border-slate-200 dark:border-slate-700">
+                                            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-semibold mb-2 uppercase tracking-wide">Descrição da Instituição</p>
                                             <p className="text-sm sm:text-base text-slate-900 dark:text-white leading-relaxed">{portalSettings?.description || 'N/A'}</p>
                                         </div>
 
-                                        <div className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide">📞 Contato</div>
+                                        {/* Card: Informações de Contato */}
+                                        <div className="border border-blue-200 dark:border-blue-800/30 rounded-xl overflow-hidden">
+                                            <div className="p-4 sm:p-5 bg-gradient-to-r from-blue-50 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-800/20 border-b border-blue-200 dark:border-blue-800/30">
+                                                <h3 className="text-sm font-bold text-blue-900 dark:text-blue-100 flex items-center gap-2">
+                                                    <span className="text-lg">📞</span> Informações de Contato
+                                                </h3>
+                                            </div>
+                                            <div className="p-4 sm:p-5 space-y-3">
+                                                <div className="flex items-center justify-between p-3 bg-blue-50/50 dark:bg-blue-900/10 rounded-lg">
+                                                    <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 font-semibold">Website:</p>
+                                                    <p className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white truncate ml-2">{portalSettings?.website || 'N/A'}</p>
+                                                </div>
+                                                <div className="flex items-center justify-between p-3 bg-blue-50/50 dark:bg-blue-900/10 rounded-lg">
+                                                    <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 font-semibold">Email:</p>
+                                                    <p className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white truncate ml-2">{portalSettings?.email || 'N/A'}</p>
+                                                </div>
+                                                <div className="flex items-center justify-between p-3 bg-blue-50/50 dark:bg-blue-900/10 rounded-lg">
+                                                    <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 font-semibold">Telefone:</p>
+                                                    <p className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white">{portalSettings?.phone || 'N/A'}</p>
+                                                </div>
+                                                <div className="flex items-center justify-between p-3 bg-blue-50/50 dark:bg-blue-900/10 rounded-lg">
+                                                    <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 font-semibold">WhatsApp:</p>
+                                                    <p className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white">{portalSettings?.phone2 || 'N/A'}</p>
+                                                </div>
+                                                <div className="flex items-start justify-between p-3 bg-blue-50/50 dark:bg-blue-900/10 rounded-lg gap-3">
+                                                    <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 font-semibold shrink-0">Endereço:</p>
+                                                    <p className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white text-right">{portalSettings?.address || 'N/A'}</p>
+                                                </div>
+                                            </div>
+                                        </div>
 
-                                        <div className="grid grid-cols-1 gap-2">
-                                            <div className="flex items-center justify-between">
-                                                <p className="text-xs text-slate-500 dark:text-slate-400">Website:</p>
-                                                <p className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white truncate">{portalSettings?.website || 'N/A'}</p>
+                                        {/* Card: Redes Sociais */}
+                                        <div className="border border-pink-200 dark:border-pink-800/30 rounded-xl overflow-hidden">
+                                            <div className="p-4 sm:p-5 bg-gradient-to-r from-pink-50 to-rose-50/50 dark:from-pink-900/20 dark:to-rose-900/20 border-b border-pink-200 dark:border-pink-800/30">
+                                                <h3 className="text-sm font-bold text-pink-900 dark:text-pink-100 flex items-center gap-2">
+                                                    <span className="text-lg">📱</span> Redes Sociais
+                                                </h3>
                                             </div>
-                                            <div className="flex items-center justify-between">
-                                                <p className="text-xs text-slate-500 dark:text-slate-400">Email:</p>
-                                                <p className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white truncate">{portalSettings?.email || 'N/A'}</p>
-                                            </div>
-                                            <div className="flex items-center justify-between">
-                                                <p className="text-xs text-slate-500 dark:text-slate-400">Telefone:</p>
-                                                <p className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white">{portalSettings?.phone || 'N/A'}</p>
-                                            </div>
-                                            <div className="flex items-center justify-between">
-                                                <p className="text-xs text-slate-500 dark:text-slate-400">WhatsApp:</p>
-                                                <p className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white">{portalSettings?.phone2 || 'N/A'}</p>
-                                            </div>
-                                            <div className="flex items-center justify-between">
-                                                <p className="text-xs text-slate-500 dark:text-slate-400">Endereço:</p>
-                                                <p className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white truncate">{portalSettings?.address || 'N/A'}</p>
+                                            <div className="p-4 sm:p-5 space-y-3">
+                                                <div className="flex items-center justify-between p-3 bg-pink-50/50 dark:bg-pink-900/10 rounded-lg">
+                                                    <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 font-semibold">Instagram:</p>
+                                                    <p className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white truncate ml-2">{portalSettings?.instagramHandle || portalSettings?.instagram || 'N/A'}</p>
+                                                </div>
+                                                <div className="flex items-center justify-between p-3 bg-pink-50/50 dark:bg-pink-900/10 rounded-lg">
+                                                    <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 font-semibold">Facebook:</p>
+                                                    <p className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white truncate ml-2">{portalSettings?.facebookHandle || portalSettings?.facebook || 'N/A'}</p>
+                                                </div>
+                                                <div className="flex items-center justify-between p-3 bg-pink-50/50 dark:bg-pink-900/10 rounded-lg">
+                                                    <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 font-semibold">PIX:</p>
+                                                    <p className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white truncate ml-2">{portalSettings?.pixKey || 'N/A'}</p>
+                                                </div>
                                             </div>
                                         </div>
 
-                                        <div className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide">📱 Redes</div>
-
-                                        <div className="grid grid-cols-1 gap-2">
-                                            <div className="flex items-center justify-between">
-                                                <p className="text-xs text-slate-500 dark:text-slate-400">Instagram:</p>
-                                                <p className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white">{portalSettings?.instagram || 'N/A'}</p>
+                                        {/* Card: Necessidade Urgente */}
+                                        {(portalSettings?.urgentNeedTitle || portalSettings?.urgentNeedDescription) && (
+                                            <div className="border-2 border-red-300 dark:border-red-700/50 rounded-xl overflow-hidden bg-gradient-to-b from-red-50/30 to-transparent dark:from-red-900/10 dark:to-transparent">
+                                                <div className="p-4 sm:p-5 bg-gradient-to-r from-red-100 to-orange-50 dark:from-red-900/30 dark:to-orange-900/30 border-b border-red-200 dark:border-red-800/30">
+                                                    <h3 className="text-sm font-bold text-red-900 dark:text-red-100 flex items-center gap-2">
+                                                        <span className="text-lg">🚨</span> Necessidade Urgente Atual
+                                                    </h3>
+                                                </div>
+                                                <div className="p-4 sm:p-5 space-y-4">
+                                                    {portalSettings?.urgentNeedTitle && (
+                                                        <div>
+                                                            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 font-semibold uppercase tracking-wide mb-1">Título</p>
+                                                            <p className="text-sm sm:text-base font-bold text-red-700 dark:text-red-200">{portalSettings.urgentNeedTitle}</p>
+                                                        </div>
+                                                    )}
+                                                    {portalSettings?.urgentNeedDescription && (
+                                                        <div>
+                                                            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 font-semibold uppercase tracking-wide mb-1">Descrição</p>
+                                                            <p className="text-sm sm:text-base text-slate-900 dark:text-white leading-relaxed">{portalSettings.urgentNeedDescription}</p>
+                                                        </div>
+                                                    )}
+                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                        {portalSettings?.urgentNeedWindow && (
+                                                            <div className="p-3 bg-red-100/40 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800/30">
+                                                                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 font-semibold mb-1">Janela de Entrega</p>
+                                                                <p className="text-xs sm:text-sm text-slate-900 dark:text-white font-semibold">{portalSettings.urgentNeedWindow}</p>
+                                                            </div>
+                                                        )}
+                                                        {portalSettings?.urgentNeedDelivery && (
+                                                            <div className="p-3 bg-red-100/40 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800/30">
+                                                                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 font-semibold mb-1">Local de Entrega</p>
+                                                                <p className="text-xs sm:text-sm text-slate-900 dark:text-white font-semibold">{portalSettings.urgentNeedDelivery}</p>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div className="flex items-center justify-between">
-                                                <p className="text-xs text-slate-500 dark:text-slate-400">Facebook:</p>
-                                                <p className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white">{portalSettings?.facebook || 'N/A'}</p>
-                                            </div>
-                                            <div className="flex items-center justify-between">
-                                                <p className="text-xs text-slate-500 dark:text-slate-400">PIX:</p>
-                                                <p className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white truncate">{portalSettings?.pixKey || 'N/A'}</p>
-                                            </div>
-                                        </div>
+                                        )}
                                     </div>
 
                                     {/* Sucesso do Portal */}
@@ -968,7 +1035,7 @@ const Settings: React.FC = () => {
                     </div>
 
                     {/* Histórico de Atividades */}
-                    <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-[2.5rem] border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm transition-all hover:shadow-md">
+                    <div className="mt-6 sm:mt-8 lg:mt-12 bg-white dark:bg-slate-900 rounded-2xl sm:rounded-[2.5rem] border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm transition-all hover:shadow-md">
                         {/* Header */}
                         <div className="p-4 sm:p-6 lg:p-8 border-b border-slate-100 dark:border-slate-800/50 bg-linear-to-r from-blue-50/50 to-cyan-50/50 dark:from-slate-900/50 dark:to-slate-800/50">
                             <div className="flex items-center gap-3">

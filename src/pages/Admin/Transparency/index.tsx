@@ -1,6 +1,8 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { FileText, Plus, Trash2, Eye, Lock, Globe, Filter, X, Search, Edit, ChevronLeft, ChevronRight, Clock, AlertCircle } from 'lucide-react';
 import UploadModal from '@/components/Admin/UploadModal';
+import UploadConfirmationModal from '@/components/Admin/UploadConfirmationModal';
+import OperationConfirmationModal from '@/components/Admin/OperationConfirmationModal';
 import ConfirmDeleteModal from '@/components/admin/ConfirmDeleteModal';
 import EditDocumentModal from '@/components/admin/EditDocumentModal';
 import { useDocuments } from '@/hooks/useDocuments';
@@ -13,6 +15,10 @@ const TransparencyAdmin: React.FC = () => {
 
     // UI States (apenas para UI, não para dados)
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [showConfirmation, setShowConfirmation] = useState(false);
+    const [uploadedDocumentName, setUploadedDocumentName] = useState('');
+    const [showEditConfirmation, setShowEditConfirmation] = useState(false);
+    const [editedDocumentName, setEditedDocumentName] = useState('');
     const [showAdvancedFilter, setShowAdvancedFilter] = useState(false);
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [documentToDelete, setDocumentToDelete] = useState<number | null>(null);
@@ -86,7 +92,10 @@ const TransparencyAdmin: React.FC = () => {
         
         const result = await createDocument(newDocument);
         if (result) {
-            setIsModalOpen(false);
+            // Mostra confirmação de sucesso
+            setUploadedDocumentName(uploadData.nome);
+            setShowConfirmation(true);
+            
             // Atualiza o timestamp do último upload (compartilhado)
             const now = Date.now();
             setLastUploadTime(now);
@@ -142,6 +151,9 @@ const TransparencyAdmin: React.FC = () => {
 
         const success = await updateDocument(docIdToUpdate, updates, title);
         if (success) {
+            // Mostra confirmação de sucesso
+            setEditedDocumentName(title);
+            setShowEditConfirmation(true);
             setEditModalOpen(false);
             setDocumentToEdit(null);
         }
@@ -566,6 +578,15 @@ const TransparencyAdmin: React.FC = () => {
         )}
 
         <UploadModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onUpload={handleUpload} />
+        <UploadConfirmationModal 
+            isOpen={showConfirmation} 
+            documentName={uploadedDocumentName} 
+            onClose={() => setShowConfirmation(false)}
+            onCloseAll={() => {
+                setShowConfirmation(false);
+                setIsModalOpen(false);
+            }}
+        />
         
         {/* Modal de Confirmação de Exclusão */}
         <ConfirmDeleteModal
@@ -589,6 +610,17 @@ const TransparencyAdmin: React.FC = () => {
             }}
             onSave={handleSaveEdit}
             isLoading={loading}
+        />
+
+        {/* Modal de Confirmação de Edição */}
+        <OperationConfirmationModal
+            isOpen={showEditConfirmation}
+            title="Documento Atualizado!"
+            subtitle="As alterações foram salvas com sucesso."
+            documentName={editedDocumentName}
+            label="O documento foi atualizado como:"
+            onClose={() => setShowEditConfirmation(false)}
+            onCloseAll={() => setShowEditConfirmation(false)}
         />
         </div>
     );

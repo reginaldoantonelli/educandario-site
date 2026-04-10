@@ -133,8 +133,6 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpload }) 
             });
             setFileError('');
             
-            onClose();
-            alert(`Documento "${formData.nome}" enviado com sucesso!`);
         }, 1500);
     };
 

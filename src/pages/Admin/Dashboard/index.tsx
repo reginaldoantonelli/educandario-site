@@ -9,6 +9,7 @@ import {
     Trash2
 } from 'lucide-react';
 import UploadModal from '@/components/Admin/UploadModal';
+import UploadConfirmationModal from '@/components/Admin/UploadConfirmationModal';
 import { useDocuments } from '@/hooks/useDocuments';
 
 interface Document {
@@ -25,6 +26,8 @@ interface Document {
 
 const Dashboard: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [showConfirmation, setShowConfirmation] = useState(false);
+    const [uploadedDocumentName, setUploadedDocumentName] = useState('');
     const { documents, createDocument } = useDocuments();
 
     // Estado para rastrear o último upload (compartilhado com Transparência)
@@ -134,12 +137,15 @@ const Dashboard: React.FC = () => {
         
         const result = await createDocument(newDocument);
         if (result) {
+            // Mostra confirmação de sucesso
+            setUploadedDocumentName(uploadData.nome);
+            setShowConfirmation(true);
+            
             // Atualiza o timestamp do último upload (compartilhado)
             const now = Date.now();
             setLastUploadTime(now);
             localStorage.setItem('lastDocumentUpload', now.toString());
         }
-        closeModal();
     };
 
     return (
@@ -312,6 +318,15 @@ const Dashboard: React.FC = () => {
             </div>
 
         <UploadModal isOpen={isModalOpen} onClose={closeModal} onUpload={handleUpload} />
+        <UploadConfirmationModal 
+            isOpen={showConfirmation} 
+            documentName={uploadedDocumentName} 
+            onClose={() => setShowConfirmation(false)}
+            onCloseAll={() => {
+                setShowConfirmation(false);
+                setIsModalOpen(false);
+            }}
+        />
         </div>
     );
 };
