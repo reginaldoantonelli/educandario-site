@@ -75,6 +75,11 @@ const NotificationPanel: React.FC = () => {
   };
 
   const getTimeAgo = (timestamp: number) => {
+    // Se timestamp é inválido, retorna N/A
+    if (!timestamp || typeof timestamp !== 'number') {
+      return 'Data inválida';
+    }
+
     const diffMs = Date.now() - timestamp;
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMs / 3600000);
@@ -84,7 +89,12 @@ const NotificationPanel: React.FC = () => {
     if (diffMins < 60) return `há ${diffMins}m`;
     if (diffHours < 24) return `há ${diffHours}h`;
     if (diffDays < 7) return `há ${diffDays}d`;
-    return new Date(timestamp).toLocaleDateString('pt-BR');
+    
+    // Formato: 10/04/2026 às 17:02
+    const date = new Date(timestamp);
+    const datePart = date.toLocaleDateString('pt-BR');
+    const timePart = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    return `${datePart} às ${timePart}`;
   };
 
   const handleMarkAsRead = async (id: string) => {

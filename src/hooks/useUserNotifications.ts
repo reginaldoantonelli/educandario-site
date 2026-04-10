@@ -15,8 +15,8 @@ import { userNotificationsService } from '@/services/userNotificationsService';
 interface UserNotification {
   id: string;
   user_id?: string;
-  action: string;
-  timestamp: string;
+  message: string;
+  timestamp: number;
   created_at?: string;
   read?: boolean;
 }

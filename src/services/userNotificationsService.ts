@@ -11,8 +11,8 @@
 interface UserNotification {
   id: string;
   user_id?: string;
-  action: string;
-  timestamp: string;
+  message: string;
+  timestamp: number;
   created_at?: string;
   read?: boolean;
 }
@@ -46,8 +46,8 @@ class UserNotificationsService {
       const newNotification: UserNotification = {
         id: `notif-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
         user_id: userId,
-        action,
-        timestamp: new Date().toLocaleString('pt-BR'),
+        message: action,
+        timestamp: Date.now(),
         created_at: new Date().toISOString(),
         read: false
       };
