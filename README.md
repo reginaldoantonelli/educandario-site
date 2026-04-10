@@ -183,6 +183,12 @@ educandario-site/
 │   │   └── project/
 │   ├── assets-optimized/     # Imagens otimizadas (WebP)
 │   ├── components/           # Componentes reutilizáveis
+│   │   ├── Admin/            # Componentes do painel admin
+│   │   │   ├── UploadModal.tsx              # Modal de upload de documentos
+│   │   │   ├── UploadConfirmationModal.tsx  # Confirmação de upload com loading
+│   │   │   ├── EditDocumentModal.tsx        # Modal de edição de documentos
+│   │   │   ├── OperationConfirmationModal.tsx  # Confirmação genérica com spinner
+│   │   │   └── ConfirmDeleteModal.tsx       # Confirmação de exclusão
 │   │   ├── Navbar/
 │   │   │   └── index.tsx     # Nav com dark mode & acessibilidade
 │   │   ├── Footer/
@@ -193,8 +199,9 @@ educandario-site/
 │   │   │   └── index.tsx
 │   │   ├── ImpactStats/
 │   │   │   └── index.tsx
-│   │   └── DonationModal/
-│   │       └── DonationModal.tsx
+│   │   ├── DonationModel/
+│   │   │   └── DonationModal.tsx
+│   │   └── NotificationPanel.tsx  # Painel de notificações com timestamp
 │   ├── hooks/                # Custom React Hooks
 │   ├── layouts/
 │   │   └── DefaultLayout.tsx # Layout principal
@@ -202,12 +209,21 @@ educandario-site/
 │   │   ├── Home/
 │   │   ├── About/
 │   │   ├── Contact/
-│   │   ├── Login/
-│   │   │   └── index.tsx     # 🔒 Painel administrativo
-│   │   ├── ErrorPage/
 │   │   ├── HistoryPage/
-│   │   ├── Transparency/
-│   │   └── RegimentoInterno/
+│   │   │   └── index.tsx     # Página de história com modal de zoom
+│   │   ├── RegimentoInterno/
+│   │   │   └── index.tsx
+│   │   ├── ErrorPage/
+│   │   │   └── index.tsx
+│   │   ├── Login/
+│   │   │   └── index.tsx     # 🔒 Autenticação admin
+│   │   └── Admin/            # 🔒 Área administrativa (protegida)
+│   │       ├── Dashboard/
+│   │       │   └── index.tsx     # Visão geral com métricas dinâmicas
+│   │       ├── Transparency/
+│   │       │   └── index.tsx     # Gestão de documentos públicos
+│   │       └── Settings/
+│   │           └── index.tsx     # Configurações administrativas
 │   ├── App.tsx               # Configuração de rotas
 │   ├── main.tsx              # Entry point
 │   └── index.css             # Estilos globais
