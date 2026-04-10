@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState, useRef } from 'react';
 import { User, Mail, Shield, Lock, Eye, EyeOff, Check, AlertCircle, History, Upload, Trash2 } from 'lucide-react';
 import { useUserProfile } from '@/hooks/useUserProfile';
@@ -6,6 +7,7 @@ import { useAuditLogs } from '@/hooks/useAuditLogs';
 
 const Settings: React.FC = () => {
     // Hooks de dados
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { profile, loading: profileLoading, error: profileError, updateProfile, uploadAvatar, removeAvatar: removeAvatarService, clearError: clearProfileError } = useUserProfile();
     const { settings: portalSettings, loading: portalLoading, error: portalError, updateSettings, clearError: clearPortalError } = usePortalSettings();
     const { logs: auditLogs, loading: auditLoading, error: auditError, clearError: clearAuditError, fetchLogs } = useAuditLogs();
@@ -36,7 +38,19 @@ const Settings: React.FC = () => {
     const [editingPortalData, setEditingPortalData] = useState({
         description: portalSettings?.description || '',
         website: portalSettings?.website || '',
-        phone: portalSettings?.phone || ''
+        phone: portalSettings?.phone || '',
+        email: portalSettings?.email || '',
+        phone2: portalSettings?.phone2 || '',
+        address: portalSettings?.address || '',
+        instagram: portalSettings?.instagram || '',
+        instagramHandle: portalSettings?.instagramHandle || '',
+        facebook: portalSettings?.facebook || '',
+        facebookHandle: portalSettings?.facebookHandle || '',
+        pixKey: portalSettings?.pixKey || '',
+        urgentNeedTitle: portalSettings?.urgentNeedTitle || '',
+        urgentNeedDescription: portalSettings?.urgentNeedDescription || '',
+        urgentNeedWindow: portalSettings?.urgentNeedWindow || '',
+        urgentNeedDelivery: portalSettings?.urgentNeedDelivery || ''
     });
 
     // Estados de formulário local
@@ -151,6 +165,33 @@ const Settings: React.FC = () => {
         }));
     };
 
+    // Funções para extrair username de URLs
+    const extractInstagramUsername = (input: string): string => {
+        if (!input) return '';
+        // Remove espaços
+        input = input.trim();
+        // Se for URL, extrai o username
+        if (input.includes('instagram.com')) {
+            const match = input.match(/instagram\.com\/([^/?\s]+)/);
+            return match ? match[1] : input;
+        }
+        // Se tiver @, remove
+        return input.replace('@', '').trim();
+    };
+
+    const extractFacebookUsername = (input: string): string => {
+        if (!input) return '';
+        // Remove espaços
+        input = input.trim();
+        // Se for URL, extrai o username
+        if (input.includes('facebook.com') || input.includes('fb.com')) {
+            const match = input.match(/facebook\.com\/([^/?\s]+)|fb\.com\/([^/?\s]+)/);
+            return match ? (match[1] || match[2]) : input;
+        }
+        // Se tiver @, remove
+        return input.replace('@', '').trim();
+    };
+
     const handleSavePortal = async () => {
         if (!editingPortalData.description.trim()) {
             console.error('A descrição é obrigatória');
@@ -159,10 +200,26 @@ const Settings: React.FC = () => {
         
         try {
             clearPortalError();
+            // Extrai apenas o username da URL
+            const instagramUsername = extractInstagramUsername(editingPortalData.instagram);
+            const facebookUsername = extractFacebookUsername(editingPortalData.facebook);
+            
             await updateSettings({
                 description: editingPortalData.description,
                 website: editingPortalData.website,
-                phone: editingPortalData.phone
+                phone: editingPortalData.phone,
+                email: editingPortalData.email,
+                phone2: editingPortalData.phone2,
+                address: editingPortalData.address,
+                instagram: instagramUsername,
+                instagramHandle: editingPortalData.instagramHandle,
+                facebook: facebookUsername,
+                facebookHandle: editingPortalData.facebookHandle,
+                pixKey: editingPortalData.pixKey,
+                urgentNeedTitle: editingPortalData.urgentNeedTitle,
+                urgentNeedDescription: editingPortalData.urgentNeedDescription,
+                urgentNeedWindow: editingPortalData.urgentNeedWindow,
+                urgentNeedDelivery: editingPortalData.urgentNeedDelivery
             });
             // Recarregar o histórico de atividades
             await fetchLogs();
@@ -459,7 +516,7 @@ const Settings: React.FC = () => {
                                 <>
                                     {/* Descrição */}
                                     <div className="space-y-2">
-                                        <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Descrição</label>
+                                        <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Descrição da Instituição</label>
                                         <textarea
                                             name="description"
                                             value={editingPortalData.description}
@@ -469,6 +526,12 @@ const Settings: React.FC = () => {
                                             placeholder="Descrição da instituição..."
                                         />
                                     </div>
+
+                                    {/* Divider */}
+                                    <div className="border-t border-slate-200 dark:border-slate-700/50 my-2" />
+
+                                    {/* Seção: Informações de Contato */}
+                                    <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-3">📞 Informações de Contato</div>
 
                                     {/* Website */}
                                     <div className="space-y-2">
@@ -483,9 +546,22 @@ const Settings: React.FC = () => {
                                         />
                                     </div>
 
-                                    {/* Telefone */}
+                                    {/* Email */}
                                     <div className="space-y-2">
-                                        <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Telefone</label>
+                                        <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">E-mail</label>
+                                        <input
+                                            type="email"
+                                            name="email"
+                                            value={editingPortalData.email}
+                                            onChange={handlePortalChange}
+                                            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                                            placeholder="email@example.com"
+                                        />
+                                    </div>
+
+                                    {/* Telefone Fixo */}
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Telefone Fixo</label>
                                         <input
                                             type="tel"
                                             name="phone"
@@ -493,6 +569,159 @@ const Settings: React.FC = () => {
                                             onChange={handlePortalChange}
                                             className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
                                             placeholder="(11) 0000-0000"
+                                        />
+                                    </div>
+
+                                    {/* WhatsApp/Celular */}
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">WhatsApp / Celular</label>
+                                        <input
+                                            type="tel"
+                                            name="phone2"
+                                            value={editingPortalData.phone2}
+                                            onChange={handlePortalChange}
+                                            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                                            placeholder="(19) 0000-0000"
+                                        />
+                                    </div>
+
+                                    {/* Endereço */}
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Endereço</label>
+                                        <input
+                                            type="text"
+                                            name="address"
+                                            value={editingPortalData.address}
+                                            onChange={handlePortalChange}
+                                            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                                            placeholder="Rua..., Número - Cidade/Estado"
+                                        />
+                                    </div>
+
+                                    {/* Divider */}
+                                    <div className="border-t border-slate-200 dark:border-slate-700/50 my-2" />
+
+                                    {/* Seção: Redes Sociais */}
+                                    <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-3">📱 Redes Sociais</div>
+
+                                    {/* Instagram */}
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Instagram - URL</label>
+                                        <input
+                                            type="text"
+                                            name="instagram"
+                                            value={editingPortalData.instagram}
+                                            onChange={handlePortalChange}
+                                            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                                            placeholder="https://instagram.com/usuario ou apenas usuario"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Instagram - Nome de Exibição</label>
+                                        <input
+                                            type="text"
+                                            name="instagramHandle"
+                                            value={editingPortalData.instagramHandle}
+                                            onChange={handlePortalChange}
+                                            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                                            placeholder="@usuario (como será exibido no site)"
+                                        />
+                                    </div>
+
+                                    {/* Facebook */}
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Facebook - URL</label>
+                                        <input
+                                            type="text"
+                                            name="facebook"
+                                            value={editingPortalData.facebook}
+                                            onChange={handlePortalChange}
+                                            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                                            placeholder="https://www.facebook.com/usuario ou apenas usuario"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Facebook - Nome de Exibição</label>
+                                        <input
+                                            type="text"
+                                            name="facebookHandle"
+                                            value={editingPortalData.facebookHandle}
+                                            onChange={handlePortalChange}
+                                            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                                            placeholder="@usuario (como será exibido no site)"
+                                        />
+                                    </div>
+
+                                    {/* PIX */}
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">PIX</label>
+                                        <input
+                                            type="text"
+                                            name="pixKey"
+                                            value={editingPortalData.pixKey}
+                                            onChange={handlePortalChange}
+                                            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                                            placeholder="chave-pix@example.com ou CPF/CNPJ"
+                                        />
+                                    </div>
+
+                                    {/* Divider */}
+                                    <div className="border-t border-slate-200 dark:border-slate-700/50 my-2" />
+
+                                    {/* Seção: Necessidade Urgente */}
+                                    <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-3">🚨 Necessidade Urgente Atual</div>
+
+                                    {/* Título da Necessidade */}
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Título</label>
+                                        <input
+                                            type="text"
+                                            name="urgentNeedTitle"
+                                            value={editingPortalData.urgentNeedTitle}
+                                            onChange={handlePortalChange}
+                                            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                                            placeholder="Título da necessidade urgente..."
+                                        />
+                                    </div>
+
+                                    {/* Descrição */}
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Descrição</label>
+                                        <textarea
+                                            name="urgentNeedDescription"
+                                            value={editingPortalData.urgentNeedDescription}
+                                            onChange={handlePortalChange}
+                                            rows={2}
+                                            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all resize-none"
+                                            placeholder="Descrição detalhada da necessidade..."
+                                        />
+                                    </div>
+
+                                    {/* Janela de Entrega */}
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Janela de Entrega</label>
+                                        <input
+                                            type="text"
+                                            name="urgentNeedWindow"
+                                            value={editingPortalData.urgentNeedWindow}
+                                            onChange={handlePortalChange}
+                                            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                                            placeholder="Ex: Entrega ideal: 10 a 13/03, 8h às 16h"
+                                        />
+                                    </div>
+
+                                    {/* Local de Entrega */}
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Local de Entrega</label>
+                                        <input
+                                            type="text"
+                                            name="urgentNeedDelivery"
+                                            value={editingPortalData.urgentNeedDelivery}
+                                            onChange={handlePortalChange}
+                                            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                                            placeholder="Enderço para entrega dessa necessidade..."
                                         />
                                     </div>
 
@@ -504,7 +733,19 @@ const Settings: React.FC = () => {
                                                 setEditingPortalData({
                                                     description: portalSettings?.description || '',
                                                     website: portalSettings?.website || '',
-                                                    phone: portalSettings?.phone || ''
+                                                    phone: portalSettings?.phone || '',
+                                                    email: portalSettings?.email || '',
+                                                    phone2: portalSettings?.phone2 || '',
+                                                    address: portalSettings?.address || '',
+                                                    instagram: portalSettings?.instagram || '',
+                                                    instagramHandle: portalSettings?.instagramHandle || '',
+                                                    facebook: portalSettings?.facebook || '',
+                                                    facebookHandle: portalSettings?.facebookHandle || '',
+                                                    pixKey: portalSettings?.pixKey || '',
+                                                    urgentNeedTitle: portalSettings?.urgentNeedTitle || '',
+                                                    urgentNeedDescription: portalSettings?.urgentNeedDescription || '',
+                                                    urgentNeedWindow: portalSettings?.urgentNeedWindow || '',
+                                                    urgentNeedDelivery: portalSettings?.urgentNeedDelivery || ''
                                                 });
                                             }}
                                             className="flex-1 px-4 py-2.5 text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg font-medium text-sm transition-colors"
@@ -539,14 +780,45 @@ const Settings: React.FC = () => {
                                             <p className="text-sm sm:text-base text-slate-900 dark:text-white leading-relaxed">{portalSettings?.description || 'N/A'}</p>
                                         </div>
 
-                                        <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                                            <div className="p-3 sm:p-4 bg-slate-50 dark:bg-slate-950/50 rounded-lg">
-                                                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-1">Website</p>
+                                        <div className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide">📞 Contato</div>
+
+                                        <div className="grid grid-cols-1 gap-2">
+                                            <div className="flex items-center justify-between">
+                                                <p className="text-xs text-slate-500 dark:text-slate-400">Website:</p>
                                                 <p className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white truncate">{portalSettings?.website || 'N/A'}</p>
                                             </div>
-                                            <div className="p-3 sm:p-4 bg-slate-50 dark:bg-slate-950/50 rounded-lg">
-                                                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-1">Telefone</p>
+                                            <div className="flex items-center justify-between">
+                                                <p className="text-xs text-slate-500 dark:text-slate-400">Email:</p>
+                                                <p className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white truncate">{portalSettings?.email || 'N/A'}</p>
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                                <p className="text-xs text-slate-500 dark:text-slate-400">Telefone:</p>
                                                 <p className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white">{portalSettings?.phone || 'N/A'}</p>
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                                <p className="text-xs text-slate-500 dark:text-slate-400">WhatsApp:</p>
+                                                <p className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white">{portalSettings?.phone2 || 'N/A'}</p>
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                                <p className="text-xs text-slate-500 dark:text-slate-400">Endereço:</p>
+                                                <p className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white truncate">{portalSettings?.address || 'N/A'}</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide">📱 Redes</div>
+
+                                        <div className="grid grid-cols-1 gap-2">
+                                            <div className="flex items-center justify-between">
+                                                <p className="text-xs text-slate-500 dark:text-slate-400">Instagram:</p>
+                                                <p className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white">{portalSettings?.instagram || 'N/A'}</p>
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                                <p className="text-xs text-slate-500 dark:text-slate-400">Facebook:</p>
+                                                <p className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white">{portalSettings?.facebook || 'N/A'}</p>
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                                <p className="text-xs text-slate-500 dark:text-slate-400">PIX:</p>
+                                                <p className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white truncate">{portalSettings?.pixKey || 'N/A'}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -567,7 +839,19 @@ const Settings: React.FC = () => {
                                             setEditingPortalData({
                                                 description: portalSettings?.description || '',
                                                 website: portalSettings?.website || '',
-                                                phone: portalSettings?.phone || ''
+                                                phone: portalSettings?.phone || '',
+                                                email: portalSettings?.email || '',
+                                                phone2: portalSettings?.phone2 || '',
+                                                address: portalSettings?.address || '',
+                                                instagram: portalSettings?.instagram || '',
+                                                instagramHandle: portalSettings?.instagramHandle || '',
+                                                facebook: portalSettings?.facebook || '',
+                                                facebookHandle: portalSettings?.facebookHandle || '',
+                                                pixKey: portalSettings?.pixKey || '',
+                                                urgentNeedTitle: portalSettings?.urgentNeedTitle || '',
+                                                urgentNeedDescription: portalSettings?.urgentNeedDescription || '',
+                                                urgentNeedWindow: portalSettings?.urgentNeedWindow || '',
+                                                urgentNeedDelivery: portalSettings?.urgentNeedDelivery || ''
                                             });
                                             setEditingPortal(true);
                                         }}

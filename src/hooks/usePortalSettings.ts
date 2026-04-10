@@ -7,6 +7,18 @@ interface PortalSettings {
   description: string;
   website: string;
   phone: string;
+  email?: string;
+  phone2?: string;
+  address?: string;
+  instagram?: string;
+  instagramHandle?: string;
+  facebook?: string;
+  facebookHandle?: string;
+  pixKey?: string;
+  urgentNeedTitle?: string;
+  urgentNeedDescription?: string;
+  urgentNeedWindow?: string;
+  urgentNeedDelivery?: string;
   updated_at?: string;
 }
 

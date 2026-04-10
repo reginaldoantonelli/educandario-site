@@ -8,6 +8,8 @@
  * Supabase: audit_logs table (ilimitado)
  */
 
+import { userNotificationsService } from './userNotificationsService';
+
 interface AuditLog {
   id: string;
   user_id?: string;
@@ -37,6 +39,8 @@ export class AuditService {
   /**
    * Adicionar novo log de auditoria
    * 
+   * Também cria uma notificação pessoal para o usuário logado
+   * 
    * Chamado por:
    * - handleUpload (Transparency)
    * - handleDelete (Transparency)
@@ -60,6 +64,17 @@ export class AuditService {
       const updated = [newLog, ...logs].slice(0, MAX_LOCAL_LOGS);
       localStorage.setItem(AUDIT_LOGS_KEY, JSON.stringify(updated));
 
+      // ✨ Criar notificação pessoal simultaneamente
+      try {
+        const userProfileStr = localStorage.getItem('userProfile');
+        const userId = userProfileStr ? JSON.parse(userProfileStr).id : 'admin-user';
+        
+        await userNotificationsService.addNotification(userId, action);
+      } catch (notifError) {
+        console.error('Erro ao criar notificação pessoal:', notifError);
+        // Não falhar o log se a notificação falhar
+      }
+
       return newLog;
     } catch (error) {
       throw this.handleError(error, 'adicionar log');
@@ -74,20 +89,6 @@ export class AuditService {
       localStorage.removeItem(AUDIT_LOGS_KEY);
     } catch (error) {
       console.error('Erro ao limpar logs:', error);
-    }
-  }
-
-  /**
-   * Deletar um log específico
-   */
-  async deleteLog(logId: string): Promise<void> {
-    try {
-      const logs = await this.getLogs();
-      const updated = logs.filter(log => log.id !== logId);
-      localStorage.setItem(AUDIT_LOGS_KEY, JSON.stringify(updated));
-    } catch (error) {
-      console.error('Erro ao deletar log:', error);
-      throw this.handleError(error, 'deletar log');
     }
   }
 

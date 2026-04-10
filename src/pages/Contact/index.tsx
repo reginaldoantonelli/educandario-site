@@ -1,36 +1,42 @@
 import React from 'react';
 import { Instagram, Facebook, Mail, Phone, MapPin, MessageCircle, Navigation, AlertCircle, Calendar, Package, HandHeart, Banknote } from 'lucide-react';
+import { usePortalSettings } from '@/hooks/usePortalSettings';
 
 const Contact: React.FC = () => {
+    // Usar dados do portal
+    const { settings: portalSettings } = usePortalSettings();
+
+    // Socialize links baseados nas configurações do portal
     const socialLinks = [
         {
-        name: 'Instagram',
-        handle: '@ensa_itapira',
-        href: 'https://instagram.com/ensa_itapira',
-        icon: <Instagram className="w-6 h-6" />,
-        color: 'bg-pink-600',
+            name: 'Instagram',
+            handle: portalSettings?.instagramHandle || '@ensa_itapira',
+            href: `https://instagram.com/${portalSettings?.instagram || 'ensa_itapira'}`,
+            icon: <Instagram className="w-6 h-6" />,
+            color: 'bg-pink-600',
         },
         {
-        name: 'Facebook',
-        handle: '@educandarioensa',
-        href: 'https://www.facebook.com/aparecida.ensa.1',
-        icon: <Facebook className="w-6 h-6" />,
-        color: 'bg-blue-600',
+            name: 'Facebook',
+            handle: portalSettings?.facebookHandle || '@educandarioensa',
+            href: `https://www.facebook.com/${portalSettings?.facebook || 'educandarioensa'}`,
+            icon: <Facebook className="w-6 h-6" />,
+            color: 'bg-blue-600',
         },
         {
-        name: 'WhatsApp',
-        handle: '(19) 3863-1972',
-        href: 'https://wa.me/551938631972',
-        icon: <MessageCircle className="w-6 h-6" />,
-        color: 'bg-green-600',
+            name: 'WhatsApp',
+            handle: portalSettings?.phone2 || '(19) 3863-1972',
+            href: `https://wa.me/${portalSettings?.phone2?.replace(/\D/g, '') || '551938631972'}`,
+            icon: <MessageCircle className="w-6 h-6" />,
+            color: 'bg-green-600',
         },
     ];
 
+    // Necessidade urgente
     const urgentNeed = {
-        title: 'Mantimentos prioritários desta semana',
-        description: 'Precisamos de verduras frescas (ex.: manjericão) para as refeições das crianças.',
-        window: 'Entrega ideal: 10 a 13/03, 8h às 16h',
-        delivery: 'Entregar na sede - Rua José Pereira, 780, Vila Bazani, Itapira/SP',
+        title: portalSettings?.urgentNeedTitle || 'Mantimentos prioritários desta semana',
+        description: portalSettings?.urgentNeedDescription || 'Precisamos de verduras frescas (ex.: manjericão) para as refeições das crianças.',
+        window: portalSettings?.urgentNeedWindow || 'Entrega ideal: 10 a 13/03, 8h às 16h',
+        delivery: portalSettings?.urgentNeedDelivery || 'Entregar na sede - Rua José Pereira, 780, Vila Bazani, Itapira/SP',
     };
 
     return (
@@ -71,7 +77,7 @@ const Contact: React.FC = () => {
                     </div>
                     <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
                         <a
-                            href="https://wa.me/551938631972"
+                            href={`https://wa.me/${portalSettings?.phone2?.replace(/\D/g, '') || '551938631972'}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-orange-700 hover:bg-orange-800 text-white font-bold w-full sm:w-auto text-sm"
@@ -119,7 +125,7 @@ const Contact: React.FC = () => {
                     </div>
                     <div>
                         <p className="text-blue-200 text-sm">E-mail oficial</p>
-                        <p className="font-semibold break-all">educandarionsa@yahoo.com.br</p>
+                        <p className="font-semibold break-all">{portalSettings?.email || 'educandarionsa@yahoo.com.br'}</p>
                     </div>
                     </div>
 
@@ -129,7 +135,7 @@ const Contact: React.FC = () => {
                     </div>
                     <div>
                         <p className="text-blue-200 text-sm">Telefone Fixo</p>
-                        <p className="font-semibold">(19) 3863-1972</p>
+                        <p className="font-semibold">{portalSettings?.phone || '(19) 3863-1972'}</p>
                     </div>
                     </div>
 
@@ -139,13 +145,13 @@ const Contact: React.FC = () => {
                     </div>
                     <div>
                         <p className="text-blue-200 text-sm">Endereço</p>
-                        <p className="font-semibold">Rua José Pereira, 780 - Vila Bazani, Itapira/SP</p>
+                        <p className="font-semibold">{portalSettings?.address || 'Rua José Pereira, 780 - Vila Bazani, Itapira/SP'}</p>
                     </div>
                     </div>
                 </div>
 
                 <a
-                    href="https://www.google.com/maps/dir//Educand%C3%A1rio+Nossa+Senhora+Aparecida+-+R.+Jos%C3%A9+Pereira,+780+-+Vila+Bazani,+Itapira+-+SP"
+                    href={`https://www.google.com/maps/search/${encodeURIComponent(portalSettings?.address || 'Rua José Pereira, 780 - Vila Bazani, Itapira - SP')}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-full mt-10 bg-orange-700 hover:bg-orange-800 text-white font-bold py-4 rounded-2xl transition-colors shadow-lg flex items-center justify-center gap-2"
@@ -188,7 +194,7 @@ const Contact: React.FC = () => {
                         Doações físicas
                     </div>
                     <p className="text-sm text-slate-600 dark:text-slate-300">Entregue mantimentos, roupas e itens de higiene diretamente na sede.</p>
-                    <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 mt-3">Rua José Pereira, 780 - Vila Bazani</p>
+                    <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 mt-3">{portalSettings?.address || 'Rua José Pereira, 780 - Vila Bazani'}</p>
                     <p className="text-xs text-slate-500 dark:text-slate-400">Horário: 07h às 17h (seg a sex)</p>
                 </div>
                 <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-sm">
@@ -197,7 +203,7 @@ const Contact: React.FC = () => {
                         Doações financeiras
                     </div>
                     <p className="text-sm text-slate-600 dark:text-slate-300">Transfira via PIX ou dados bancários. Transparência e prestação de contas garantidas.</p>
-                    <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 mt-3">PIX: contato@educandarionsa.com.br</p>
+                    <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 mt-3">PIX: {portalSettings?.pixKey || 'contato@educandarionsa.com.br'}</p>
                     <p className="text-xs text-slate-500 dark:text-slate-400">Banco do Brasil · Ag. 0000 · C/C 000000-0 · CNPJ 00.000.000/0000-00</p>
                 </div>
                 <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-sm">
@@ -208,7 +214,7 @@ const Contact: React.FC = () => {
                     <p className="text-sm text-slate-600 dark:text-slate-300">Doe tempo e habilidades: oficinas, esporte, comunicação ou apoio administrativo.</p>
                     <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 mt-3">Fale com a equipe pelo WhatsApp</p>
                     <a
-                        href="https://wa.me/551938631972"
+                        href={`https://wa.me/${portalSettings?.phone2?.replace(/\D/g, '') || '551938631972'}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-2 text-sm font-semibold text-blue-700 hover:text-blue-900 mt-2"

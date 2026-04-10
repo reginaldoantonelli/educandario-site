@@ -6,6 +6,18 @@ interface PortalSettings {
   description: string;
   website: string;
   phone: string;
+  email?: string;
+  phone2?: string;
+  address?: string;
+  instagram?: string;
+  instagramHandle?: string;
+  facebook?: string;
+  facebookHandle?: string;
+  pixKey?: string;
+  urgentNeedTitle?: string;
+  urgentNeedDescription?: string;
+  urgentNeedWindow?: string;
+  urgentNeedDelivery?: string;
   updated_at?: string;
 }
 
@@ -15,7 +27,19 @@ class PortalSettingsService {
     private defaultSettings: PortalSettings = {
         description: 'Instituição dedicada à promoção de educação de qualidade e inclusão social, com foco em transparência e responsabilidade com a comunidade.',
         website: 'https://www.educandario.com.br',
-        phone: '(11) 3456-7890'
+        phone: '(19) 3863-1972',
+        email: 'educandarionsa@yahoo.com.br',
+        phone2: '(19) 3863-1972',
+        address: 'Rua José Pereira, 780 - Vila Bazani, Itapira/SP',
+        instagram: 'ensa_itapira',
+        instagramHandle: '@ensa_itapira',
+        facebook: 'educandarioensa',
+        facebookHandle: '@educandarioensa',
+        pixKey: 'contato@educandarionsa.com.br',
+        urgentNeedTitle: 'Mantimentos prioritários desta semana',
+        urgentNeedDescription: 'Precisamos de verduras frescas (ex.: manjericão) para as refeições das crianças.',
+        urgentNeedWindow: 'Entrega ideal: 10 a 13/03, 8h às 16h',
+        urgentNeedDelivery: 'Entregar na sede - Rua José Pereira, 780, Vila Bazani, Itapira/SP'
     };
 
     async getSettings(): Promise<PortalSettings> {

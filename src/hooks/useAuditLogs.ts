@@ -25,7 +25,6 @@ export interface UseAuditLogsReturn {
   error: string | null;
   fetchLogs: () => Promise<void>;
   clearLogs: () => Promise<void>;
-  deleteLog: (logId: string) => Promise<void>;
   clearError: () => void;
 }
 
@@ -77,27 +76,6 @@ export function useAuditLogs(): UseAuditLogsReturn {
     setError(null);
   }, []);
 
-  /**
-   * Deletar um log específico
-   */
-  const deleteLog = useCallback(async (logId: string) => {
-    try {
-      setLoading(true);
-      setError(null);
-      if (auditService.deleteLog) {
-        await auditService.deleteLog(logId);
-      }
-      // Remover do estado local
-      setLogs(prevLogs => prevLogs.filter(log => log.id !== logId));
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Erro ao deletar log';
-      setError(message);
-      console.error('Erro em deleteLog:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
   // Carregar logs ao montar o componente
   useEffect(() => {
     fetchLogs();
@@ -109,7 +87,6 @@ export function useAuditLogs(): UseAuditLogsReturn {
     error,
     fetchLogs,
     clearLogs: clearAllLogs,
-    deleteLog,
     clearError
   };
 }
