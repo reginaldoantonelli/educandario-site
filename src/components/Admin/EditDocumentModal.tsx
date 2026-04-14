@@ -4,14 +4,14 @@ import { X, Save } from 'lucide-react';
 interface EditDocumentModalProps {
     isOpen: boolean;
     document: {
-        id: number;
+        id: string;
         nome: string;
         categoria: string;
         ano: string;
         visibilidade: string;
     } | null;
     onClose: () => void;
-    onSave: (updatedDocument: { id: number; nome: string; categoria: string; ano: string; visibilidade: string }) => void;
+    onSave: (updatedDocument: { id: string; nome: string; categoria: string; ano: string; visibilidade: string }) => Promise<void> | void;
     isLoading?: boolean;
 }
 

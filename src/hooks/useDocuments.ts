@@ -1,163 +1,203 @@
 /**
- * Hook useDocuments
+ * useDocuments Hook (Firebase Implementation)
  * 
- * Encapsula toda a lógica de documentos
- * Limpa a UI dos componentes
+ * React hook for managing document operations (upload, download, list, delete)
+ * Wraps firebaseDocumentService with React state management
  * 
- * Uso:
- * const { documents, loading, error, deleteDocument, createDocument } = useDocuments();
+ * Usage:
+ * const { documents, loading, uploading, error, upload, list, delete: deleteDoc } = useDocuments();
  */
 
-import { useState, useCallback, useEffect } from 'react';
-import { documentService } from '@/services/documentService';
-import { auditService } from '@/services/auditService';
+import { useState, useCallback } from 'react';
+import type {
+  DocumentMetadata,
+  DocumentFilter,
+  UploadProgress,
+  UploadDocumentInput,
+} from '@/services/api/documents';
+import { DocumentServiceError } from '@/services/api/documents';
+import { firebaseDocumentService } from '@/services/firebase/documents';
 
-interface Document {
-  id: number | string;
-  title: string;
-  category_id?: string;
-  category?: string;
-  year: string;
-  visibilidade: 'public' | 'private' | 'restricted';
-  file_url?: string;
-  created_at?: string;
-  updated_at?: string;
-}
-
-export interface UseDocumentsReturn {
-  documents: Document[];
+interface UseDocumentsReturn {
+  // State
+  documents: DocumentMetadata[];
   loading: boolean;
-  error: string | null;
-  fetchDocuments: () => Promise<void>;
-  createDocument: (doc: Omit<Document, 'id' | 'created_at'>) => Promise<Document | null>;
-  updateDocument: (id: number | string, updates: Partial<Document>, title: string) => Promise<boolean>;
-  deleteDocument: (id: number | string, title: string) => Promise<boolean>;
+  uploading: boolean;
+  error: DocumentServiceError | null;
+  uploadProgress: UploadProgress | null;
+  total: number;
+  
+  // Operations
+  upload: (file: File, metadata: UploadDocumentInput) => Promise<DocumentMetadata>;
+  list: (filter?: DocumentFilter) => Promise<void>;
+  getMetadata: (documentId: string) => Promise<DocumentMetadata>;
+  getURL: (documentId: string) => Promise<string>;
+  delete: (documentId: string) => Promise<void>;
+  update: (
+    documentId: string,
+    updates: Partial<Omit<DocumentMetadata, 'id' | 'uploadedBy' | 'uploadedAt'>>
+  ) => Promise<DocumentMetadata>;
+  search: (query: string) => Promise<DocumentMetadata[]>;
   clearError: () => void;
 }
 
-export function useDocuments(): UseDocumentsReturn {
-  const [documents, setDocuments] = useState<Document[]>([]);
+/**
+ * Hook for document management
+ * Provides state and methods for document operations
+ */
+export const useDocuments = (): UseDocumentsReturn => {
+  const [documents, setDocuments] = useState<DocumentMetadata[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<DocumentServiceError | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<UploadProgress | null>(null);
+  const [total, setTotal] = useState(0);
 
-  /**
-   * Carregar documentos do serviço
-   */
-  const fetchDocuments = useCallback(async () => {
+  // Upload document
+  const upload = useCallback(
+    async (file: File, metadata: UploadDocumentInput) => {
+      try {
+        setUploading(true);
+        setError(null);
+        
+        const result = await firebaseDocumentService.uploadDocument(
+          file,
+          metadata,
+          (progress) => {
+            setUploadProgress(progress);
+          }
+        );
+
+        // Add to list
+        setDocuments((prev) => [result, ...prev]);
+        setUploadProgress(null);
+        return result;
+      } catch (err) {
+        const error = err as DocumentServiceError;
+        setError(error);
+        throw error;
+      } finally {
+        setUploading(false);
+      }
+    },
+    []
+  );
+
+  // List documents
+  const list = useCallback(async (filter?: DocumentFilter) => {
     try {
       setLoading(true);
       setError(null);
-      const docs = await documentService.getDocuments();
-      setDocuments(docs);
+      
+      const result = await firebaseDocumentService.listDocuments(filter);
+      setDocuments(result.documents);
+      setTotal(result.total);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Erro ao carregar documentos';
-      setError(message);
-      console.error('Erro em fetchDocuments:', err);
+      const error = err as DocumentServiceError;
+      setError(error);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  /**
-   * Criar novo documento
-   */
-  const createDocument = useCallback(
-    async (doc: Omit<Document, 'id' | 'created_at'>) => {
+  // Get document metadata
+  const getMetadata = useCallback(async (documentId: string) => {
+    try {
+      setError(null);
+      return await firebaseDocumentService.getDocumentMetadata(documentId);
+    } catch (err) {
+      const error = err as DocumentServiceError;
+      setError(error);
+      throw error;
+    }
+  }, []);
+
+  // Get document URL
+  const getURL = useCallback(async (documentId: string) => {
+    try {
+      setError(null);
+      return await firebaseDocumentService.getDocumentURL(documentId);
+    } catch (err) {
+      const error = err as DocumentServiceError;
+      setError(error);
+      throw error;
+    }
+  }, []);
+
+  // Delete document
+  const deleteDoc = useCallback(async (documentId: string) => {
+    try {
+      setError(null);
+      await firebaseDocumentService.deleteDocument(documentId);
+      
+      // Remove from list
+      setDocuments((prev) => prev.filter((d) => d.id !== documentId));
+    } catch (err) {
+      const error = err as DocumentServiceError;
+      setError(error);
+      throw error;
+    }
+  }, []);
+
+  // Update document
+  const update = useCallback(
+    async (
+      documentId: string,
+      updates: Partial<Omit<DocumentMetadata, 'id' | 'uploadedBy' | 'uploadedAt'>>
+    ) => {
       try {
-        setLoading(true);
         setError(null);
-
-        const newDoc = await documentService.createDocument(doc);
-        await auditService.addLog(`📤 Arquivo enviado: ${newDoc.title}`);
-
-        setDocuments(prev => [newDoc, ...prev]);
-        return newDoc;
-      } catch (err) {
-        const message = err instanceof Error ? err.message : 'Erro ao criar documento';
-        setError(message);
-        console.error('Erro em createDocument:', err);
-        return null;
-      } finally {
-        setLoading(false);
-      }
-    },
-    []
-  );
-
-  /**
-   * Atualizar documento
-   */
-  const updateDocument = useCallback(
-    async (id: number | string, updates: Partial<Document>, title: string) => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        await documentService.updateDocument(id, updates);
-        await auditService.addLog(`✏️ Arquivo editado: ${title}`);
-
-        setDocuments(prev =>
-          prev.map(d => (d.id === id ? { ...d, ...updates } : d))
+        const result = await firebaseDocumentService.updateDocument(
+          documentId,
+          updates
         );
-        return true;
+        
+        // Update in list
+        setDocuments((prev) =>
+          prev.map((d) => (d.id === documentId ? result : d))
+        );
+        
+        return result;
       } catch (err) {
-        const message = err instanceof Error ? err.message : 'Erro ao editar documento';
-        setError(message);
-        console.error('Erro em updateDocument:', err);
-        return false;
-      } finally {
-        setLoading(false);
+        const error = err as DocumentServiceError;
+        setError(error);
+        throw error;
       }
     },
     []
   );
 
-  /**
-   * Deletar documento
-   */
-  const deleteDocument = useCallback(
-    async (id: number | string, title: string) => {
-      try {
-        setLoading(true);
-        setError(null);
+  // Search documents
+  const search = useCallback(async (query: string) => {
+    try {
+      setError(null);
+      return await firebaseDocumentService.searchDocuments(query);
+    } catch (err) {
+      const error = err as DocumentServiceError;
+      setError(error);
+      throw error;
+    }
+  }, []);
 
-        await documentService.deleteDocument(id);
-        await auditService.addLog(`🗑️ Arquivo removido: ${title}`);
-
-        setDocuments(prev => prev.filter(d => d.id !== id));
-        return true;
-      } catch (err) {
-        const message = err instanceof Error ? err.message : 'Erro ao deletar documento';
-        setError(message);
-        console.error('Erro em deleteDocument:', err);
-        return false;
-      } finally {
-        setLoading(false);
-      }
-    },
-    []
-  );
-
-  /**
-   * Limpar mensagem de erro
-   */
+  // Clear error
   const clearError = useCallback(() => {
     setError(null);
   }, []);
 
-  // Carregar documentos ao montar o componente
-  useEffect(() => {
-    fetchDocuments();
-  }, [fetchDocuments]);
-
   return {
     documents,
     loading,
+    uploading,
     error,
-    fetchDocuments,
-    createDocument,
-    updateDocument,
-    deleteDocument,
-    clearError
+    uploadProgress,
+    total,
+    upload,
+    list,
+    getMetadata,
+    getURL,
+    delete: deleteDoc,
+    update,
+    search,
+    clearError,
   };
-}
+};

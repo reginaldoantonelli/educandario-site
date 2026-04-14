@@ -7,11 +7,9 @@ import ConfirmDeleteModal from '@/components/Admin/ConfirmDeleteModal';
 import EditDocumentModal from '@/components/Admin/EditDocumentModal';
 import { useDocuments } from '@/hooks/useDocuments';
 
-type Document = {id:number|string;title:string;category_id?:string;category?:string;year:string;visibilidade:'public'|'private'|'restricted';file_url?:string;created_at?:string;updated_at?:string;}
-
 const TransparencyAdmin: React.FC = () => {
-    // Hook para gerenciar documentos
-    const { documents, loading, error, deleteDocument, createDocument, updateDocument } = useDocuments();
+    // Hook para gerenciar documentos (Firebase implementation)
+    const { documents, loading, error, delete: deleteDoc, upload, update } = useDocuments();
 
     // UI States (apenas para UI, não para dados)
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -19,13 +17,12 @@ const TransparencyAdmin: React.FC = () => {
     const [uploadedDocumentName, setUploadedDocumentName] = useState('');
     const [showEditConfirmation, setShowEditConfirmation] = useState(false);
     const [editedDocumentName, setEditedDocumentName] = useState('');
-    const [isEditProcessing, setIsEditProcessing] = useState(false);
     const [isUploadProcessing, setIsUploadProcessing] = useState(false);
     const [showAdvancedFilter, setShowAdvancedFilter] = useState(false);
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-    const [documentToDelete, setDocumentToDelete] = useState<number | null>(null);
+    const [documentToDelete, setDocumentToDelete] = useState<string | null>(null);
     const [editModalOpen, setEditModalOpen] = useState(false);
-    const [documentToEdit, setDocumentToEdit] = useState<number | null>(null);
+    const [documentToEdit, setDocumentToEdit] = useState<string | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 6;
     
@@ -76,35 +73,33 @@ const TransparencyAdmin: React.FC = () => {
         'educacao': 'Educação'
     };
 
-    // Mapa de visibilidade (português → inglês)
-    const visibilityMap: Record<string, 'public' | 'private' | 'restricted'> = {
-        'Público': 'public',
-        'Privado': 'private',
-        'Restrito': 'restricted'
-    };
-
     // Função para adicionar novo documento
     const handleUpload = async (uploadData: { nome: string; arquivo: File; ano: string; visibilidade: string; categoria: string }) => {
-        const newDocument: Omit<Document, 'id' | 'created_at'> = {
-            title: uploadData.arquivo.name,
-            category: categoryMap[uploadData.categoria] || uploadData.categoria,
-            year: uploadData.ano,
-            visibilidade: visibilityMap[uploadData.visibilidade] || 'public'
-        };
-        
         setIsUploadProcessing(true);
-        const result = await createDocument(newDocument);
-        if (result) {
-            // Mostra confirmação de sucesso
-            setUploadedDocumentName(uploadData.nome);
-            setShowConfirmation(true);
+        try {
+            const result = await upload(uploadData.arquivo, {
+                name: uploadData.arquivo.name,
+                type: 'pdf',
+                category: categoryMap[uploadData.categoria] || uploadData.categoria,
+                public: uploadData.visibilidade === 'Público',
+                tags: [uploadData.ano]
+            });
             
-            // Atualiza o timestamp do último upload (compartilhado)
-            const now = Date.now();
-            setLastUploadTime(now);
-            localStorage.setItem('lastDocumentUpload', now.toString());
+            if (result) {
+                // Mostra confirmação de sucesso
+                setUploadedDocumentName(uploadData.nome);
+                setShowConfirmation(true);
+                
+                // Atualiza o timestamp do último upload (compartilhado)
+                const now = Date.now();
+                setLastUploadTime(now);
+                localStorage.setItem('lastDocumentUpload', now.toString());
+            }
+        } catch (err) {
+            console.error('Upload failed:', err);
+        } finally {
+            setIsUploadProcessing(false);
         }
-        setIsUploadProcessing(false);
     };
 
     // Função para visualizar documento
@@ -114,73 +109,62 @@ const TransparencyAdmin: React.FC = () => {
     };
 
     // Função para abrir modal de confirmação de exclusão
-    const openDeleteModal = (docId: number | string) => {
-        setDocumentToDelete(docId as number);
+    const openDeleteModal = (docId: string) => {
+        setDocumentToDelete(docId);
         setDeleteModalOpen(true);
     };
 
     // Função para confirmar exclusão
     const handleConfirmDelete = async () => {
         if (documentToDelete !== null) {
-            const docToDelete = documents.find(doc => doc.id === documentToDelete);
-            
-            if (docToDelete) {
-                const success = await deleteDocument(documentToDelete, docToDelete.title || 'Documento');
-                if (success) {
-                    setDeleteModalOpen(false);
-                    setDocumentToDelete(null);
-                }
+            try {
+                await deleteDoc(documentToDelete);
+                setDeleteModalOpen(false);
+                setDocumentToDelete(null);
+            } catch (err) {
+                console.error('Delete failed:', err);
             }
         }
     };
 
     // Função para abrir modal de edição
-    const handleEdit = (docId: number | string) => {
-        setDocumentToEdit(docId as number);
+    const handleEdit = (docId: string) => {
+        setDocumentToEdit(docId);
         setEditModalOpen(true);
     };
 
     // Função para salvar edição
-    const handleSaveEdit = async (updatedDocument: { id: number; nome?: string; title?: string; category?: string; categoria?: string; year?: string; ano?: string; visibilidade: string }) => {
+    const handleSaveEdit = async (updatedDocument: { id: string; nome?: string; title?: string; category?: string; categoria?: string; year?: string; ano?: string; visibilidade: string }) => {
         const docIdToUpdate = documentToEdit;
         if (docIdToUpdate === null) return;
 
-        const title = updatedDocument.title || updatedDocument.nome || 'Documento';
-        const updates: Partial<Document> = {
-            title,
-            category: updatedDocument.category || updatedDocument.categoria,
-            year: updatedDocument.year || updatedDocument.ano,
-            visibilidade: visibilityMap[updatedDocument.visibilidade] || visibilityMap['Público']
-        };
-
-        setIsEditProcessing(true);
-        const success = await updateDocument(docIdToUpdate, updates, title);
-        if (success) {
+        try {
+            await update(docIdToUpdate, {
+                public: updatedDocument.visibilidade === 'Público',
+                category: updatedDocument.category || updatedDocument.categoria,
+                tags: updatedDocument.year ? [updatedDocument.year] : []
+            });
+            
             // Mostra confirmação de sucesso
+            const title = updatedDocument.title || updatedDocument.nome || 'Documento';
             setEditedDocumentName(title);
             setShowEditConfirmation(true);
             setEditModalOpen(false);
             setDocumentToEdit(null);
+        } catch (err) {
+            console.error('Update failed:', err);
         }
-        setIsEditProcessing(false);
     };
 
-    // Conversor de dados: Document type → formato da UI
-    const visibilidadeMap = {
-        'public': 'Público',
-        'private': 'Privado',
-        'restricted': 'Restrito'
-    };
-
-    // Documentos convertidos para o formato UI
+    // Documentos convertidos de DocumentMetadata para o formato legado UI
     const documentsConverted = documents.map(doc => ({
-        id: Number(doc.id),
-        nome: doc.title || '',
-        title: doc.title || '',
+        id: doc.id,
+        nome: doc.name || '',
+        title: doc.name || '',
         categoria: doc.category || '',
-        ano: doc.year || '',
-        year: doc.year || '',
-        visibilidade: visibilidadeMap[doc.visibilidade as keyof typeof visibilidadeMap] || 'Público'
+        ano: doc.tags?.[0] || '',
+        year: doc.tags?.[0] || '',
+        visibilidade: doc.public ? 'Público' : 'Privado'
     }));
 
     // Extrair valores únicos para os filtros
@@ -255,13 +239,13 @@ const TransparencyAdmin: React.FC = () => {
 
     return (
         <div className="space-y-4 sm:space-y-6 p-4 md:p-6 lg:p-8">
-            {/* Error Display */}
+        {/* Error Display */}
             {error && (
                 <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 flex items-start gap-3">
                     <AlertCircle size={20} className="text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
                     <div className="flex-1">
                         <h3 className="font-semibold text-red-700 dark:text-red-300">Erro ao carregar documentos</h3>
-                        <p className="text-sm text-red-600 dark:text-red-400 mt-1">{error}</p>
+                        <p className="text-sm text-red-600 dark:text-red-400 mt-1">{error.message}</p>
                     </div>
                     <button 
                         onClick={() => window.location.reload()}
@@ -610,7 +594,16 @@ const TransparencyAdmin: React.FC = () => {
         {/* Modal de Edição */}
         <EditDocumentModal
             isOpen={editModalOpen}
-            document={documentsConverted.find(d => d.id === documentToEdit) || null}
+            document={documentsConverted.find(d => d.id === documentToEdit) 
+                ? {
+                    id: documentToEdit!,
+                    nome: documentsConverted.find(d => d.id === documentToEdit)?.nome || '',
+                    categoria: documentsConverted.find(d => d.id === documentToEdit)?.categoria || '',
+                    ano: documentsConverted.find(d => d.id === documentToEdit)?.ano || '',
+                    visibilidade: documentsConverted.find(d => d.id === documentToEdit)?.visibilidade || ''
+                }
+                : null
+            }
             onClose={() => {
                 setEditModalOpen(false);
                 setDocumentToEdit(null);
@@ -628,7 +621,7 @@ const TransparencyAdmin: React.FC = () => {
             label="O documento foi atualizado como:"
             onClose={() => setShowEditConfirmation(false)}
             onCloseAll={() => setShowEditConfirmation(false)}
-            isLoading={isEditProcessing}
+            isLoading={loading}
         />
         </div>
     );
