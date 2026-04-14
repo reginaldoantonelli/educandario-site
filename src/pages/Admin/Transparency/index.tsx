@@ -3,8 +3,8 @@ import { FileText, Plus, Trash2, Eye, Lock, Globe, Filter, X, Search, Edit, Chev
 import UploadModal from '@/components/Admin/UploadModal';
 import UploadConfirmationModal from '@/components/Admin/UploadConfirmationModal';
 import OperationConfirmationModal from '@/components/Admin/OperationConfirmationModal';
-import ConfirmDeleteModal from '@/components/admin/ConfirmDeleteModal';
-import EditDocumentModal from '@/components/admin/EditDocumentModal';
+import ConfirmDeleteModal from '@/components/Admin/ConfirmDeleteModal';
+import EditDocumentModal from '@/components/Admin/EditDocumentModal';
 import { useDocuments } from '@/hooks/useDocuments';
 
 type Document = {id:number|string;title:string;category_id?:string;category?:string;year:string;visibilidade:'public'|'private'|'restricted';file_url?:string;created_at?:string;updated_at?:string;}
@@ -174,7 +174,7 @@ const TransparencyAdmin: React.FC = () => {
 
     // Documentos convertidos para o formato UI
     const documentsConverted = documents.map(doc => ({
-        id: doc.id,
+        id: Number(doc.id),
         nome: doc.title || '',
         title: doc.title || '',
         categoria: doc.category || '',
