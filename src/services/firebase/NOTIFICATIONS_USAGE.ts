@@ -364,7 +364,7 @@ export const ActivityFeedExample = () => {
       <div className="space-y-3">
         {activityNotifs.map((notif) => (
           <div key={notif.id} className="flex gap-3 pb-3 border-b last:border-b-0">
-            <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 flex-shrink-0" />
+            <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 shrink-0" />
             <div className="flex-1">
               <p className="text-sm font-semibold">{notif.title}</p>
               <p className="text-xs text-gray-500">{notif.message}</p>
@@ -375,7 +375,7 @@ export const ActivityFeedExample = () => {
                 Ver mais →
               </a>
             </div>
-            <p className="text-xs text-gray-400 flex-shrink-0">
+            <p className="text-xs text-gray-400 shrink-0">
               {formatDistanceToNow(new Date(notif.createdAt), {
                 locale: ptBR,
                 addSuffix: true,

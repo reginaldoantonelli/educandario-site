@@ -17,7 +17,6 @@ import {
   query,
   where,
   limit,
-  offset,
   orderBy,
   deleteDoc,
   updateDoc,
@@ -30,7 +29,7 @@ import {
   writeBatch,
 } from 'firebase/firestore';
 
-import { db } from './config';
+import { firestore } from './config';
 import { firebaseAuthService } from './auth';
 import {
   NotificationService,
@@ -109,7 +108,7 @@ class FirebaseNotificationService implements NotificationService {
       };
 
       const docRef = await addDoc(
-        collection(db, this.notificationsCollection),
+        collection(firestore, this.notificationsCollection),
         notification
       );
 
@@ -152,7 +151,7 @@ class FirebaseNotificationService implements NotificationService {
       const now = Timestamp.now();
 
       for (const userId of userIds) {
-        const docRef = doc(collection(db, this.notificationsCollection));
+        const docRef = doc(collection(firestore, this.notificationsCollection));
         
         const notification = {
           userId,
@@ -217,11 +216,12 @@ class FirebaseNotificationService implements NotificationService {
         constraints.push(limit(filter.limit));
       }
 
-      if (filter?.offset) {
-        constraints.push(offset(filter.offset));
-      }
+      // TODO: Firebase Firestore v9+ doesn't support offset() - use startAfter() for pagination
+      // if (filter?.offset) {
+      //   constraints.push(offset(filter.offset));
+      // }
 
-      const q = query(collection(db, this.notificationsCollection), ...constraints);
+      const q = query(collection(firestore, this.notificationsCollection), ...constraints);
       const snapshot = await getDocs(q);
 
       const notifications = snapshot.docs.map((doc) =>
@@ -230,11 +230,10 @@ class FirebaseNotificationService implements NotificationService {
 
       // Get total count (without pagination)
       const countConstraints = constraints.filter(
-        (c) => !c.toJSON().toString().includes('limit') && 
-               !c.toJSON().toString().includes('offset')
+        (c) => !c.toJSON().toString().includes('limit')
       );
       const countQuery = query(
-        collection(db, this.notificationsCollection),
+        collection(firestore, this.notificationsCollection),
         ...countConstraints
       );
       const countSnapshot = await getDocs(countQuery);
@@ -260,7 +259,7 @@ class FirebaseNotificationService implements NotificationService {
     const user = await this.getCurrentUser();
 
     try {
-      const docRef = doc(db, this.notificationsCollection, notificationId);
+      const docRef = doc(firestore, this.notificationsCollection, notificationId);
       const snapshot = await getDoc(docRef);
 
       if (!snapshot.exists()) {
@@ -303,7 +302,7 @@ class FirebaseNotificationService implements NotificationService {
     const user = await this.getCurrentUser();
 
     try {
-      const docRef = doc(db, this.notificationsCollection, notificationId);
+      const docRef = doc(firestore, this.notificationsCollection, notificationId);
       const snapshot = await getDoc(docRef);
 
       if (!snapshot.exists()) {
@@ -353,7 +352,7 @@ class FirebaseNotificationService implements NotificationService {
 
     try {
       const q = query(
-        collection(db, this.notificationsCollection),
+        collection(firestore, this.notificationsCollection),
         where('userId', '==', user.id),
         where('read', '==', false)
       );
@@ -372,7 +371,7 @@ class FirebaseNotificationService implements NotificationService {
       await batch.commit();
 
       // Reset unread count
-      const statsRef = doc(db, this.statsCollection, user.id);
+      const statsRef = doc(firestore, this.statsCollection, user.id);
       await updateDoc(statsRef, {
         unread: 0,
         updatedAt: now,
@@ -393,7 +392,7 @@ class FirebaseNotificationService implements NotificationService {
     const user = await this.getCurrentUser();
 
     try {
-      const docRef = doc(db, this.notificationsCollection, notificationId);
+      const docRef = doc(firestore, this.notificationsCollection, notificationId);
       const snapshot = await getDoc(docRef);
 
       if (!snapshot.exists()) {
@@ -439,7 +438,7 @@ class FirebaseNotificationService implements NotificationService {
 
     try {
       const q = query(
-        collection(db, this.notificationsCollection),
+        collection(firestore, this.notificationsCollection),
         where('userId', '==', user.id)
       );
 
@@ -453,7 +452,7 @@ class FirebaseNotificationService implements NotificationService {
       await batch.commit();
 
       // Reset stats
-      const statsRef = doc(db, this.statsCollection, user.id);
+      const statsRef = doc(firestore, this.statsCollection, user.id);
       await updateDoc(statsRef, {
         total: 0,
         unread: 0,
@@ -476,7 +475,7 @@ class FirebaseNotificationService implements NotificationService {
 
     try {
       const q = query(
-        collection(db, this.notificationsCollection),
+        collection(firestore, this.notificationsCollection),
         where('userId', '==', user.id),
         where('read', '==', false)
       );
@@ -500,7 +499,7 @@ class FirebaseNotificationService implements NotificationService {
 
     try {
       const q = query(
-        collection(db, this.notificationsCollection),
+        collection(firestore, this.notificationsCollection),
         where('userId', '==', user.id)
       );
 
@@ -549,7 +548,7 @@ class FirebaseNotificationService implements NotificationService {
       if (!userId) return;
 
       const q = query(
-        collection(db, this.notificationsCollection),
+        collection(firestore, this.notificationsCollection),
         where('userId', '==', userId),
         orderBy('createdAt', 'desc'),
         limit(50)
@@ -586,7 +585,7 @@ class FirebaseNotificationService implements NotificationService {
       if (!userId) return;
 
       const q = query(
-        collection(db, this.notificationsCollection),
+        collection(firestore, this.notificationsCollection),
         where('userId', '==', userId),
         where('read', '==', false)
       );
@@ -614,7 +613,7 @@ class FirebaseNotificationService implements NotificationService {
    */
   private async updateStats(userId: string, action: 'increment' | 'decrement') {
     try {
-      const statsRef = doc(db, this.statsCollection, userId);
+      const statsRef = doc(firestore, this.statsCollection, userId);
 
       await updateDoc(statsRef, {
         unread: increment(action === 'increment' ? 1 : -1),

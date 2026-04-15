@@ -605,7 +605,7 @@ const Settings: React.FC = () => {
 
                                     {/* Seção: Redes Sociais */}
                                     <div className="border-t border-slate-200 dark:border-slate-700/50 mt-6 pt-6">
-                                        <div className="p-4 sm:p-5 bg-gradient-to-r from-pink-50 to-rose-50 dark:from-pink-900/20 dark:to-rose-900/20 border-l-4 border-pink-500 rounded-r-lg mb-4">
+                                        <div className="p-4 sm:p-5 bg-linear-to-r from-pink-50 to-rose-50 dark:from-pink-900/20 dark:to-rose-900/20 border-l-4 border-pink-500 rounded-r-lg mb-4">
                                             <h3 className="text-sm font-bold text-pink-900 dark:text-pink-100 flex items-center gap-2">
                                                 <span className="text-lg">📱</span> Redes Sociais
                                             </h3>
@@ -679,7 +679,7 @@ const Settings: React.FC = () => {
 
                                     {/* Seção: Necessidade Urgente */}
                                     <div className="border-t border-slate-200 dark:border-slate-700/50 mt-6 pt-6">
-                                        <div className="p-4 sm:p-5 bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 border-l-4 border-red-500 rounded-r-lg mb-4">
+                                        <div className="p-4 sm:p-5 bg-linear-to-r from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 border-l-4 border-red-500 rounded-r-lg mb-4">
                                             <h3 className="text-sm font-bold text-red-900 dark:text-red-100 flex items-center gap-2">
                                                 <span className="text-lg">🚨</span> Necessidade Urgente Atual
                                             </h3>
@@ -798,7 +798,7 @@ const Settings: React.FC = () => {
 
                                         {/* Card: Informações de Contato */}
                                         <div className="border border-blue-200 dark:border-blue-800/30 rounded-xl overflow-hidden">
-                                            <div className="p-4 sm:p-5 bg-gradient-to-r from-blue-50 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-800/20 border-b border-blue-200 dark:border-blue-800/30">
+                                            <div className="p-4 sm:p-5 bg-linear-to-r from-blue-50 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-800/20 border-b border-blue-200 dark:border-blue-800/30">
                                                 <h3 className="text-sm font-bold text-blue-900 dark:text-blue-100 flex items-center gap-2">
                                                     <span className="text-lg">📞</span> Informações de Contato
                                                 </h3>
@@ -829,7 +829,7 @@ const Settings: React.FC = () => {
 
                                         {/* Card: Redes Sociais */}
                                         <div className="border border-pink-200 dark:border-pink-800/30 rounded-xl overflow-hidden">
-                                            <div className="p-4 sm:p-5 bg-gradient-to-r from-pink-50 to-rose-50/50 dark:from-pink-900/20 dark:to-rose-900/20 border-b border-pink-200 dark:border-pink-800/30">
+                                            <div className="p-4 sm:p-5 bg-linear-to-r from-pink-50 to-rose-50/50 dark:from-pink-900/20 dark:to-rose-900/20 border-b border-pink-200 dark:border-pink-800/30">
                                                 <h3 className="text-sm font-bold text-pink-900 dark:text-pink-100 flex items-center gap-2">
                                                     <span className="text-lg">📱</span> Redes Sociais
                                                 </h3>
@@ -852,8 +852,8 @@ const Settings: React.FC = () => {
 
                                         {/* Card: Necessidade Urgente */}
                                         {(portalSettings?.urgentNeedTitle || portalSettings?.urgentNeedDescription) && (
-                                            <div className="border-2 border-red-300 dark:border-red-700/50 rounded-xl overflow-hidden bg-gradient-to-b from-red-50/30 to-transparent dark:from-red-900/10 dark:to-transparent">
-                                                <div className="p-4 sm:p-5 bg-gradient-to-r from-red-100 to-orange-50 dark:from-red-900/30 dark:to-orange-900/30 border-b border-red-200 dark:border-red-800/30">
+                                            <div className="border-2 border-red-300 dark:border-red-700/50 rounded-xl overflow-hidden bg-linear-to-b from-red-50/30 to-transparent dark:from-red-900/10 dark:to-transparent">
+                                                <div className="p-4 sm:p-5 bg-linear-to-r from-red-100 to-orange-50 dark:from-red-900/30 dark:to-orange-900/30 border-b border-red-200 dark:border-red-800/30">
                                                     <h3 className="text-sm font-bold text-red-900 dark:text-red-100 flex items-center gap-2">
                                                         <span className="text-lg">🚨</span> Necessidade Urgente Atual
                                                     </h3>

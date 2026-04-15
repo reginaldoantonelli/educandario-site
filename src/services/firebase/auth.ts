@@ -10,9 +10,9 @@ import {
   sendPasswordResetEmail,
   updateProfile,
   onAuthStateChanged,
-  User,
   setPersistence,
   browserLocalPersistence,
+  type User,
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, firestore } from './config';

@@ -209,7 +209,7 @@ const NotificationPanel: React.FC = () => {
                     key={notification.id}
                     className={`px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group cursor-pointer flex justify-between items-start ${
                       !notification.read ? 'bg-blue-50 dark:bg-blue-900/10' : ''
-                    }`}
+                    } ${notification.protected ? 'border-l-2 border-l-yellow-400' : ''}`}
                   >
                     <div 
                       className="flex-1 flex gap-3 items-start"
@@ -229,20 +229,27 @@ const NotificationPanel: React.FC = () => {
                       {!notification.read && (
                         <div className="w-2 h-2 bg-blue-500 rounded-full shrink-0"></div>
                       )}
-                      <button
-                        onClick={async (e) => {
-                          e.stopPropagation();
-                          try {
-                            await deleteNotification(notification.id);
-                          } catch (error) {
-                            console.error('Erro ao deletar notificação:', error);
-                          }
-                        }}
-                        className="p-1 text-slate-400 hover:text-red-600 dark:hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"
-                        title="Remover notificação"
-                      >
-                        <Trash2 size={14} />
-                      </button>
+                      {notification.protected && (
+                        <div className="text-yellow-500 text-xs font-bold shrink-0" title="Notificação protegida - Histórico de auditoria">
+                          🔒
+                        </div>
+                      )}
+                      {!notification.protected && (
+                        <button
+                          onClick={async (e) => {
+                            e.stopPropagation();
+                            try {
+                              await deleteNotification(notification.id);
+                            } catch (error) {
+                              console.error('Erro ao deletar notificação:', error);
+                            }
+                          }}
+                          className="p-1 text-slate-400 hover:text-red-600 dark:hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"
+                          title="Remover notificação"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}

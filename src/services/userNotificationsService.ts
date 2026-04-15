@@ -15,6 +15,7 @@ interface UserNotification {
   timestamp: number;
   created_at?: string;
   read?: boolean;
+  protected?: boolean; // Se true, não será deletada ao limpar notificações lidas (para histórico de auditoria)
 }
 
 class UserNotificationsService {
@@ -38,8 +39,9 @@ class UserNotificationsService {
 
   /**
    * Adicionar nova notificação para o usuário
+   * @param isAuditLog - Se true, marca como protegida (não será deletada ao limpar histórico)
    */
-  async addNotification(userId: string, action: string): Promise<UserNotification> {
+  async addNotification(userId: string, action: string, isAuditLog: boolean = false): Promise<UserNotification> {
     try {
       const notifications = await this.getNotifications(userId);
       
@@ -49,7 +51,8 @@ class UserNotificationsService {
         message: action,
         timestamp: Date.now(),
         created_at: new Date().toISOString(),
-        read: false
+        read: false,
+        protected: isAuditLog // Marcar como protegida se for log de auditoria
       };
 
       // Adiciona no início (mais recente primeiro)
@@ -63,7 +66,7 @@ class UserNotificationsService {
       const key = `${this.STORAGE_PREFIX}${userId}`;
       localStorage.setItem(key, JSON.stringify(notifications));
 
-      console.log(`✨ Notificação criada para ${userId}:`, action);
+      console.log(`✨ Notificação ${isAuditLog ? 'protegida' : 'normal'} criada para ${userId}:`, action);
       return newNotification;
     } catch (error) {
       console.error('Erro ao adicionar notificação:', error);
@@ -110,16 +113,18 @@ class UserNotificationsService {
 
   /**
    * Deletar todas as notificações lidas do usuário
+   * ⚠️ Não deleta notificações protegidas (histórico de auditoria)
    */
   async clearReadNotifications(userId: string): Promise<void> {
     try {
       let notifications = await this.getNotifications(userId);
-      notifications = notifications.filter(n => !n.read);
+      // Mantém notificações não lidas E notificações protegidas
+      notifications = notifications.filter(n => !n.read || n.protected);
       
       const key = `${this.STORAGE_PREFIX}${userId}`;
       localStorage.setItem(key, JSON.stringify(notifications));
       
-      console.log(`🗑️ Notificações lidas limpas para ${userId}`);
+      console.log(`🗑️ Notificações lidas limpas para ${userId} (protegidas mantidas)`);
     } catch (error) {
       console.error('Erro ao limpar notificações lidas:', error);
       throw error;

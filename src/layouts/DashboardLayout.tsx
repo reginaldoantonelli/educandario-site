@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Outlet, NavLink } from 'react-router-dom';
+import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { 
     LayoutDashboard, 
     FileText, 
@@ -11,10 +11,20 @@ import {
     Moon
     } from 'lucide-react';
 import NotificationPanel from '@/components/NotificationPanel';
+import { useAuth } from '@/hooks/useAuth';
+import { firebaseAuthService } from '@/services/firebase/auth';
 
     const DashboardLayout: React.FC = () => {
+    const navigate = useNavigate();
+    const { user } = useAuth();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [displayName, setDisplayName] = useState(() => {
+        // Primeiro tenta usar dados do Firebase
+        if (user?.name) {
+            return user.name;
+        }
+        
+        // Fallback para localStorage
         const savedProfile = localStorage.getItem('adminProfile');
         try {
             if (savedProfile) {
@@ -27,6 +37,12 @@ import NotificationPanel from '@/components/NotificationPanel';
         return 'Iago';
     });
     const [userRole, setUserRole] = useState(() => {
+        // Primeiro tenta usar dados do Firebase
+        if (user?.role) {
+            return user.role;
+        }
+        
+        // Fallback para localStorage
         const savedProfile = localStorage.getItem('adminProfile');
         try {
             if (savedProfile) {
@@ -57,6 +73,14 @@ import NotificationPanel from '@/components/NotificationPanel';
 
     // --- SINCRONIZAR PERFIL COM HEADER ---
     useEffect(() => {
+        // Atualizar displayName e userRole quando user muda
+        if (user?.name) {
+            setDisplayName(user.name);
+        }
+        if (user?.role) {
+            setUserRole(user.role);
+        }
+
         // Listener para atualizações de perfil via CustomEvent
         const handleProfileUpdate = (event: Event) => {
             const customEvent = event as CustomEvent;
@@ -81,7 +105,7 @@ import NotificationPanel from '@/components/NotificationPanel';
             window.removeEventListener('profileUpdated', handleProfileUpdate);
             window.removeEventListener('avatarUpdated', handleAvatarUpdate);
         };
-    }, []);
+    }, [user]);
     // ---------------------------
 
     useEffect(() => {
@@ -97,6 +121,18 @@ import NotificationPanel from '@/components/NotificationPanel';
     const toggleTheme = () => {
         setIsDark(!isDark);
     };
+
+    // Handler para logout
+    const handleLogout = async () => {
+        try {
+            await firebaseAuthService.logout();
+            console.log('✅ Logout realizado com sucesso');
+            navigate('/admin');
+        } catch (error) {
+            console.error('❌ Erro ao fazer logout:', error);
+        }
+    };
+
   // ---------------------------
 
     return (
@@ -140,9 +176,12 @@ import NotificationPanel from '@/components/NotificationPanel';
 
             {/* Rodapé da Sidebar (Sair) */}
             <div className="pt-6 border-t border-slate-100 dark:border-slate-800">
-                <button className="flex items-center gap-3 px-4 py-3 w-full text-left text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-xl transition-all font-medium">
-                <LogOut size={20} />
-                Sair
+                <button 
+                    onClick={handleLogout}
+                    className="flex items-center gap-3 px-4 py-3 w-full text-left text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-xl transition-all font-medium"
+                >
+                    <LogOut size={20} />
+                    Sair
                 </button>
             </div>
             </div>

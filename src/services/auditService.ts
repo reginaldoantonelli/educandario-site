@@ -39,7 +39,7 @@ export class AuditService {
   /**
    * Adicionar novo log de auditoria
    * 
-   * Também cria uma notificação pessoal para o usuário logado
+   * Também cria uma notificação pessoal PROTEGIDA (não será deletada) para o usuário logado
    * 
    * Chamado por:
    * - handleUpload (Transparency)
@@ -64,12 +64,13 @@ export class AuditService {
       const updated = [newLog, ...logs].slice(0, MAX_LOCAL_LOGS);
       localStorage.setItem(AUDIT_LOGS_KEY, JSON.stringify(updated));
 
-      // ✨ Criar notificação pessoal simultaneamente
+      // ✨ Criar notificação pessoal PROTEGIDA simultaneamente
+      // Notificações protegidas NÃO serão deletadas ao limpar histórico
       try {
         const userProfileStr = localStorage.getItem('userProfile');
         const userId = userProfileStr ? JSON.parse(userProfileStr).id : 'admin-user';
         
-        await userNotificationsService.addNotification(userId, action);
+        await userNotificationsService.addNotification(userId, action, true); // true = protegida
       } catch (notifError) {
         console.error('Erro ao criar notificação pessoal:', notifError);
         // Não falhar o log se a notificação falhar

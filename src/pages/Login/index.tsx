@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, ArrowLeft, LogIn, Sun, Moon, AlertCircle, CheckCircle, Eye, EyeOff } from 'lucide-react';
+import { firebaseAuthService } from '@/services/firebase/auth';
+import { AuthError } from '@/services/api/auth';
 
 const Login: React.FC = () => {
+  const navigate = useNavigate();
   // Estados do formulário
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -64,23 +68,36 @@ const Login: React.FC = () => {
         return;
         }
 
-        if (password.length < 6) {
-        setError('A senha deve ter pelo menos 6 caracteres');
-        return;
-        }
-
         setError('');
         setIsLoading(true);
 
-        // Simula requisição de login (remova em produção)
-        setTimeout(() => {
-        setIsLoading(false);
-        setSuccess(true);
-        setEmail('');
-        setPassword('');
-        // Em produção, redirecionar o usuário aqui
-        console.log('Login realizado', { email, rememberMe });
-        }, 1500);
+        try {
+            // Fazer login com Firebase
+            const user = await firebaseAuthService.login(email, password);
+            
+            // Sucesso
+            setSuccess(true);
+            setEmail('');
+            setPassword('');
+            
+            console.log('✅ Login realizado com sucesso:', user);
+            
+            // Redirecionar para o dashboard após 1.5 segundos
+            setTimeout(() => {
+                navigate('/dashboard');
+            }, 1500);
+        } catch (err: any) {
+            setIsLoading(false);
+            
+            // Tratar erro de autenticação
+            if (err instanceof AuthError) {
+                setError(err.message);
+            } else {
+                setError(err?.message || 'Erro ao fazer login. Tente novamente.');
+            }
+            
+            console.error('❌ Erro ao fazer login:', err);
+        }
     };
 
     const toggleTheme = () => {

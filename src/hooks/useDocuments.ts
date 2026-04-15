@@ -16,7 +16,7 @@ import type {
   UploadDocumentInput,
 } from '@/services/api/documents';
 import { DocumentServiceError } from '@/services/api/documents';
-import { firebaseDocumentService } from '@/services/firebase/documents';
+import { supabaseDocumentService } from '@/services/supabase/documents';
 
 interface UseDocumentsReturn {
   // State
@@ -60,7 +60,7 @@ export const useDocuments = (): UseDocumentsReturn => {
         setUploading(true);
         setError(null);
         
-        const result = await firebaseDocumentService.uploadDocument(
+        const result = await supabaseDocumentService.uploadDocument(
           file,
           metadata,
           (progress) => {
@@ -89,7 +89,7 @@ export const useDocuments = (): UseDocumentsReturn => {
       setLoading(true);
       setError(null);
       
-      const result = await firebaseDocumentService.listDocuments(filter);
+      const result = await supabaseDocumentService.listDocuments(filter);
       setDocuments(result.documents);
       setTotal(result.total);
     } catch (err) {
@@ -104,7 +104,7 @@ export const useDocuments = (): UseDocumentsReturn => {
   const getMetadata = useCallback(async (documentId: string) => {
     try {
       setError(null);
-      return await firebaseDocumentService.getDocumentMetadata(documentId);
+      return await supabaseDocumentService.getDocumentMetadata(documentId);
     } catch (err) {
       const error = err as DocumentServiceError;
       setError(error);
@@ -116,7 +116,7 @@ export const useDocuments = (): UseDocumentsReturn => {
   const getURL = useCallback(async (documentId: string) => {
     try {
       setError(null);
-      return await firebaseDocumentService.getDocumentURL(documentId);
+      return await supabaseDocumentService.getDocumentURL(documentId);
     } catch (err) {
       const error = err as DocumentServiceError;
       setError(error);
@@ -128,7 +128,7 @@ export const useDocuments = (): UseDocumentsReturn => {
   const deleteDoc = useCallback(async (documentId: string) => {
     try {
       setError(null);
-      await firebaseDocumentService.deleteDocument(documentId);
+      await supabaseDocumentService.deleteDocument(documentId);
       
       // Remove from list
       setDocuments((prev) => prev.filter((d) => d.id !== documentId));
@@ -147,7 +147,7 @@ export const useDocuments = (): UseDocumentsReturn => {
     ) => {
       try {
         setError(null);
-        const result = await firebaseDocumentService.updateDocument(
+        const result = await supabaseDocumentService.updateDocument(
           documentId,
           updates
         );
@@ -171,7 +171,7 @@ export const useDocuments = (): UseDocumentsReturn => {
   const search = useCallback(async (query: string) => {
     try {
       setError(null);
-      return await firebaseDocumentService.searchDocuments(query);
+      return await supabaseDocumentService.searchDocuments(query);
     } catch (err) {
       const error = err as DocumentServiceError;
       setError(error);

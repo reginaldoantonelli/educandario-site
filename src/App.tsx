@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { createBrowserRouter } from 'react-router-dom';
 import DefaultLayout from '@/layouts/DefaultLayout';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
 
 // Adicione os novos imports com lazy load
 const Home = lazy(() => import('@/pages/Home'));
@@ -42,9 +43,11 @@ const router = createBrowserRouter([
   {
     path: '/dashboard',
     element: (
-      <Suspense fallback={<div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">Carregando Painel...</div>}>
-        <DashboardLayout />
-      </Suspense>
+      <ProtectedRoute>
+        <Suspense fallback={<div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">Carregando Painel...</div>}>
+          <DashboardLayout />
+        </Suspense>
+      </ProtectedRoute>
     ),
     children: [
       {

@@ -14,7 +14,7 @@ const HistoryPage: React.FC = () => {
             {/* Modal de imagem expandida */}
             {expandedImage && (
                 <div
-                    className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-sm p-4 md:p-8"
+                    className="fixed inset-0 z-9999 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4 md:p-8"
                     onClick={closeImage}
                 >
                     <button
@@ -68,7 +68,7 @@ const HistoryPage: React.FC = () => {
                         className="relative rounded-[3rem] aspect-video overflow-hidden shadow-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 group cursor-zoom-in"
                         onClick={() => openImage(fotoMatrizAntiga, 'Igreja Matriz Antiga')}
                     >
-                        <div className="absolute inset-0 bg-gradient-to-br from-white/60 via-transparent to-blue-50/50 dark:from-slate-900/40 dark:to-blue-900/30 z-10 pointer-events-none" />
+                        <div className="absolute inset-0 bg-linear-to-br from-white/60 via-transparent to-blue-50/50 dark:from-slate-900/40 dark:to-blue-900/30 z-10 pointer-events-none" />
                         <img
                             src={fotoMatrizAntiga}
                             alt="Igreja Matriz Antiga"

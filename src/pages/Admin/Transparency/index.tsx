@@ -6,10 +6,14 @@ import OperationConfirmationModal from '@/components/Admin/OperationConfirmation
 import ConfirmDeleteModal from '@/components/Admin/ConfirmDeleteModal';
 import EditDocumentModal from '@/components/Admin/EditDocumentModal';
 import { useDocuments } from '@/hooks/useDocuments';
+import { useNotifications } from '@/hooks/useNotifications';
+//import { userNotificationsService } from '@/services/userNotificationsService';
+import { auditService } from '@/services/auditService';
 
 const TransparencyAdmin: React.FC = () => {
-    // Hook para gerenciar documentos (Firebase implementation)
+    // Hooks para gerenciar documentos e notificações
     const { documents, loading, error, delete: deleteDoc, upload, update } = useDocuments();
+    const { create: createNotification } = useNotifications();
 
     // UI States (apenas para UI, não para dados)
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -94,6 +98,19 @@ const TransparencyAdmin: React.FC = () => {
                 const now = Date.now();
                 setLastUploadTime(now);
                 localStorage.setItem('lastDocumentUpload', now.toString());
+                
+                // Registra no histórico de auditoria (inclui notificação protegida automaticamente)
+                await auditService.addLog(
+                    `📤 Arquivo enviado: ${uploadData.nome} (${categoryMap[uploadData.categoria] || uploadData.categoria})`
+                );
+                
+                // Cria notificação no Firebase (para histórico global)
+                await createNotification({
+                    title: 'Upload realizado',
+                    message: `Documento "${uploadData.nome}" foi enviado com sucesso`,
+                    type: 'success',
+                    actionUrl: '/admin/transparency',
+                });
             }
         } catch (err) {
             console.error('Upload failed:', err);

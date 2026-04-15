@@ -19,6 +19,7 @@ interface UserNotification {
   timestamp: number;
   created_at?: string;
   read?: boolean;
+  protected?: boolean; // Se true, não pode ser deletada
 }
 
 export interface UseUserNotificationsReturn {
@@ -78,6 +79,13 @@ export const useUserNotifications = () => {
     try {
       setError(null);
       const userId = getUserId();
+      
+      // Verificar se a notificação é protegida
+      const notifi = notifications.find(n => n.id === notificationId);
+      if (notifi?.protected) {
+        throw new Error('Esta notificação faz parte do histórico de auditoria e não pode ser deletada');
+      }
+      
       await userNotificationsService.deleteNotification(userId, notificationId);
       // Atualizar state removendo a notificação
       setNotifications(prev => prev.filter(n => n.id !== notificationId));
@@ -86,7 +94,7 @@ export const useUserNotifications = () => {
       setError(errorMsg);
       throw err;
     }
-  }, [getUserId]);
+  }, [getUserId, notifications]);
 
   // Marcar como lida
   const markAsRead = useCallback(async (notificationId: string) => {
@@ -111,8 +119,8 @@ export const useUserNotifications = () => {
       setError(null);
       const userId = getUserId();
       await userNotificationsService.clearReadNotifications(userId);
-      // Atualizar state removendo as lidas
-      setNotifications(prev => prev.filter(n => !n.read));
+      // Atualizar state: remove lidas, MAS mantém protegidas
+      setNotifications(prev => prev.filter(n => !n.read || n.protected));
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Erro ao limpar notificações';
       setError(errorMsg);

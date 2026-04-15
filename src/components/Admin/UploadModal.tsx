@@ -116,9 +116,8 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpload }) 
 
         setUploading(true);
         
-        // Simula upload
-        setTimeout(() => {
-            setUploading(false);
+        try {
+            // Chama o upload de verdade
             if (onUpload) {
                 onUpload(formData);
             }
@@ -133,7 +132,14 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpload }) 
             });
             setFileError('');
             
-        }, 1500);
+            // ✅ Fecha o modal após o upload
+            onClose();
+            
+        } catch (error) {
+            console.error('Upload error:', error);
+        } finally {
+            setUploading(false);
+        }
     };
 
     const closeModal = () => {

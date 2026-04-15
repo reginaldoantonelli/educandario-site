@@ -6,55 +6,62 @@ import {
     Plus, 
     Eye, 
     Edit2, 
-    Trash2
+    Trash2,
+    Bell,
+    AlertCircle
 } from 'lucide-react';
 import UploadModal from '@/components/Admin/UploadModal';
 import UploadConfirmationModal from '@/components/Admin/UploadConfirmationModal';
+import { useAuth } from '@/hooks/useAuth';
 import { useDocuments } from '@/hooks/useDocuments';
-
-interface Document {
-  id: number | string;
-  title: string;
-  category_id?: string;
-  category?: string;
-  year: string;
-  visibilidade: 'public' | 'private' | 'restricted';
-  file_url?: string;
-  created_at?: string;
-  updated_at?: string;
-}
+import { useNotifications } from '@/hooks/useNotifications';
+//import { userNotificationsService } from '@/services/userNotificationsService';
+import { auditService } from '@/services/auditService';
 
 const Dashboard: React.FC = () => {
+    // Authentication
+    const { user, loading: authLoading, error: authError } = useAuth();
+
+    // Documents
+    const { documents, upload, delete: deleteDoc } = useDocuments();
+
+    // Notifications
+    const { unreadCount, create: createNotification } = useNotifications();
+
+    // UI State
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [showConfirmation, setShowConfirmation] = useState(false);
     const [uploadedDocumentName, setUploadedDocumentName] = useState('');
     const [isUploadProcessing, setIsUploadProcessing] = useState(false);
-    const { documents, createDocument } = useDocuments();
-
-    // Estado para rastrear o último upload (compartilhado com Transparência)
+    
+    // Timestamp for last upload
     const [lastUploadTime, setLastUploadTime] = useState<number | null>(() => {
         const saved = localStorage.getItem('lastDocumentUpload');
         return saved ? parseInt(saved) : null;
     });
     
-    // Estado para forçar atualizações do tempo decorrido a cada 30 segundos
     const [currentTime, setCurrentTime] = useState(() => Date.now());
 
     useEffect(() => {
         const interval = setInterval(() => {
             setCurrentTime(Date.now());
         }, 30000);
-
         return () => clearInterval(interval);
     }, []);
-    
-    // Função para calcular tempo decorrido desde o último upload
+    // Mapa de categorias
+    const categoryMap: Record<string, string> = {
+        'ensa': 'Institucional',
+        'social': 'Promoção Social',
+        'cpfl': 'Convênio CPFL',
+        'educacao': 'Educação'
+    };
+
+    // Time formatting helpers
     const getTimeAgo = (timestamp: number) => {
         const diffMs = currentTime - timestamp;
         const diffMins = Math.floor(diffMs / 60000);
         const diffHours = Math.floor(diffMs / 3600000);
         const diffDays = Math.floor(diffMs / 86400000);
-
         if (diffMins < 1) return 'agora mesmo';
         if (diffMins < 60) return `há ${diffMins} min`;
         if (diffHours < 24) return `há ${diffHours}h`;
@@ -62,7 +69,6 @@ const Dashboard: React.FC = () => {
         return new Date(timestamp).toLocaleDateString('pt-BR');
     };
 
-    // Função para formatar hora em 12h com AM/PM
     const formatTimeAMPM = (timestamp: number) => {
         const date = new Date(timestamp);
         const hours = date.getHours();
@@ -73,99 +79,131 @@ const Dashboard: React.FC = () => {
         return `${displayHours}:${displayMinutes} ${ampm}`;
     };
 
-    // Função para calcular a label de "Última Atualização"
     const getLastUpdateLabel = () => {
         if (!lastUploadTime) return 'Sem dados';
-
         const updateDate = new Date(lastUploadTime);
         const today = new Date();
         const yesterday = new Date(today);
         yesterday.setDate(yesterday.getDate() - 1);
-
-        // Comparar apenas as datas (sem levarem em conta as horas)
         const isToday = updateDate.toDateString() === today.toDateString();
         const isYesterday = updateDate.toDateString() === yesterday.toDateString();
-
-        if (isToday) {
-            return 'Hoje';
-        } else if (isYesterday) {
-            return 'Ontem';
-        } else {
-            const diffDays = Math.floor((today.getTime() - updateDate.getTime()) / (1000 * 60 * 60 * 24));
-            if (diffDays < 7) {
-                return `Há ${diffDays} ${diffDays === 1 ? 'dia' : 'dias'}`;
-            }
-            return updateDate.toLocaleDateString('pt-BR');
-        }
+        if (isToday) return 'Hoje';
+        if (isYesterday) return 'Ontem';
+        const diffDays = Math.floor((today.getTime() - updateDate.getTime()) / (1000 * 60 * 60 * 24));
+        if (diffDays < 7) return `Há ${diffDays} ${diffDays === 1 ? 'dia' : 'dias'}`;
+        return updateDate.toLocaleDateString('pt-BR');
     };
 
-    // Função para obter a hora da última atualização
     const getLastUpdateTime = () => {
         if (!lastUploadTime) return '--:--';
         return formatTimeAMPM(lastUploadTime);
     };
 
-    // Mapa de categorias do modal para categorias da tabela
-    const categoryMap: Record<string, string> = {
-        'ensa': 'Institucional',
-        'social': 'Promoção Social',
-        'cpfl': 'Convênio CPFL',
-        'educacao': 'Educação'
-    };
+    // Document management
+    const recentDocs = documents.slice(0, 5);
 
-    // Mapa de visibilidade (português → inglês)
-    const visibilityMap: Record<string, 'public' | 'private' | 'restricted'> = {
-        'Público': 'public',
-        'Privado': 'private',
-        'Restrito': 'restricted'
-    };
-
-    // Pega os 5 documentos mais recentes
-    const recentDocs = documents
-        .slice(0, 5);
-
-    // Função para contar documentos públicos
     const getPublicDocumentsCount = () => {
-        return documents.filter(doc => doc.visibilidade === 'public').length;
+        return documents.filter(doc => doc.public).length;
     };
 
-    // Funções do Modal
+    // Upload handler with Firebase
+    const handleUpload = async (uploadData: { 
+        nome: string; 
+        arquivo: File; 
+        ano: string; 
+        visibilidade: string; 
+        categoria: string 
+    }) => {
+        if (!user) {
+            alert('Você precisa estar autenticado para fazer upload');
+            return;
+        }
+
+        setIsUploadProcessing(true);
+        try {
+            const result = await upload(uploadData.arquivo, {
+                name: uploadData.arquivo.name,
+                type: 'pdf',
+                category: categoryMap[uploadData.categoria] || uploadData.categoria,
+                public: uploadData.visibilidade === 'Público',
+                tags: [uploadData.ano],
+            });
+
+            if (result) {
+                setUploadedDocumentName(uploadData.nome);
+                setShowConfirmation(true);
+                
+                // Update timestamp
+                const now = Date.now();
+                setLastUploadTime(now);
+                localStorage.setItem('lastDocumentUpload', now.toString());
+
+                // Registra no histórico de auditoria (inclui notificação protegida automaticamente)
+                await auditService.addLog(
+                    `📤 Arquivo enviado: ${uploadData.nome} (${categoryMap[uploadData.categoria] || uploadData.categoria})`
+                );
+
+                // Create notification for this upload (Firebase - histórico global)
+                await createNotification({
+                    title: 'Upload realizado',
+                    message: `Documento "${uploadData.nome}" foi enviado com sucesso`,
+                    type: 'success',
+                    actionUrl: '/admin/transparency',
+                });
+            }
+        } catch (err) {
+            console.error('Upload error:', err);
+            alert('Erro ao fazer upload');
+        } finally {
+            setIsUploadProcessing(false);
+        }
+    };
+
+    // Modal handlers
     const openModal = () => setIsModalOpen(true);
     const closeModal = () => setIsModalOpen(false);
 
-    const handleUpload = async (uploadData: { nome: string; arquivo: File; ano: string; visibilidade: string; categoria: string }) => {
-        const newDocument: Omit<Document, 'id' | 'created_at'> = {
-            title: uploadData.arquivo.name,
-            category: categoryMap[uploadData.categoria] || uploadData.categoria,
-            year: uploadData.ano,
-            visibilidade: visibilityMap[uploadData.visibilidade] || 'public'
-        };
-        
-        setIsUploadProcessing(true);
-        const result = await createDocument(newDocument);
-        if (result) {
-            // Mostra confirmação de sucesso
-            setUploadedDocumentName(uploadData.nome);
-            setShowConfirmation(true);
-            
-            // Atualiza o timestamp do último upload (compartilhado)
-            const now = Date.now();
-            setLastUploadTime(now);
-            localStorage.setItem('lastDocumentUpload', now.toString());
-        }
-        setIsUploadProcessing(false);
-    };
-
     return (
         <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-700">
-            {/* Cabeçalho - Responsivo */}
+            {/* Auth Error */}
+            {authError && (
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 flex items-start gap-3">
+                    <AlertCircle size={20} className="text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
+                    <div>
+                        <h3 className="font-semibold text-red-700 dark:text-red-300">Erro de autenticação</h3>
+                        <p className="text-sm text-red-600 dark:text-red-400 mt-1">{authError.message}</p>
+                    </div>
+                </div>
+            )}
+
+            {/* Header */}
             <div className="flex flex-col sm:flex-row md:flex-row md:justify-between md:items-center gap-4">
                 <div className="min-w-0 flex-1">
-                    <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white truncate">Visão Geral</h1>
-                    <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">Bem-vindo ao painel administrativo.</p>
+                    <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white truncate">
+                        Visão Geral {user && `(${user.name})`}
+                    </h1>
+                    <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">
+                        Bem-vindo ao painel administrativo.
+                    </p>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-3 md:gap-4 items-start md:items-center">
-                    {/* Indicador de Último Upload */}
+                    {/* Unread Notifications Badge */}
+                    {unreadCount > 0 && (
+                        <div className="flex items-center gap-2 px-3 md:px-4 py-2 md:py-2.5 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/50 rounded-lg">
+                            <div className="relative flex items-center justify-center">
+                                <Bell size={16} className="text-blue-600 dark:text-blue-400" />
+                                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold">
+                                    {unreadCount > 9 ? '9+' : unreadCount}
+                                </span>
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-xs font-semibold text-blue-700 dark:text-blue-300">Notificações</span>
+                                <span className="text-xs text-blue-600 dark:text-blue-400">{unreadCount} não lidas</span>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Last Upload Indicator */}
                     {lastUploadTime && (
                         <div className="flex items-center gap-2 px-3 md:px-4 py-2 md:py-2.5 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800/50 rounded-lg">
                             <div className="relative flex items-center justify-center">
@@ -178,9 +216,13 @@ const Dashboard: React.FC = () => {
                             </div>
                         </div>
                     )}
+
+                    {/* Upload Button */}
                     <button 
                         onClick={openModal}
-                        className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white px-4 md:px-6 py-2.5 md:py-3 rounded-xl font-bold flex items-center justify-center md:justify-start gap-2 transition-all shadow-lg shadow-blue-500/20 text-sm md:text-base shrink-0">
+                        disabled={authLoading}
+                        className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 md:px-6 py-2.5 md:py-3 rounded-xl font-bold flex items-center justify-center md:justify-start gap-2 transition-all shadow-lg shadow-blue-500/20 text-sm md:text-base shrink-0"
+                    >
                         <Plus size={20} /> 
                         <span className="hidden md:inline">Novo Documento</span>
                         <span className="md:hidden">Novo</span>
@@ -236,19 +278,19 @@ const Dashboard: React.FC = () => {
                                             <div className="p-2 bg-red-50 dark:bg-red-900/20 rounded-lg text-red-600 dark:text-red-400 shrink-0">
                                                 <FileText size={18} />
                                             </div>
-                                            <span className="font-medium text-slate-700 dark:text-slate-200 truncate">{doc.title}</span>
+                                            <span className="font-medium text-slate-700 dark:text-slate-200 truncate">{doc.name}</span>
                                         </div>
                                     </td>
-                                    <td className="px-4 sm:px-6 py-4 text-slate-500 dark:text-slate-400 text-sm font-medium">{doc.year}</td>
+                                    <td className="px-4 sm:px-6 py-4 text-slate-500 dark:text-slate-400 text-sm font-medium">
+                                        {doc.tags?.[0] || doc.uploadedAt ? new Date(doc.uploadedAt).getFullYear() : '-'}
+                                    </td>
                                     <td className="px-4 sm:px-6 py-4 text-center">
                                         <span className={`px-3 py-1 text-xs font-bold rounded-full uppercase ${
-                                            doc.visibilidade === 'public' 
+                                            doc.public 
                                                 ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'
-                                                : doc.visibilidade === 'private'
-                                                ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
-                                                : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+                                                : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
                                         }`}>
-                                            {doc.visibilidade === 'public' ? 'Público' : doc.visibilidade === 'private' ? 'Privado' : 'Restrito'}
+                                            {doc.public ? 'Público' : 'Privado'}
                                         </span>
                                     </td>
                                     <td className="px-4 sm:px-6 py-4">
@@ -259,7 +301,11 @@ const Dashboard: React.FC = () => {
                                             <button className="p-2 text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 transition-colors hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg" title="Editar">
                                                 <Edit2 size={18} />
                                             </button>
-                                            <button className="p-2 text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg" title="Excluir">
+                                            <button 
+                                                onClick={() => deleteDoc(doc.id)}
+                                                className="p-2 text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg" 
+                                                title="Excluir"
+                                            >
                                                 <Trash2 size={18} />
                                             </button>
                                         </div>
@@ -281,19 +327,17 @@ const Dashboard: React.FC = () => {
                                             <FileText size={18} />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className="font-semibold text-slate-900 dark:text-white text-sm truncate">{doc.title}</p>
-                                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Ano: <span className="font-medium">{doc.year}</span></p>
+                                            <p className="font-semibold text-slate-900 dark:text-white text-sm truncate">{doc.name}</p>
+                                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Ano: <span className="font-medium">{doc.uploadedAt ? new Date(doc.uploadedAt).getFullYear() : '-'}</span></p>
                                         </div>
                                     </div>
                                     <div className="flex items-center justify-between gap-3">
                                         <span className={`px-3 py-1 text-xs font-bold rounded-full uppercase ${
-                                            doc.visibilidade === 'public' 
+                                            doc.public 
                                                 ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'
-                                                : doc.visibilidade === 'private'
-                                                ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
-                                                : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+                                                : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
                                         }`}>
-                                            {doc.visibilidade === 'public' ? 'Público' : doc.visibilidade === 'private' ? 'Privado' : 'Restrito'}
+                                            {doc.public ? 'Público' : 'Privado'}
                                         </span>
                                         <div className="flex gap-2">
                                             <button className="p-2 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg" title="Visualizar">

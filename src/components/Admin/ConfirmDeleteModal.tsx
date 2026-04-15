@@ -31,7 +31,7 @@ const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
 
                 {/* Header com Ícone de Alerta */}
                 <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex items-start gap-4">
-                    <div className="flex-shrink-0">
+                    <div className="shrink-0">
                         <div className="flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900/30">
                             <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400" />
                         </div>
@@ -46,7 +46,7 @@ const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
                     </div>
                     <button
                         onClick={onCancel}
-                        className="p-1 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors flex-shrink-0"
+                        className="p-1 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors shrink-0"
                         title="Fechar"
                     >
                         <X size={20} />
@@ -59,7 +59,7 @@ const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
                         Tem certeza que deseja excluir o documento:
                     </p>
                     <p className="mt-3 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
-                        <span className="font-semibold text-slate-900 dark:text-white break-words">
+                        <span className="font-semibold text-slate-900 dark:text-white wrap-break-word">
                             {documentName}
                         </span>
                     </p>

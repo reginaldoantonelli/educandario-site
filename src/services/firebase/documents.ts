@@ -17,7 +17,6 @@ import {
   query,
   where,
   limit,
-  offset,
   orderBy,
   deleteDoc,
   updateDoc,
@@ -34,7 +33,7 @@ import {
   UploadTask,
 } from 'firebase/storage';
 
-import { db, storage } from './config';
+import { firestore, storage } from './config';
 import { firebaseAuthService } from './auth';
 import {
   DocumentService,
@@ -90,7 +89,7 @@ class FirebaseDocumentService implements DocumentService {
     try {
       const user = await firebaseAuthService.getCurrentUser();
       
-      await addDoc(collection(db, this.auditLogsCollection), {
+      await addDoc(collection(firestore, this.auditLogsCollection), {
         documentId,
         action,
         userId: user?.id || 'unknown',
@@ -113,7 +112,7 @@ class FirebaseDocumentService implements DocumentService {
       const now = new Date();
       const oneMinuteAgo = new Date(now.getTime() - 60 * 1000);
 
-      const rateLimitRef = doc(db, this.rateLimitsCollection, userId);
+      const rateLimitRef = doc(firestore, this.rateLimitsCollection, userId);
       const rateLimitDoc = await getDoc(rateLimitRef);
 
       if (!rateLimitDoc.exists()) {
@@ -213,7 +212,7 @@ class FirebaseDocumentService implements DocumentService {
 
     try {
       // Create document reference with auto-generated ID
-      const docRef = doc(collection(db, this.documentsCollection));
+      const docRef = doc(collection(firestore, this.documentsCollection));
       const documentId = docRef.id;
 
       // Upload to storage
@@ -317,11 +316,12 @@ class FirebaseDocumentService implements DocumentService {
         constraints.push(limit(filter.limit));
       }
 
-      if (filter?.offset) {
-        constraints.push(offset(filter.offset));
-      }
+      // TODO: Firebase Firestore v9+ doesn't support offset() - use startAfter() for pagination
+      // if (filter?.offset) {
+      //   constraints.push(offset(filter.offset));
+      // }
 
-      const q = query(collection(db, this.documentsCollection), ...constraints);
+      const q = query(collection(firestore, this.documentsCollection), ...constraints);
       const snapshot = await getDocs(q);
 
       const documents = snapshot.docs.map((doc) =>
@@ -330,10 +330,10 @@ class FirebaseDocumentService implements DocumentService {
 
       // Get total count for pagination
       const countConstraints = constraints.filter(
-        (c) => !c.toJSON().toString().includes('limit') && !c.toJSON().toString().includes('offset')
+        (c) => !c.toJSON().toString().includes('limit')
       );
       const countQuery = query(
-        collection(db, this.documentsCollection),
+        collection(firestore, this.documentsCollection),
         ...countConstraints
       );
       const countSnapshot = await getDocs(countQuery);
@@ -357,7 +357,7 @@ class FirebaseDocumentService implements DocumentService {
    */
   async getDocumentMetadata(documentId: string): Promise<DocumentMetadata> {
     try {
-      const docRef = doc(db, this.documentsCollection, documentId);
+      const docRef = doc(firestore, this.documentsCollection, documentId);
       const snapshot = await getDoc(docRef);
 
       if (!snapshot.exists()) {
@@ -407,7 +407,7 @@ class FirebaseDocumentService implements DocumentService {
     try {
       const metadata = await this.getDocumentMetadata(documentId);
       const storagePath = (await getDoc(
-        doc(db, this.documentsCollection, documentId)
+        doc(firestore, this.documentsCollection, documentId)
       )).data()?.storagePath;
 
       if (!storagePath) {
@@ -448,7 +448,7 @@ class FirebaseDocumentService implements DocumentService {
     const user = await this.getCurrentUser();
 
     try {
-      const docRef = doc(db, this.documentsCollection, documentId);
+      const docRef = doc(firestore, this.documentsCollection, documentId);
       const docSnapshot = await getDoc(docRef);
 
       if (!docSnapshot.exists()) {
@@ -503,7 +503,7 @@ class FirebaseDocumentService implements DocumentService {
     const user = await this.getCurrentUser();
 
     try {
-      const docRef = doc(db, this.documentsCollection, documentId);
+      const docRef = doc(firestore, this.documentsCollection, documentId);
       const docSnapshot = await getDoc(docRef);
 
       if (!docSnapshot.exists()) {
@@ -563,7 +563,7 @@ class FirebaseDocumentService implements DocumentService {
         limit(limit),
       ];
 
-      const q = query(collection(db, this.documentsCollection), ...constraints);
+      const q = query(collection(firestore, this.documentsCollection), ...constraints);
       const snapshot = await getDocs(q);
 
       // Client-side filtering by query
@@ -606,7 +606,7 @@ class FirebaseDocumentService implements DocumentService {
         limit(100),
       ];
 
-      const q = query(collection(db, this.auditLogsCollection), ...constraints);
+      const q = query(collection(firestore, this.auditLogsCollection), ...constraints);
       const snapshot = await getDocs(q);
 
       return snapshot.docs.map((doc) => ({
