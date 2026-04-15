@@ -4,7 +4,7 @@ import { X, Upload, FileText, AlertCircle } from 'lucide-react';
 interface UploadModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onUpload?: (data: { nome: string; arquivo: File; ano: string; visibilidade: string; categoria: string }) => void;
+    onUpload?: (data: { nome: string; arquivo: File; ano: string; visibilidade: string; categoria: string; descricao: string }) => void;
 }
 
 interface Category {
@@ -118,8 +118,12 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpload }) 
         
         try {
             // Chama o upload de verdade
-            if (onUpload) {
-                onUpload(formData);
+            if (onUpload && formData.arquivo) {
+                onUpload({
+                    ...formData,
+                    arquivo: formData.arquivo,  // Garante que não é null
+                    descricao: selectedCategory?.description || ''
+                });
             }
             
             // Reset form

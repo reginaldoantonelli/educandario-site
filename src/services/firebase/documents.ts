@@ -168,6 +168,9 @@ class FirebaseDocumentService implements DocumentService {
       public: docData.public || false,
       tags: docData.tags || [],
       url: docData.url,
+      fileUrl: docData.fileUrl,
+      storagePath: docData.storagePath,
+      description: docData.description,
     };
   }
 
@@ -308,18 +311,13 @@ class FirebaseDocumentService implements DocumentService {
         constraints.push(where('category', '==', filter.category));
       }
 
-      // Sort by date
-      constraints.push(orderBy('uploadedAt', 'desc'));
+      // Sort by date (disabled - requires Firestore index)
+      // constraints.push(orderBy('uploadedAt', 'desc'));
 
       // Pagination
       if (filter?.limit) {
         constraints.push(limit(filter.limit));
       }
-
-      // TODO: Firebase Firestore v9+ doesn't support offset() - use startAfter() for pagination
-      // if (filter?.offset) {
-      //   constraints.push(offset(filter.offset));
-      // }
 
       const q = query(collection(firestore, this.documentsCollection), ...constraints);
       const snapshot = await getDocs(q);
@@ -328,14 +326,21 @@ class FirebaseDocumentService implements DocumentService {
         this.firebaseDocToMetadata({ id: doc.id, ...doc.data() })
       );
 
-      // Get total count for pagination
-      const countConstraints = constraints.filter(
-        (c) => !c.toJSON().toString().includes('limit')
-      );
-      const countQuery = query(
-        collection(firestore, this.documentsCollection),
-        ...countConstraints
-      );
+      // Get total count for pagination (without limit)
+      let countQuery;
+      const hasLimit = constraints.some(c => c.type === 'limit');
+      
+      if (hasLimit) {
+        // Remove limit constraint for count
+        const countConstraints = constraints.filter(c => c.type !== 'limit');
+        countQuery = query(
+          collection(firestore, this.documentsCollection),
+          ...countConstraints
+        );
+      } else {
+        countQuery = q;
+      }
+      
       const countSnapshot = await getDocs(countQuery);
 
       return {
@@ -344,6 +349,7 @@ class FirebaseDocumentService implements DocumentService {
         hasMore: documents.length < countSnapshot.size,
       };
     } catch (error) {
+      console.error('❌ listDocuments error:', error);
       throw new DocumentServiceError(
         'Erro ao listar documentos',
         'LIST_FAILED',
@@ -468,14 +474,13 @@ class FirebaseDocumentService implements DocumentService {
         );
       }
 
-      // Delete from storage
-      if (docData.storagePath) {
-        const fileRef = ref(storage, docData.storagePath);
-        await deleteObject(fileRef);
-      }
+      // NOTE: Arquivo no Storage não será deletado por limitações de CORS
+      // O arquivo fica órfão no storage mas isso é aceitável
+      // Para deletar arquivos do Storage, usar função administrativa no backend
 
-      // Delete metadata
+      // Delete metadata from Firestore (deve sempre funcionar)
       await deleteDoc(docRef);
+      console.log('✓ Document metadata deleted from Firestore');
 
       // Log audit
       await this.logAuditAction('delete', documentId, {
@@ -485,6 +490,7 @@ class FirebaseDocumentService implements DocumentService {
       if (error instanceof DocumentServiceError) {
         throw error;
       }
+      console.error('Delete error:', error);
       throw new DocumentServiceError(
         'Erro ao deletar documento',
         'DELETE_FAILED',

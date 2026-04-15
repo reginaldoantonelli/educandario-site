@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { X, Save } from 'lucide-react';
 
 interface EditDocumentModalProps {
@@ -36,18 +36,28 @@ const EditDocumentModal: React.FC<EditDocumentModalProps> = ({
         visibilidade: 'Público'
     });
 
+    // Mapa inverso para encontrar o nome real pela categoria armazenada
+    const getCategoryName = useCallback((categoryNameOrId: string): string => {
+        // Se já é um nome real (como "Institucional"), retorna ele mesmo
+        if (Object.keys(categoryMap).includes(categoryNameOrId)) {
+            return categoryNameOrId;
+        }
+        // Se é um ID (como "ensa"), encontra o nome correspondente
+        const categoryEntry = Object.entries(categoryMap).find(([name]) => categoryMap[name].id === categoryNameOrId || categoryMap[name].shortTitle === categoryNameOrId);
+        return categoryEntry ? categoryEntry[0] : 'Institucional';
+    }, []);
+
+    // Sincronizar formulário quando o documento mudar
     useEffect(() => {
         if (document) {
-            // Sincronizar estado do formulário quando o documento muda (padrão comum para formulários controlados)
-            // eslint-disable-next-line
             setFormData({
                 nome: document.nome,
-                categoria: document.categoria,
+                categoria: getCategoryName(document.categoria),
                 ano: document.ano,
                 visibilidade: document.visibilidade
             });
         }
-    }, [document]);
+    }, [document, getCategoryName]);
 
     const selectedCategory = useMemo(() => 
         categoryMap[formData.categoria],
@@ -66,7 +76,10 @@ const EditDocumentModal: React.FC<EditDocumentModalProps> = ({
 
         onSave({
             id: document.id,
-            ...formData
+            nome: formData.nome,
+            categoria: formData.categoria,  // Passa o nome da categoria (ex: 'Institucional')
+            ano: formData.ano,
+            visibilidade: formData.visibilidade
         });
     };
 
@@ -120,9 +133,8 @@ const EditDocumentModal: React.FC<EditDocumentModalProps> = ({
                             Ano do Documento
                         </label>
                         <input
-                            type="number"
-                            min="2000"
-                            max={new Date().getFullYear() + 1}
+                            type="text"
+                            placeholder="ex: 2026"
                             value={formData.ano}
                             onChange={(e) => setFormData({ ...formData, ano: e.target.value })}
                             disabled={isLoading}

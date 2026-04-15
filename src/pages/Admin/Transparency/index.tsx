@@ -6,14 +6,12 @@ import OperationConfirmationModal from '@/components/Admin/OperationConfirmation
 import ConfirmDeleteModal from '@/components/Admin/ConfirmDeleteModal';
 import EditDocumentModal from '@/components/Admin/EditDocumentModal';
 import { useDocuments } from '@/hooks/useDocuments';
-import { useNotifications } from '@/hooks/useNotifications';
 //import { userNotificationsService } from '@/services/userNotificationsService';
 import { auditService } from '@/services/auditService';
 
 const TransparencyAdmin: React.FC = () => {
     // Hooks para gerenciar documentos e notificações
-    const { documents, loading, error, delete: deleteDoc, upload, update } = useDocuments();
-    const { create: createNotification } = useNotifications();
+    const { documents, loading, error, delete: deleteDoc, upload, update, list: listDocuments } = useDocuments();
 
     // UI States (apenas para UI, não para dados)
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -29,6 +27,8 @@ const TransparencyAdmin: React.FC = () => {
     const [documentToEdit, setDocumentToEdit] = useState<string | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 6;
+    const [deleteLoading, setDeleteLoading] = useState(false);
+    const [deleteError, setDeleteError] = useState<string | null>(null);
     
     // Estado para rastrear o último upload (compartilhado com Dashboard)
     const [lastUploadTime, setLastUploadTime] = useState<number | null>(() => {
@@ -38,6 +38,11 @@ const TransparencyAdmin: React.FC = () => {
     
     // Estado para forçar atualizações do tempo decorrido a cada 30 segundos
     const [currentTime, setCurrentTime] = useState(() => Date.now());
+
+    // Carregar documentos ao montar
+    useEffect(() => {
+        listDocuments();
+    }, [listDocuments]);
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -78,7 +83,7 @@ const TransparencyAdmin: React.FC = () => {
     };
 
     // Função para adicionar novo documento
-    const handleUpload = async (uploadData: { nome: string; arquivo: File; ano: string; visibilidade: string; categoria: string }) => {
+    const handleUpload = async (uploadData: { nome: string; arquivo: File; ano: string; visibilidade: string; categoria: string; descricao: string }) => {
         setIsUploadProcessing(true);
         try {
             const result = await upload(uploadData.arquivo, {
@@ -86,7 +91,8 @@ const TransparencyAdmin: React.FC = () => {
                 type: 'pdf',
                 category: categoryMap[uploadData.categoria] || uploadData.categoria,
                 public: uploadData.visibilidade === 'Público',
-                tags: [uploadData.ano]
+                tags: [uploadData.ano],
+                description: uploadData.descricao
             });
             
             if (result) {
@@ -104,13 +110,8 @@ const TransparencyAdmin: React.FC = () => {
                     `📤 Arquivo enviado: ${uploadData.nome} (${categoryMap[uploadData.categoria] || uploadData.categoria})`
                 );
                 
-                // Cria notificação no Firebase (para histórico global)
-                await createNotification({
-                    title: 'Upload realizado',
-                    message: `Documento "${uploadData.nome}" foi enviado com sucesso`,
-                    type: 'success',
-                    actionUrl: '/admin/transparency',
-                });
+                // Recarregar documents list para sincronizar com novo documento
+                await listDocuments();
             }
         } catch (err) {
             console.error('Upload failed:', err);
@@ -133,14 +134,31 @@ const TransparencyAdmin: React.FC = () => {
 
     // Função para confirmar exclusão
     const handleConfirmDelete = async () => {
-        if (documentToDelete !== null) {
-            try {
-                await deleteDoc(documentToDelete);
-                setDeleteModalOpen(false);
-                setDocumentToDelete(null);
-            } catch (err) {
-                console.error('Delete failed:', err);
-            }
+        if (documentToDelete === null) return;
+
+        setDeleteLoading(true);
+        setDeleteError(null);
+
+        try {
+            // Get document name before deleting
+            const docToDelete = documents.find(d => d.id === documentToDelete);
+            const docName = docToDelete?.name || 'Documento desconhecido';
+
+            await deleteDoc(documentToDelete);
+            
+            // Log audit action
+            await auditService.addLog(
+                `🗑️ Arquivo deletado: ${docName}`
+            );
+            
+            setDeleteModalOpen(false);
+            setDocumentToDelete(null);
+        } catch (err) {
+            console.error('Delete failed:', err);
+            const errorMessage = err instanceof Error ? err.message : 'Erro ao deletar documento. Tente novamente.';
+            setDeleteError(errorMessage);
+        } finally {
+            setDeleteLoading(false);
         }
     };
 
@@ -156,10 +174,13 @@ const TransparencyAdmin: React.FC = () => {
         if (docIdToUpdate === null) return;
 
         try {
+            // Mapear categoria visual para categoria de armazenamento (se necessário)
+            const categoryName = updatedDocument.categoria || updatedDocument.category || '';
+            
             await update(docIdToUpdate, {
                 public: updatedDocument.visibilidade === 'Público',
-                category: updatedDocument.category || updatedDocument.categoria,
-                tags: updatedDocument.year ? [updatedDocument.year] : []
+                category: categoryName,  // Passa o nome da categoria (ex: 'Institucional')
+                tags: updatedDocument.ano ? [updatedDocument.ano] : []
             });
             
             // Mostra confirmação de sucesso
@@ -168,6 +189,13 @@ const TransparencyAdmin: React.FC = () => {
             setShowEditConfirmation(true);
             setEditModalOpen(false);
             setDocumentToEdit(null);
+
+            // Recarregar documents list para sincronizar mudanças
+            await listDocuments();
+            
+            // Notificar também a página de transparência sobre a mudança
+            const now = Date.now();
+            localStorage.setItem('lastDocumentUpdate', now.toString());
         } catch (err) {
             console.error('Update failed:', err);
         }
@@ -181,7 +209,8 @@ const TransparencyAdmin: React.FC = () => {
         categoria: doc.category || '',
         ano: doc.tags?.[0] || '',
         year: doc.tags?.[0] || '',
-        visibilidade: doc.public ? 'Público' : 'Privado'
+        visibilidade: doc.public ? 'Público' : 'Privado',
+        updatedAt: doc.updatedAt || doc.uploadedAt || 0  // Usar updatedAt ou uploadedAt para ordenação
     }));
 
     // Extrair valores únicos para os filtros
@@ -189,15 +218,33 @@ const TransparencyAdmin: React.FC = () => {
     const anos = useMemo(() => [...new Set(documentsConverted.map(doc => doc.ano))].filter(Boolean).sort().reverse(), [documentsConverted]);
     const visibilidades = ['Público', 'Privado', 'Restrito'];
 
-    // Documentos filtrados
+    // Função auxiliar para converter timestamp para milliseconds
+    const getTimeInMillis = (timestamp: Date | number | { toMillis(): number } | undefined | null): number => {
+        if (!timestamp) return 0;
+        if (typeof timestamp === 'number') return timestamp;
+        if (timestamp instanceof Date) return timestamp.getTime();
+        if (typeof timestamp === 'object' && 'toMillis' in timestamp && typeof (timestamp as { toMillis(): number }).toMillis === 'function') {
+            return (timestamp as { toMillis(): number }).toMillis();
+        }
+        return 0;
+    };
+
+    // Documentos filtrados e ordenados em ordem decrescente (mais recentes primeiro)
     const documentosFiltrados = useMemo(() => {
-        return documentsConverted.filter(doc => {
+        const filtered = documentsConverted.filter(doc => {
             const buscaMatch = doc.nome.toLowerCase().includes(filters.busca.toLowerCase());
             const categoriaMatch = !filters.categoria || doc.categoria === filters.categoria;
             const visibilidadeMatch = !filters.visibilidade || doc.visibilidade === filters.visibilidade;
             const anoMatch = !filters.ano || doc.ano === filters.ano;
             
             return buscaMatch && categoriaMatch && visibilidadeMatch && anoMatch;
+        });
+        
+        // Ordenar em ordem decrescente por data de atualização
+        return filtered.sort((a, b) => {
+            const aTime = getTimeInMillis(a.updatedAt);
+            const bTime = getTimeInMillis(b.updatedAt);
+            return bTime - aTime;  // Ordem decrescente (mais recentes primeiro)
         });
     }, [documentsConverted, filters]);
 
@@ -422,9 +469,13 @@ const TransparencyAdmin: React.FC = () => {
                         </div>
                         </td>
                         <td className="px-4 sm:px-8 py-4 sm:py-5">
-                        <div className="flex flex-col">
-                            <span className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase">{doc.categoria}</span>
-                            <span className="text-sm text-slate-400">{doc.ano}</span>
+                        <div className="flex flex-col gap-1">
+                            <span className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase">
+                                {doc.categoria || '—'}
+                            </span>
+                            <span className="text-sm text-slate-400 font-medium">
+                                {doc.ano ? `${doc.ano}` : '—'}
+                            </span>
                         </div>
                         </td>
                         <td className="px-4 sm:px-8 py-4 sm:py-5">
@@ -483,8 +534,12 @@ const TransparencyAdmin: React.FC = () => {
                             <div className="flex-1 min-w-0">
                                 <h3 className="font-bold text-slate-900 dark:text-white truncate text-sm md:text-base">{doc.nome}</h3>
                                 <div className="flex items-center gap-2 mt-2 flex-wrap">
-                                    <span className="text-xs md:text-sm font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-2 py-1 rounded">{doc.categoria}</span>
-                                    <span className="text-xs md:text-sm text-slate-500 dark:text-slate-400">{doc.ano}</span>
+                                    <span className="text-xs md:text-sm font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-2 py-1 rounded">
+                                        {doc.categoria || '—'}
+                                    </span>
+                                    <span className="text-xs md:text-sm text-slate-500 dark:text-slate-400 font-medium">
+                                        {doc.ano ? `${doc.ano}` : '—'}
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -604,8 +659,10 @@ const TransparencyAdmin: React.FC = () => {
             onCancel={() => {
                 setDeleteModalOpen(false);
                 setDocumentToDelete(null);
+                setDeleteError(null);
             }}
-            isDeleting={loading}
+            isDeleting={deleteLoading}
+            error={deleteError}
         />
 
         {/* Modal de Edição */}

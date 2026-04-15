@@ -1,9 +1,13 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { FileText, Download, ShieldCheck, Search, FilterX, ChevronRight, Menu } from 'lucide-react';
+import { firebaseDocumentService } from '@/services/firebase/documents';
+import type { DocumentMetadata } from '@/services/api/documents';
 
 interface DocumentItem {
+    id: string;
     title: string;
     year: string;
+    fileUrl: string;
 }
 
 interface Category {
@@ -17,48 +21,122 @@ interface Category {
 const Transparency: React.FC = () => {
     const [activeTab, setActiveTab] = useState(0);
     const [searchTerm, setSearchTerm] = useState('');
+    const [loading, setLoading] = useState(true);
 
-    const categories: Category[] = useMemo(() => [
+    // Definir estrutura base de categorias (com descrições)
+    const baseCategories = useMemo(() => [
         {
             id: 'ensa',
             title: "Documentos – ENSA",
             shortTitle: "Institucional",
             description: "Estatutos, atas de eleição e documentos oficiais da entidade.",
-            items: [
-                { title: "Estatuto Social Atualizado", year: "2024" },
-                { title: "Ata de Eleição de Diretoria", year: "2022-2025" },
-                { title: "Cartão CNPJ", year: "2024" },
-            ]
         },
         {
             id: 'social',
             title: "Promoção Social",
             shortTitle: "Promoção Social",
             description: "Relatórios de atividades e demonstrativos financeiros da assistência.",
-            items: [
-                { title: "Relatório de Atividades Anual", year: "2023" },
-                { title: "Balanço Patrimonial", year: "2023" },
-            ]
         },
         {
             id: 'cpfl',
             title: "Parceria CPFL",
             shortTitle: "Convênio CPFL",
             description: "Documentos e prestações de contas do projeto CPFL.",
-            items: [
-                { title: "Relatório de Execução CPFL", year: "2023" },
-            ]
         },
         {
             id: 'educacao',
             title: "Educação",
             shortTitle: "Educação",
             description: "Relatórios pedagógicos e convênios da área educacional.",
-            items: [
-                { title: "Relatório Pedagógico Municipal", year: "2024" },
-            ]
         }
-    ], []);
+    ] as Omit<Category, 'items'>[], []);
+
+    // Inicializar com categorias base vazias
+    const [categories, setCategories] = useState<Category[]>(
+        baseCategories.map(cat => ({ ...cat, items: [] }))
+    );
+    const [lastUploadCheck, setLastUploadCheck] = useState<number | null>(null);
+
+    // Memoizar a função de carregamento para evitar recriações desnecessárias
+    const loadDocumentsFromFirestore = useCallback(async () => {
+        try {
+            setLoading(true);
+            // Mapear IDs para nomes de categorias do Firestore
+            const categoryMap: Record<string, string> = {
+                'ensa': 'Institucional',
+                'social': 'Promoção Social',
+                'cpfl': 'Convênio CPFL',
+                'educacao': 'Educação'
+            };
+
+            // Carregar apenas documentos públicos
+            const result = await firebaseDocumentService.listDocuments({ public: true });
+            
+            // Agrupar documentos por categoria
+            const grouped: Record<string, DocumentItem[]> = {};
+            
+            result.documents.forEach((doc: DocumentMetadata) => {
+                const fireCat = doc.category || 'Geral';
+                if (!grouped[fireCat]) {
+                    grouped[fireCat] = [];
+                }
+                
+                const year = doc.tags?.[0] || new Date(doc.uploadedAt).getFullYear().toString() || 'N/A';
+                
+                grouped[fireCat].push({
+                    id: doc.id,
+                    title: doc.name,
+                    year: year,
+                    fileUrl: doc.fileUrl || doc.url || ''
+                });
+            });
+
+            // Combinar com estrutura base
+            const updatedCategories = baseCategories.map(baseCat => ({
+                ...baseCat,
+                items: grouped[categoryMap[baseCat.id]] || []
+            }));
+
+            setCategories(updatedCategories);
+        } catch (error) {
+            console.error('Erro ao carregar documentos:', error);
+            // Manter categorias vazias em caso de erro
+            setCategories(baseCategories.map(cat => ({ ...cat, items: [] })));
+        } finally {
+            setLoading(false);
+        }
+    }, [baseCategories]);
+
+    // Carregar documentos ao montar
+    useEffect(() => {
+        loadDocumentsFromFirestore();
+    }, [loadDocumentsFromFirestore]);
+
+    // Monitorar novos uploads e edições via localStorage
+    useEffect(() => {
+        const checkForChanges = () => {
+            const lastUpload = localStorage.getItem('lastDocumentUpload');
+            const lastUpdate = localStorage.getItem('lastDocumentUpdate');
+            
+            const uploadTime = lastUpload ? parseInt(lastUpload) : null;
+            const updateTime = lastUpdate ? parseInt(lastUpdate) : null;
+            const latestChange = Math.max(uploadTime || 0, updateTime || 0);
+            
+            if (latestChange && (!lastUploadCheck || latestChange > lastUploadCheck)) {
+                setLastUploadCheck(latestChange);
+                // Recarregar documentos quando há um novo upload ou edição
+                loadDocumentsFromFirestore();
+            }
+        };
+
+        // Verificar imediatamente
+        checkForChanges();
+
+        // E verificar a cada 2 segundos também
+        const interval = setInterval(checkForChanges, 2000);
+
+        return () => clearInterval(interval);
+    }, [lastUploadCheck, loadDocumentsFromFirestore]);
 
     const filteredItems = useMemo(() => {
         const currentCategory = categories[activeTab];
@@ -145,11 +223,18 @@ const Transparency: React.FC = () => {
 
                             {/* Área com altura máxima e scroll automático */}
                             <div className="p-6 md:p-10 overflow-y-auto max-h-150 custom-scrollbar bg-slate-50/20 dark:bg-slate-900/30">
-                                {filteredItems.length > 0 ? (
+                                {loading ? (
+                                    <div className="flex items-center justify-center py-20">
+                                        <div className="text-center text-slate-500 dark:text-slate-400">
+                                            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+                                            <p className="font-bold">Carregando documentos...</p>
+                                        </div>
+                                    </div>
+                                ) : filteredItems.length > 0 ? (
                                     <div className="grid gap-3">
                                         {filteredItems.map((doc) => (
                                             <div
-                                                key={`${doc.title}-${doc.year}`}
+                                                key={doc.id}
                                                 tabIndex={0}
                                                 className="flex items-center justify-between p-4 md:p-6 rounded-3xl border border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-lg transition-all group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                                             >
@@ -164,10 +249,14 @@ const Transparency: React.FC = () => {
                                                         </p>
                                                     </div>
                                                 </div>
-                                                <button className="flex items-center gap-2 bg-blue-50 text-blue-700 px-4 py-2.5 rounded-xl font-bold text-xs hover:bg-blue-600 hover:text-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+                                                <a 
+                                                    href={doc.fileUrl} 
+                                                    download 
+                                                    className="flex items-center gap-2 bg-blue-50 text-blue-700 px-4 py-2.5 rounded-xl font-bold text-xs hover:bg-blue-600 hover:text-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                                                >
                                                     <Download size={18} />
                                                     <span className="hidden sm:inline">BAIXAR</span>
-                                                </button>
+                                                </a>
                                             </div>
                                         ))}
                                     </div>

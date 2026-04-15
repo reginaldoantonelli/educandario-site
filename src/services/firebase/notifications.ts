@@ -146,7 +146,7 @@ class FirebaseNotificationService implements NotificationService {
     }
 
     try {
-      const batch = writeBatch(db);
+      const batch = writeBatch(firestore);
       const notifications: Notification[] = [];
       const now = Timestamp.now();
 
@@ -358,7 +358,7 @@ class FirebaseNotificationService implements NotificationService {
       );
 
       const snapshot = await getDocs(q);
-      const batch = writeBatch(db);
+      const batch = writeBatch(firestore);
       const now = Timestamp.now();
 
       snapshot.docs.forEach((doc) => {
@@ -443,7 +443,7 @@ class FirebaseNotificationService implements NotificationService {
       );
 
       const snapshot = await getDocs(q);
-      const batch = writeBatch(db);
+      const batch = writeBatch(firestore);
 
       snapshot.docs.forEach((doc) => {
         batch.delete(doc.ref);

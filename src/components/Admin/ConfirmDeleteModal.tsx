@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertTriangle, Trash2, X } from 'lucide-react';
+import { AlertTriangle, Trash2, X, AlertCircle } from 'lucide-react';
 
 interface ConfirmDeleteModalProps {
     isOpen: boolean;
@@ -7,6 +7,7 @@ interface ConfirmDeleteModalProps {
     onConfirm: () => void;
     onCancel: () => void;
     isDeleting?: boolean;
+    error?: string | null;
 }
 
 const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
@@ -14,7 +15,8 @@ const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
     documentName,
     onConfirm,
     onCancel,
-    isDeleting = false
+    isDeleting = false,
+    error = null
 }) => {
     if (!isOpen) return null;
 
@@ -63,6 +65,16 @@ const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
                             {documentName}
                         </span>
                     </p>
+
+                    {/* Exibir erro se houver */}
+                    {error && (
+                        <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-start gap-3">
+                            <AlertCircle size={18} className="text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
+                            <p className="text-sm text-red-700 dark:text-red-300">
+                                {error}
+                            </p>
+                        </div>
+                    )}
                 </div>
 
                 {/* Botões de Ação */}

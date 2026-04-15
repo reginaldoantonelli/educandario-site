@@ -113,18 +113,19 @@ class UserNotificationsService {
 
   /**
    * Deletar todas as notificações lidas do usuário
-   * ⚠️ Não deleta notificações protegidas (histórico de auditoria)
+   * Remove COMPLETAMENTE as notificações lidas (sem proteção)
+   * As notificações pessoais podem ser deletadas sem restrição
    */
   async clearReadNotifications(userId: string): Promise<void> {
     try {
       let notifications = await this.getNotifications(userId);
-      // Mantém notificações não lidas E notificações protegidas
-      notifications = notifications.filter(n => !n.read || n.protected);
+      // Remove TODAS as notificações lidas (mantém apenas as NÃO lidas)
+      notifications = notifications.filter(n => !n.read);
       
       const key = `${this.STORAGE_PREFIX}${userId}`;
       localStorage.setItem(key, JSON.stringify(notifications));
       
-      console.log(`🗑️ Notificações lidas limpas para ${userId} (protegidas mantidas)`);
+      console.log(`🗑️ Notificações lidas limpas para ${userId}`);
     } catch (error) {
       console.error('Erro ao limpar notificações lidas:', error);
       throw error;

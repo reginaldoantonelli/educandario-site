@@ -29,6 +29,7 @@ import type {
 import { DocumentServiceError } from '@/services/api/documents';
 import { firestore } from '@/services/firebase/config';
 import { firebaseAuthService } from '@/services/firebase/auth';
+import { firebaseDocumentService } from '@/services/firebase/documents';
 import { storageService } from './storage';
 
 export class SupabaseDocumentService {
@@ -111,7 +112,6 @@ export class SupabaseDocumentService {
         tags: metadata.tags || [],
         category: metadata.category || 'Geral',
         public: metadata.public !== false,
-        visibility: metadata.public !== false ? 'public' : 'private',
         description: metadata.description || '',
       };
 

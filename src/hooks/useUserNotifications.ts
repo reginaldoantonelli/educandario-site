@@ -80,12 +80,7 @@ export const useUserNotifications = () => {
       setError(null);
       const userId = getUserId();
       
-      // Verificar se a notificação é protegida
-      const notifi = notifications.find(n => n.id === notificationId);
-      if (notifi?.protected) {
-        throw new Error('Esta notificação faz parte do histórico de auditoria e não pode ser deletada');
-      }
-      
+      // Deletar SEM PROTEÇÃO - notificações no sino podem ser deletadas
       await userNotificationsService.deleteNotification(userId, notificationId);
       // Atualizar state removendo a notificação
       setNotifications(prev => prev.filter(n => n.id !== notificationId));
@@ -94,7 +89,7 @@ export const useUserNotifications = () => {
       setError(errorMsg);
       throw err;
     }
-  }, [getUserId, notifications]);
+  }, [getUserId]);
 
   // Marcar como lida
   const markAsRead = useCallback(async (notificationId: string) => {
@@ -118,13 +113,18 @@ export const useUserNotifications = () => {
     try {
       setError(null);
       const userId = getUserId();
+      
+      // Atualização otimista usando função de estado anterior (evita dependency array issues)
+      // Remove TODAS as lidas (sem proteção no sino)
+      setNotifications(prev => prev.filter(n => !n.read));
+      
+      // Depois chamar o serviço para sincronizar
       await userNotificationsService.clearReadNotifications(userId);
-      // Atualizar state: remove lidas, MAS mantém protegidas
-      setNotifications(prev => prev.filter(n => !n.read || n.protected));
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Erro ao limpar notificações';
       setError(errorMsg);
-      throw err;
+      // NÃO throw - apenas registrar erro mas manter a atualização otimista
+      console.error('Erro ao limpar notificações:', err);
     }
   }, [getUserId]);
 

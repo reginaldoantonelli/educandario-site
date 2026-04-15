@@ -18,6 +18,7 @@ const NotificationPanel: React.FC = () => {
     const saved = localStorage.getItem('readNotifications');
     return saved ? new Set(JSON.parse(saved)) : new Set();
   });
+  const [isOperating, setIsOperating] = useState(false); // Pausar polling durante operações
   const panelRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [currentTime, setCurrentTime] = useState(() => Date.now());
@@ -49,7 +50,7 @@ const NotificationPanel: React.FC = () => {
         id: notif.id,
         message: notif.message,
         timestamp: notif.timestamp,
-        read: readNotifications.has(notif.id),
+        read: notif.read || readNotifications.has(notif.id), // Usa a prop read primeiro
         icon: getIconForMessage(notif.message),
       };
     });
@@ -58,14 +59,17 @@ const NotificationPanel: React.FC = () => {
     setNotifications(newNotifications);
   }, [userNotifications, readNotifications]);
 
-  // Poll para recarregar notificações a cada 30 segundos
+  // Poll para recarregar notificações a cada 30 segundos (pausado durante operações)
   useEffect(() => {
+    // Não fazer polling se uma operação está em andamento
+    if (isOperating) return;
+    
     const interval = setInterval(() => {
       fetchNotifications();
     }, 30000);
 
     return () => clearInterval(interval);
-  }, [fetchNotifications]);
+  }, [fetchNotifications, isOperating]);
 
   // Fechar ao clicar fora
   useEffect(() => {
@@ -123,31 +127,40 @@ const NotificationPanel: React.FC = () => {
   };
 
   const handleMarkAllAsRead = async () => {
-    const allIds = new Set(notifications.map(n => n.id));
-    setReadNotifications(allIds);
-    localStorage.setItem('readNotifications', JSON.stringify(Array.from(allIds)));
-    
-    // Marcar como lido no backend para cada notificação
+    setIsOperating(true);
     try {
-      for (const notification of notifications) {
-        if (!notification.read) {
-          await markAsRead(notification.id);
+      const allIds = new Set(notifications.map(n => n.id));
+      setReadNotifications(allIds);
+      localStorage.setItem('readNotifications', JSON.stringify(Array.from(allIds)));
+      
+      // Marcar como lido no backend para cada notificação
+      try {
+        for (const notification of notifications) {
+          if (!notification.read) {
+            await markAsRead(notification.id);
+          }
         }
+      } catch (error) {
+        console.error('Erro ao marcar notificações como lidas:', error);
       }
-    } catch (error) {
-      console.error('Erro ao marcar notificações como lidas:', error);
+    } finally {
+      setIsOperating(false);
     }
   };
 
   const handleClearAll = async () => {
-    // Deletar notificações lidas via hook
+    setIsOperating(true);
     try {
-      await clearReadNotifications();
-      // Limpar localStorage apenas após sucesso
+      // Limpar localStorage - remove TUDO que está lido
       setReadNotifications(new Set());
       localStorage.setItem('readNotifications', JSON.stringify([]));
+      
+      // Depois chamar o hook para sincronizar no serviço
+      await clearReadNotifications();
     } catch (error) {
       console.error('Erro ao limpar notificações:', error);
+    } finally {
+      setIsOperating(false);
     }
   };
 
@@ -209,7 +222,7 @@ const NotificationPanel: React.FC = () => {
                     key={notification.id}
                     className={`px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group cursor-pointer flex justify-between items-start ${
                       !notification.read ? 'bg-blue-50 dark:bg-blue-900/10' : ''
-                    } ${notification.protected ? 'border-l-2 border-l-yellow-400' : ''}`}
+                    }`}
                   >
                     <div 
                       className="flex-1 flex gap-3 items-start"
@@ -229,27 +242,20 @@ const NotificationPanel: React.FC = () => {
                       {!notification.read && (
                         <div className="w-2 h-2 bg-blue-500 rounded-full shrink-0"></div>
                       )}
-                      {notification.protected && (
-                        <div className="text-yellow-500 text-xs font-bold shrink-0" title="Notificação protegida - Histórico de auditoria">
-                          🔒
-                        </div>
-                      )}
-                      {!notification.protected && (
-                        <button
-                          onClick={async (e) => {
-                            e.stopPropagation();
-                            try {
-                              await deleteNotification(notification.id);
-                            } catch (error) {
-                              console.error('Erro ao deletar notificação:', error);
-                            }
-                          }}
-                          className="p-1 text-slate-400 hover:text-red-600 dark:hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"
-                          title="Remover notificação"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      )}
+                      <button
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          try {
+                            await deleteNotification(notification.id);
+                          } catch (error) {
+                            console.error('Erro ao deletar notificação:', error);
+                          }
+                        }}
+                        className="p-1 text-slate-400 hover:text-red-600 dark:hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"
+                        title="Remover notificação"
+                      >
+                        <Trash2 size={14} />
+                      </button>
                     </div>
                   </div>
                 ))}

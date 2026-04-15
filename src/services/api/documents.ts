@@ -19,6 +19,9 @@ export interface DocumentMetadata {
   public: boolean; // true = accessible to users, false = admin only
   tags?: string[];
   url?: string; // Signed or public URL
+  fileUrl?: string; // Supabase URL
+  storagePath?: string; // Supabase storage path
+  description?: string;
 }
 
 /**
@@ -32,6 +35,7 @@ export interface UploadDocumentInput {
   category?: string;
   public?: boolean;
   tags?: string[];
+  description?: string;
 }
 
 export interface UploadProgress {
@@ -117,13 +121,13 @@ export interface AuditLogEntry {
   userId: string;
   userEmail?: string;
   timestamp: Date;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
   ipAddress?: string;
 }
 
 export interface DocumentError extends Error {
   code: string;
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
 }
 
 /**
@@ -132,12 +136,12 @@ export interface DocumentError extends Error {
  */
 export class DocumentServiceError extends Error implements DocumentError {
   code: string;
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
 
   constructor(
     message: string,
     code: string,
-    context?: Record<string, any>
+    context?: Record<string, unknown>
   ) {
     super(message);
     this.name = 'DocumentServiceError';
