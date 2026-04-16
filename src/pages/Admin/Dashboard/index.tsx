@@ -7,7 +7,6 @@ import {
     Eye, 
     Edit2, 
     Trash2,
-    Bell,
     AlertCircle
 } from 'lucide-react';
 import UploadModal from '@/components/Admin/UploadModal';
@@ -27,7 +26,7 @@ const Dashboard: React.FC = () => {
     const { documents, upload, delete: deleteDoc, update: updateDoc, list: listDocuments } = useDocuments();
 
     // Notifications
-    const { unreadCount, create: createNotification } = useNotifications();
+    const { create: createNotification } = useNotifications();
 
     // UI State
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -111,7 +110,12 @@ const Dashboard: React.FC = () => {
     };
 
     // Document management
-    const recentDocs = documents.slice(0, 5);
+    const sortedDocuments = [...documents].sort((a, b) => {
+        const timeB = b.updatedAt ? (b.updatedAt instanceof Date ? b.updatedAt.getTime() : b.updatedAt) : 0;
+        const timeA = a.updatedAt ? (a.updatedAt instanceof Date ? a.updatedAt.getTime() : a.updatedAt) : 0;
+        return timeB - timeA;
+    });
+    const recentDocs = sortedDocuments.slice(0, 5);
 
     const getPublicDocumentsCount = () => {
         return documents.filter(doc => doc.public).length;
@@ -256,22 +260,6 @@ const Dashboard: React.FC = () => {
                     </p>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-3 md:gap-4 items-start md:items-center">
-                    {/* Unread Notifications Badge */}
-                    {unreadCount > 0 && (
-                        <div className="flex items-center gap-2 px-3 md:px-4 py-2 md:py-2.5 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/50 rounded-lg">
-                            <div className="relative flex items-center justify-center">
-                                <Bell size={16} className="text-blue-600 dark:text-blue-400" />
-                                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold">
-                                    {unreadCount > 9 ? '9+' : unreadCount}
-                                </span>
-                            </div>
-                            <div className="flex flex-col">
-                                <span className="text-xs font-semibold text-blue-700 dark:text-blue-300">Notificações</span>
-                                <span className="text-xs text-blue-600 dark:text-blue-400">{unreadCount} não lidas</span>
-                            </div>
-                        </div>
-                    )}
-
                     {/* Last Upload Indicator */}
                     {lastUploadTime && (
                         <div className="flex items-center gap-2 px-3 md:px-4 py-2 md:py-2.5 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800/50 rounded-lg">

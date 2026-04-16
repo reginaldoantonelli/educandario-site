@@ -6,12 +6,14 @@ import OperationConfirmationModal from '@/components/Admin/OperationConfirmation
 import ConfirmDeleteModal from '@/components/Admin/ConfirmDeleteModal';
 import EditDocumentModal from '@/components/Admin/EditDocumentModal';
 import { useDocuments } from '@/hooks/useDocuments';
+import { useNotifications } from '@/hooks/useNotifications';
 //import { userNotificationsService } from '@/services/userNotificationsService';
 import { auditService } from '@/services/auditService';
 
 const TransparencyAdmin: React.FC = () => {
     // Hooks para gerenciar documentos e notificações
     const { documents, loading, error, delete: deleteDoc, upload, update, list: listDocuments } = useDocuments();
+    const { create: createNotification } = useNotifications();
 
     // UI States (apenas para UI, não para dados)
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -193,6 +195,19 @@ const TransparencyAdmin: React.FC = () => {
 
             // Recarregar documents list para sincronizar mudanças
             await listDocuments();
+
+            // Log audit
+            await auditService.addLog(
+                `✏️ Documento atualizado: ${title} (${categoryName})`
+            );
+
+            // Create notification
+            await createNotification({
+                title: 'Documento atualizado',
+                message: `"${title}" foi atualizado com sucesso`,
+                type: 'success',
+                actionUrl: '/admin/transparency',
+            });
             
             // Notificar também a página de transparência sobre a mudança
             const now = Date.now();
@@ -203,16 +218,18 @@ const TransparencyAdmin: React.FC = () => {
     };
 
     // Documentos convertidos de DocumentMetadata para o formato legado UI
-    const documentsConverted = documents.map(doc => ({
-        id: doc.id,
-        nome: doc.name || '',
-        title: doc.name || '',
-        categoria: doc.category || '',
-        ano: doc.tags?.[0] || '',
-        year: doc.tags?.[0] || '',
-        visibilidade: doc.public ? 'Público' : 'Privado',
-        updatedAt: doc.updatedAt || doc.uploadedAt || 0  // Usar updatedAt ou uploadedAt para ordenação
-    }));
+    const documentsConverted = documents
+        .map(doc => ({
+            id: doc.id,
+            nome: doc.name || '',
+            title: doc.name || '',
+            categoria: doc.category || '',
+            ano: doc.tags?.[0] || '',
+            year: doc.tags?.[0] || '',
+            visibilidade: doc.public ? 'Público' : 'Privado',
+            updatedAt: doc.updatedAt || doc.uploadedAt || 0  // Usar updatedAt ou uploadedAt para ordenação
+        }))
+        .sort((a, b) => (typeof b.updatedAt === 'number' ? b.updatedAt : 0) - (typeof a.updatedAt === 'number' ? a.updatedAt : 0));
 
     // Extrair valores únicos para os filtros
     const categorias = useMemo(() => [...new Set(documentsConverted.map(doc => doc.categoria))].filter(Boolean), [documentsConverted]);
