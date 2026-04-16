@@ -7,12 +7,15 @@ import {
     Eye, 
     Edit2, 
     Trash2,
+    Bell,
     AlertCircle
 } from 'lucide-react';
 import UploadModal from '@/components/Admin/UploadModal';
 import UploadConfirmationModal from '@/components/Admin/UploadConfirmationModal';
 import { useAuth } from '@/hooks/useAuth';
 import { useDocuments } from '@/hooks/useDocuments';
+import { useNotifications } from '@/hooks/useNotifications';
+//import { userNotificationsService } from '@/services/userNotificationsService';
 import { auditService } from '@/services/auditService';
 
 const Dashboard: React.FC = () => {
@@ -20,14 +23,16 @@ const Dashboard: React.FC = () => {
     const { user, loading: authLoading, error: authError } = useAuth();
 
     // Documents
-    const { documents, upload, delete: deleteDoc, list: listDocuments } = useDocuments();
+    const { documents, upload, delete: deleteDoc } = useDocuments();
+
+    // Notifications
+    const { unreadCount, create: createNotification } = useNotifications();
 
     // UI State
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [showConfirmation, setShowConfirmation] = useState(false);
     const [uploadedDocumentName, setUploadedDocumentName] = useState('');
     const [isUploadProcessing, setIsUploadProcessing] = useState(false);
-    const [deleteConfirmation, setDeleteConfirmation] = useState<{ isOpen: boolean; documentId: string | null; documentName: string }>({ isOpen: false, documentId: null, documentName: '' });
     
     // Timestamp for last upload
     const [lastUploadTime, setLastUploadTime] = useState<number | null>(() => {
@@ -36,11 +41,6 @@ const Dashboard: React.FC = () => {
     });
     
     const [currentTime, setCurrentTime] = useState(() => Date.now());
-
-    // Carregar documentos ao montar
-    useEffect(() => {
-        listDocuments();
-    }, [listDocuments]);
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -99,25 +99,8 @@ const Dashboard: React.FC = () => {
         return formatTimeAMPM(lastUploadTime);
     };
 
-    // Função para converter diferentes tipos de timestamp para milissegundos
-    const getTimeInMillis = (timestamp: Date | number | { toMillis(): number } | undefined | null): number => {
-        if (!timestamp) return 0;
-        if (typeof timestamp === 'number') return timestamp;
-        if (timestamp instanceof Date) return timestamp.getTime();
-        if (typeof timestamp === 'object' && 'toMillis' in timestamp && typeof (timestamp as { toMillis(): number }).toMillis === 'function') {
-            return (timestamp as { toMillis(): number }).toMillis();
-        }
-        return 0;
-    };
-
-    // Document management - ordenado em ordem decrescente (mais recentes primeiro)
-    const recentDocs = documents
-        .sort((a, b) => {
-            const timeA = getTimeInMillis(a.updatedAt || a.uploadedAt);
-            const timeB = getTimeInMillis(b.updatedAt || b.uploadedAt);
-            return timeB - timeA;
-        })
-        .slice(0, 5);
+    // Document management
+    const recentDocs = documents.slice(0, 5);
 
     const getPublicDocumentsCount = () => {
         return documents.filter(doc => doc.public).length;
@@ -155,13 +138,18 @@ const Dashboard: React.FC = () => {
                 setLastUploadTime(now);
                 localStorage.setItem('lastDocumentUpload', now.toString());
 
-                // Registra no histórico de auditoria (cria notificação protegida automaticamente)
+                // Registra no histórico de auditoria (inclui notificação protegida automaticamente)
                 await auditService.addLog(
                     `📤 Arquivo enviado: ${uploadData.nome} (${categoryMap[uploadData.categoria] || uploadData.categoria})`
                 );
 
-                // Recarregar documents list para sincronizar com novo documento
-                await listDocuments();
+                // Create notification for this upload (Firebase - histórico global)
+                await createNotification({
+                    title: 'Upload realizado',
+                    message: `Documento "${uploadData.nome}" foi enviado com sucesso`,
+                    type: 'success',
+                    actionUrl: '/admin/transparency',
+                });
             }
         } catch (err) {
             console.error('Upload error:', err);
@@ -169,34 +157,6 @@ const Dashboard: React.FC = () => {
         } finally {
             setIsUploadProcessing(false);
         }
-    };
-
-    // Delete handlers
-    const handleDeleteClick = (docId: string, docName: string) => {
-        setDeleteConfirmation({ isOpen: true, documentId: docId, documentName: docName });
-    };
-
-    const handleConfirmDelete = async () => {
-        if (!deleteConfirmation.documentId) return;
-
-        try {
-            await deleteDoc(deleteConfirmation.documentId);
-            
-            // Log audit action
-            await auditService.addLog(
-                `🗑️ Arquivo deletado: ${deleteConfirmation.documentName}`
-            );
-
-            // Close confirmation modal
-            setDeleteConfirmation({ isOpen: false, documentId: null, documentName: '' });
-        } catch (err) {
-            console.error('Delete error:', err);
-            alert('Erro ao deletar documento');
-        }
-    };
-
-    const handleCancelDelete = () => {
-        setDeleteConfirmation({ isOpen: false, documentId: null, documentName: '' });
     };
 
     // Modal handlers
@@ -220,13 +180,29 @@ const Dashboard: React.FC = () => {
             <div className="flex flex-col sm:flex-row md:flex-row md:justify-between md:items-center gap-4">
                 <div className="min-w-0 flex-1">
                     <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white truncate">
-                        Visão Geral
+                        Visão Geral {user && `(${user.name})`}
                     </h1>
                     <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">
                         Bem-vindo ao painel administrativo.
                     </p>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-3 md:gap-4 items-start md:items-center">
+                    {/* Unread Notifications Badge */}
+                    {unreadCount > 0 && (
+                        <div className="flex items-center gap-2 px-3 md:px-4 py-2 md:py-2.5 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/50 rounded-lg">
+                            <div className="relative flex items-center justify-center">
+                                <Bell size={16} className="text-blue-600 dark:text-blue-400" />
+                                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold">
+                                    {unreadCount > 9 ? '9+' : unreadCount}
+                                </span>
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-xs font-semibold text-blue-700 dark:text-blue-300">Notificações</span>
+                                <span className="text-xs text-blue-600 dark:text-blue-400">{unreadCount} não lidas</span>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Last Upload Indicator */}
                     {lastUploadTime && (
                         <div className="flex items-center gap-2 px-3 md:px-4 py-2 md:py-2.5 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800/50 rounded-lg">
@@ -326,7 +302,7 @@ const Dashboard: React.FC = () => {
                                                 <Edit2 size={18} />
                                             </button>
                                             <button 
-                                                onClick={() => handleDeleteClick(doc.id, doc.name)}
+                                                onClick={() => deleteDoc(doc.id)}
                                                 className="p-2 text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg" 
                                                 title="Excluir"
                                             >
@@ -370,11 +346,7 @@ const Dashboard: React.FC = () => {
                                             <button className="p-2 text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 transition-colors hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg" title="Editar">
                                                 <Edit2 size={16} />
                                             </button>
-                                            <button 
-                                                onClick={() => handleDeleteClick(doc.id, doc.name)}
-                                                className="p-2 text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg" 
-                                                title="Excluir"
-                                            >
+                                            <button className="p-2 text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg" title="Excluir">
                                                 <Trash2 size={16} />
                                             </button>
                                         </div>
@@ -408,40 +380,6 @@ const Dashboard: React.FC = () => {
             }}
             isLoading={isUploadProcessing}
         />
-
-        {/* Delete Confirmation Modal */}
-        {deleteConfirmation.isOpen && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-                <div className="bg-white dark:bg-slate-900 rounded-xl shadow-2xl max-w-sm w-full mx-4 p-6 space-y-6 animate-in fade-in zoom-in-95 duration-300">
-                    <div>
-                        <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
-                            Confirmar exclusão
-                        </h2>
-                        <p className="text-slate-600 dark:text-slate-400">
-                            Tem certeza que deseja excluir <span className="font-semibold text-slate-900 dark:text-white">"{deleteConfirmation.documentName}"</span>?
-                        </p>
-                        <p className="text-sm text-slate-500 dark:text-slate-500 mt-2">
-                            Esta ação é irreversível. O arquivo será removido do banco de dados e do armazenamento.
-                        </p>
-                    </div>
-
-                    <div className="flex gap-3 pt-4">
-                        <button
-                            onClick={handleCancelDelete}
-                            className="flex-1 px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white font-semibold rounded-lg hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors"
-                        >
-                            Cancelar
-                        </button>
-                        <button
-                            onClick={handleConfirmDelete}
-                            className="flex-1 px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 dark:hover:bg-red-700 transition-colors"
-                        >
-                            Deletar
-                        </button>
-                    </div>
-                </div>
-            </div>
-        )}
         </div>
     );
 };

@@ -32,12 +32,14 @@ O Firebase **não permite transferência direta** de projetos entre contas. A so
 5. ✅ Testar tudo funciona
 
 **O que será transferido:**
+
 - ✅ Firestore collections (`documents`, `audit_logs`)
 - ✅ Arquivos PDF do Storage
 - ✅ Usuários da Authentication
 - ✅ Regras de segurança (Firestore + Storage)
 
 **O que NÃO será transferido:**
+
 - ❌ Analytics histórico
 - ❌ Logs do Console
 - ❌ Configurações de billing
@@ -104,7 +106,7 @@ const firebaseConfig = {
 };
 ```
 
-5. Salve estas credenciais em um bloco de notas (vamos usar depois)
+1. Salve estas credenciais em um bloco de notas (vamos usar depois)
 
 ---
 
@@ -112,7 +114,7 @@ const firebaseConfig = {
 
 ### Passo 2.1: Exportar Firestore (via Console)
 
-**Método 1: Via Firebase Console (Recomendado)**
+**Método 1: Via Firebase Console (Recomendado)**  
 
 1. Acesse [Firebase Console](https://console.firebase.google.com/) com **conta atual**
 2. Vá para **Firestore Database** → **Dados**
@@ -162,14 +164,14 @@ Firestore Collections:
 
 ### Passo 2.4: Exportar Storage (Files)
 
-**Opção A: Via Firebase Console**
+**Opção A: Via Firebase Console**  
 
 1. Vá para **Storage** no Firebase Console
 2. Selecione todos os arquivos em `/documents`
 3. Clique em Download
 4. Salve com estrutura preservada
 
-**Opção B: Via Firebase CLI (Recomendado)**
+**Opção B: Via Firebase CLI (Recomendado)**  
 
 ```bash
 # Login (se necessário)
@@ -408,11 +410,13 @@ uploadStorage().catch((error) => {
 
 Infelizmente, o Firebase **não permite exportar/importar senhas de usuários**. Duas opções:
 
-**Opção A: Recriar usuários manualmente**
+**Opção A: Recriar usuários manualmente**  
+
 - Crie cada usuário administrativo novamente
 - (Mais seguro, pois força reset de senha)
 
-**Opção B: Enviar link de reset de senha**
+**Opção B: Enviar link de reset de senha**  
+
 ```bash
 # No novo projeto
 firebase auth:create-user --email admin@educandario.com.br --password temp123
@@ -426,6 +430,7 @@ firebase auth:create-user --email admin@educandario.com.br --password temp123
 ### Passo 5.1: Atualizar Arquivo `.env`
 
 **Antes (conta atual):**
+
 ```env
 VITE_FIREBASE_API_KEY=AIzaSyDxxx... (ANTIGO)
 VITE_FIREBASE_AUTH_DOMAIN=educandario-site.firebaseapp.com
@@ -437,6 +442,7 @@ VITE_FIREBASE_MEASUREMENT_ID=G-XXXXX
 ```
 
 **Depois (novo projeto):**
+
 ```env
 VITE_FIREBASE_API_KEY=AIzaSyDyyy... (NOVO)
 VITE_FIREBASE_AUTH_DOMAIN=educandario-site-novo.firebaseapp.com
@@ -640,7 +646,7 @@ firebase firestore:import backup/documents-export.json
 
 1. Vá para **Authentication** no novo projeto
 2. Crie o usuário manualmente:
-   - Email: admin@educandario.com.br
+   - Email: <admin@educandario.com.br>
    - Senha: (temporária)
 3. Envie link de reset de senha para o usuário
 
@@ -693,7 +699,7 @@ Antes de considerar a migração completa:
 
 ## 🎉 Conclusão
 
-Se todos os testes passaram, migração concluída com sucesso! 
+Se todos os testes passaram, migração concluída com sucesso!
 
 **Próximos passos:**
 
@@ -708,8 +714,8 @@ Se todos os testes passaram, migração concluída com sucesso!
 
 Se encontrar problemas:
 
-1. Veja a seção [Troubleshooting](#troubleshooting)
+1. Veja a seção [Troubleshooting](#troubleshooting)  
 2. Verifique [Documentação Firebase](https://firebase.google.com/docs)
 3. Cheque os logs em **Firebase Console** → **Regras do Firestore** → **Logs**
 
-**Boa sorte com a migração! 🚀**
+**Boa sorte com a migração! 🚀**  

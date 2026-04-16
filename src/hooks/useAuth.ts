@@ -84,6 +84,6 @@ export const useAuth = (): UseAuthReturn => {
     login,
     logout,
     resetPassword,
-    isAdmin: user?.role === 'admin' ?? false,
+    isAdmin: user?.role === 'admin',
   };
 };

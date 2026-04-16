@@ -10,15 +10,6 @@ import {
   setDoc,
   addDoc,
   Timestamp,
-  getDocs,
-  query,
-  where,
-  deleteDoc,
-  updateDoc,
-  orderBy,
-  limit,
-  QueryConstraint,
-  getDoc,
 } from 'firebase/firestore';
 import type {
   DocumentMetadata,
@@ -99,7 +90,7 @@ export class SupabaseDocumentService {
       const documentId = docRef.id;
 
       // Prepare document metadata for Firestore
-      const now = Timestamp.now();
+      const now = new Date();
       const documentData: DocumentMetadata = {
         id: documentId,
         name: metadata.name || file.name,
@@ -131,7 +122,9 @@ export class SupabaseDocumentService {
       throw new DocumentServiceError(
         'Failed to upload document',
         'UPLOAD_FAILED',
-        error instanceof Error ? error.message : 'Unknown error'
+        {
+          message: error instanceof Error ? error.message : 'Unknown error',
+        }
       );
     }
   }
@@ -171,7 +164,9 @@ export class SupabaseDocumentService {
       throw new DocumentServiceError(
         'Failed to get document URL',
         'URL_FETCH_FAILED',
-        error instanceof Error ? error.message : 'Unknown error'
+        {
+          message: error instanceof Error ? error.message : 'Unknown error',
+        }
       );
     }
   }
@@ -206,7 +201,9 @@ export class SupabaseDocumentService {
       throw new DocumentServiceError(
         'Failed to delete document',
         'DELETE_FAILED',
-        error instanceof Error ? error.message : 'Unknown error'
+        {
+          message: error instanceof Error ? error.message : 'Unknown error',
+        }
       );
     }
   }

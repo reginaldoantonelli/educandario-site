@@ -20,6 +20,7 @@ Bem-vindo à pasta de documentação do Educandário! 🎓
 ## 📚 Documentação Completa
 
 ### Índice Centralizado
+
 - **[INDEX.md](./INDEX.md)** ← Comece aqui para explorar tudo! 📍
 
 ---
@@ -40,24 +41,29 @@ Bem-vindo à pasta de documentação do Educandário! 🎓
 ## 🎯 Guia por Cenário
 
 ### 📍 Quero transferir Firebase para meu colega
+
 1. Leia: [FIREBASE_MIGRATION_GUIDE.md](./FIREBASE_MIGRATION_GUIDE.md) - **Start here!** 🚀
 2. Siga as 6 fases (Preparação → Exportação → Importação → Configuração → Testes → Go Live)
 3. Tempo: ~60-90 minutos
 
 ### 🏗️ Estou começando no projeto
+
 1. Leia: [ARCHITECTURE.md](./ARCHITECTURE.md)
 2. Configure: [FIREBASE_SETUP.md](./FIREBASE_SETUP.md)
 3. Teste: Upload, Edit, Delete
 
 ### 🔥 Preciso configurar Firebase
+
 1. Siga: [FIREBASE_SETUP.md](./FIREBASE_SETUP.md)
 2. 10 passos claros com screenshots conceituais
 
 ### 💾 Vou usar Supabase no futuro
+
 1. Leia: [MIGRATION_PLAN.md](./MIGRATION_PLAN.md)
 2. Estruture: [SUPABASE_DATABASE_SCHEMA.md](./SUPABASE_DATABASE_SCHEMA.md)
 
 ### 🧹 Tenho arquivos órfãos no Storage
+
 1. Siga: [CLEANUP_INSTRUCTIONS.md](./CLEANUP_INSTRUCTIONS.md)
 2. Execute: `npm run cleanup-orphaned`
 
@@ -90,14 +96,17 @@ docs/
 ## 🎓 Tópicos por Complexidade
 
 ### 🟢 Iniciante
+
 - [ARCHITECTURE.md](./ARCHITECTURE.md) - Visão geral
 - [FIREBASE_SETUP.md](./FIREBASE_SETUP.md) - Setup básico
 
 ### 🟡 Intermediário
+
 - [FIREBASE_MIGRATION_GUIDE.md](./FIREBASE_MIGRATION_GUIDE.md) - Migração de conta
 - [MIGRATION_PLAN.md](./MIGRATION_PLAN.md) - Migração localStorage
 
 ### 🔴 Avançado
+
 - [SUPABASE_DATABASE_SCHEMA.md](./SUPABASE_DATABASE_SCHEMA.md) - Design DB
 - [CLEANUP_INSTRUCTIONS.md](./CLEANUP_INSTRUCTIONS.md) - Admin scripts
 
@@ -106,17 +115,20 @@ docs/
 ## 💡 Dicas Importantes
 
 ### ⚠️ Antes de migrar Firebase
+
 - [ ] Faça backup dos dados atuais
 - [ ] Teste a migração em dev primeiro
 - [ ] Avise os usuários sobre o downtime (se houver)
 - [ ] Tenha um plano B (rollback)
 
 ### 🔐 Segurança
+
 - Never commit `serviceAccountKey.json` 🚫
 - Never commit `.env` com credenciais reais 🚫
 - Adicione ao `.gitignore` 📝
 
 ### 📱 Storage & CORS
+
 - ✅ GET funciona (público)
 - ❌ DELETE não funciona (CORS)
 - ✅ Solução: deletar via script Node.js
@@ -126,16 +138,19 @@ docs/
 ## 🚀 Próximos Passos Recomendados
 
 ### Hoje (Comece por aqui)
+
 1. [ ] Leia [INDEX.md](./INDEX.md) (5 min)
 2. [ ] Leia [ARCHITECTURE.md](./ARCHITECTURE.md) (15 min)
 3. [ ] Configure seu `.env` (5 min)
 
 ### Esta Semana
+
 1. [ ] Configure Firebase com [FIREBASE_SETUP.md](./FIREBASE_SETUP.md)
 2. [ ] Teste upload/edit/delete
 3. [ ] Se precisar migrar, siga [FIREBASE_MIGRATION_GUIDE.md](./FIREBASE_MIGRATION_GUIDE.md)
 
 ### Este Mês (Opcional)
+
 1. [ ] Planeje migração para Supabase
 2. [ ] Estude [SUPABASE_DATABASE_SCHEMA.md](./SUPABASE_DATABASE_SCHEMA.md)
 3. [ ] Comece preparação em dev environment
@@ -145,18 +160,22 @@ docs/
 ## 🤝 Como Usar Esta Documentação
 
 ### 1️⃣ Para Aprender
+
 - Comece com [INDEX.md](./INDEX.md)
 - Explore por seção que interessa
 
 ### 2️⃣ Para Resolver Problemas
+
 - Use busca (Ctrl+F) por palavra-chave
 - Veja a seção "Troubleshooting" do documento relevante
 
 ### 3️⃣ Para Configurar
+
 - Siga passo a passo numerado
 - Se travar em algum passo, consulte "Troubleshooting"
 
 ### 4️⃣ Para Atualizar
+
 - Abra um issue no GitHub
 - Ou faça um pull request com correções
 
@@ -179,13 +198,16 @@ docs/
 ## 🆘 Precisa de Ajuda?
 
 ### Problema comum?
+
 Busque por aqui: https://www.google.com/search?q=site:github.com firebase migration
 
 ### Issue no código?
+
 - [ ] Veja [FIREBASE_SETUP.md](./FIREBASE_SETUP.md) "Troubleshooting"
 - [ ] Veja [ARCHITECTURE.md](./ARCHITECTURE.md) "Fluxo de Dados"
 
 ### Dúvida sobre migração?
+
 - [ ] Veja [FIREBASE_MIGRATION_GUIDE.md](./FIREBASE_MIGRATION_GUIDE.md) "Troubleshooting"
 - [ ] Passo a passo completo em 6 fases
 
@@ -216,6 +238,7 @@ Busque por aqui: https://www.google.com/search?q=site:github.com firebase migrat
 ## 🎉 Você está pronto!
 
 Agora você tem tudo que precisa para:
+
 - ✅ Entender como o projeto funciona
 - ✅ Configurar Firebase
 - ✅ **Transferir Firebase para outra pessoa** ← Se precisar

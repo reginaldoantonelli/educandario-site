@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState, useRef } from 'react';
 import { User, Mail, Shield, Lock, Eye, EyeOff, Check, AlertCircle, History, Upload, Trash2 } from 'lucide-react';
 import { useUserProfile } from '@/hooks/useUserProfile';
@@ -6,9 +7,10 @@ import { useAuditLogs } from '@/hooks/useAuditLogs';
 
 const Settings: React.FC = () => {
     // Hooks de dados
-    const { profile, error: profileError, updateProfile, uploadAvatar, removeAvatar: removeAvatarService, clearError: clearProfileError } = useUserProfile();
-    const { settings: portalSettings, error: portalError, updateSettings, clearError: clearPortalError } = usePortalSettings();
-    const { logs: auditLogs, fetchLogs } = useAuditLogs();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { profile, loading: profileLoading, error: profileError, updateProfile, uploadAvatar, removeAvatar: removeAvatarService, clearError: clearProfileError } = useUserProfile();
+    const { settings: portalSettings, loading: portalLoading, error: portalError, updateSettings, clearError: clearPortalError } = usePortalSettings();
+    const { logs: auditLogs, loading: auditLoading, error: auditError, clearError: clearAuditError, fetchLogs } = useAuditLogs();
 
     // Referência para o input file
     const fileInputRef = useRef<HTMLInputElement>(null);

@@ -1,14 +1,5 @@
 import { auditService } from './auditService';
 
-interface UserProfile {
-  id?: string;
-  display_name: string;
-  email: string;
-  avatar_url?: string;
-  created_at?: string;
-  updated_at?: string;
-}
-
 interface UserProfileData {
     displayName: string;
     email: string;
