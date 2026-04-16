@@ -31,6 +31,17 @@ const Login: React.FC = () => {
         }
     }, [isDark]);
 
+    // Carrega email salvo ao montar o componente
+    useEffect(() => {
+        const savedEmail = localStorage.getItem('rememberMeEmail');
+        const savedRememberMe = localStorage.getItem('rememberMeChecked') === 'true';
+        
+        if (savedEmail && savedRememberMe) {
+            setEmail(savedEmail);
+            setRememberMe(true);
+        }
+    }, []);
+
     // Limpa mensagens de erro/sucesso após 5 segundos
     useEffect(() => {
         if (error || success) {
@@ -75,6 +86,16 @@ const Login: React.FC = () => {
             // Fazer login com Firebase
             const user = await firebaseAuthService.login(email, password);
             
+            // Salvar email se "Lembrar-me" está marcado
+            if (rememberMe) {
+                localStorage.setItem('rememberMeEmail', email);
+                localStorage.setItem('rememberMeChecked', 'true');
+            } else {
+                // Limpar dados salvos se desmarcar a opção
+                localStorage.removeItem('rememberMeEmail');
+                localStorage.removeItem('rememberMeChecked');
+            }
+            
             // Sucesso
             setSuccess(true);
             setEmail('');
@@ -88,6 +109,10 @@ const Login: React.FC = () => {
             }, 1500);
         } catch (err: any) {
             setIsLoading(false);
+            
+            // Limpar dados salvos em caso de erro (senha incorreta, etc)
+            localStorage.removeItem('rememberMeEmail');
+            localStorage.removeItem('rememberMeChecked');
             
             // Tratar erro de autenticação
             if (err instanceof AuthError) {
