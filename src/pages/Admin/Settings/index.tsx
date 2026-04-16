@@ -66,6 +66,7 @@ const Settings: React.FC = () => {
     // Estados de feedback local
     const [profileSuccess, setProfileSuccess] = useState(false);
     const [portalSuccess, setPortalSuccess] = useState(false);
+    const [localPortalError, setLocalPortalError] = useState('');
     const [twoFASuccess, setTwoFASuccess] = useState('');
     const [twoFAMessage, setTwoFAMessage] = useState('');
 
@@ -200,6 +201,8 @@ const Settings: React.FC = () => {
         
         try {
             clearPortalError();
+            setLocalPortalError('');
+            
             // Extrai apenas o username da URL
             const instagramUsername = extractInstagramUsername(editingPortalData.instagram);
             const facebookUsername = extractFacebookUsername(editingPortalData.facebook);
@@ -221,13 +224,15 @@ const Settings: React.FC = () => {
                 urgentNeedWindow: editingPortalData.urgentNeedWindow,
                 urgentNeedDelivery: editingPortalData.urgentNeedDelivery
             });
+            
             // Recarregar o histórico de atividades
             await fetchLogs();
             setPortalSuccess(true);
             setTimeout(() => setPortalSuccess(false), 3000);
             setEditingPortal(false);
         } catch (error) {
-            console.error('Erro ao salvar configurações do portal:', error);
+            const errorMsg = error instanceof Error ? error.message : 'Erro desconhecido';
+            setLocalPortalError(errorMsg);
         }
     };
 
@@ -777,11 +782,21 @@ const Settings: React.FC = () => {
                                     </div>
 
                                     {/* Erro do Portal */}
-                                    {portalError && (
+                                    {localPortalError && (
                                         <div className="p-3 sm:p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/30 rounded-lg">
                                             <p className="text-xs sm:text-sm font-semibold text-red-700 dark:text-red-400 flex items-center gap-2">
                                                 <AlertCircle size={16} />
-                                                {portalError}
+                                                ❌ Erro ao salvar no Firestore: {localPortalError}
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    {/* Sucesso do Portal */}
+                                    {portalSuccess && (
+                                        <div className="p-3 sm:p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800/30 rounded-lg animate-in fade-in duration-300">
+                                            <p className="text-xs sm:text-sm font-semibold text-green-700 dark:text-green-400 flex items-center gap-2">
+                                                <Check size={16} />
+                                                ✅ Configurações do portal salvas com sucesso no Firestore!
                                             </p>
                                         </div>
                                     )}
