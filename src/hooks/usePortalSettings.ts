@@ -54,7 +54,7 @@ export const usePortalSettings = () => {
             setSettings(updated);
             return updated;
         } catch (err) {
-            const errorMsg = err instanceof Error ? err.message : 'Erro ao atualizar configurações';
+            const errorMsg = err instanceof Error ? err.message : 'Erro desconhecido';
             setError(errorMsg);
             throw err;
         }
