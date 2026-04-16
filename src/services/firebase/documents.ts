@@ -529,12 +529,14 @@ class FirebaseDocumentService implements DocumentService {
         );
       }
 
-      // Update only allowed fields
+      // Update allowed fields (including name)
       const updateData: any = {
         updatedAt: Timestamp.now(),
+        name: updates.name ?? docData.name,
         public: updates.public ?? docData.public,
         category: updates.category ?? docData.category,
         tags: updates.tags ?? docData.tags,
+        description: updates.description ?? docData.description,
       };
 
       await updateDoc(docRef, updateData);
@@ -542,6 +544,7 @@ class FirebaseDocumentService implements DocumentService {
       // Log audit
       await this.logAuditAction('update', documentId, {
         fileName: docData.name,
+        newName: updates.name,
         changes: Object.keys(updates),
       });
 

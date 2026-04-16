@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import UploadModal from '@/components/Admin/UploadModal';
 import UploadConfirmationModal from '@/components/Admin/UploadConfirmationModal';
+import EditDocumentModal from '@/components/Admin/EditDocumentModal';
 import { useAuth } from '@/hooks/useAuth';
 import { useDocuments } from '@/hooks/useDocuments';
 import { useNotifications } from '@/hooks/useNotifications';
@@ -23,7 +24,7 @@ const Dashboard: React.FC = () => {
     const { user, loading: authLoading, error: authError } = useAuth();
 
     // Documents
-    const { documents, upload, delete: deleteDoc } = useDocuments();
+    const { documents, upload, delete: deleteDoc, update: updateDoc } = useDocuments();
 
     // Notifications
     const { unreadCount, create: createNotification } = useNotifications();
@@ -33,6 +34,11 @@ const Dashboard: React.FC = () => {
     const [showConfirmation, setShowConfirmation] = useState(false);
     const [uploadedDocumentName, setUploadedDocumentName] = useState('');
     const [isUploadProcessing, setIsUploadProcessing] = useState(false);
+    
+    // Edit Document State
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [editingDocument, setEditingDocument] = useState<any>(null);
+    const [isEditProcessing, setIsEditProcessing] = useState(false);
     
     // Timestamp for last upload
     const [lastUploadTime, setLastUploadTime] = useState<number | null>(() => {
@@ -162,6 +168,61 @@ const Dashboard: React.FC = () => {
     // Modal handlers
     const openModal = () => setIsModalOpen(true);
     const closeModal = () => setIsModalOpen(false);
+
+    // Edit document handlers
+    const openEditModal = (document: any) => {
+        setEditingDocument({
+            id: document.id,
+            nome: document.name,
+            categoria: document.category,
+            ano: document.tags?.[0] || new Date(document.uploadedAt).getFullYear().toString(),
+            visibilidade: document.public ? 'Público' : 'Privado'
+        });
+        setIsEditModalOpen(true);
+    };
+
+    const closeEditModal = () => {
+        setIsEditModalOpen(false);
+        setEditingDocument(null);
+    };
+
+    const handleEditDocument = async (updatedData: {
+        id: string;
+        nome: string;
+        categoria: string;
+        ano: string;
+        visibilidade: string;
+    }) => {
+        setIsEditProcessing(true);
+        try {
+            await updateDoc(updatedData.id, {
+                name: updatedData.nome,
+                category: updatedData.categoria,
+                tags: [updatedData.ano],
+                public: updatedData.visibilidade === 'Público',
+            });
+
+            // Log audit
+            await auditService.addLog(
+                `✏️ Documento atualizado: ${updatedData.nome} (${updatedData.categoria})`
+            );
+
+            // Create notification
+            await createNotification({
+                title: 'Documento atualizado',
+                message: `"${updatedData.nome}" foi atualizado com sucesso`,
+                type: 'success',
+                actionUrl: '/admin/transparency',
+            });
+
+            closeEditModal();
+        } catch (err) {
+            console.error('Edit error:', err);
+            alert('Erro ao atualizar documento');
+        } finally {
+            setIsEditProcessing(false);
+        }
+    };
 
     return (
         <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-700">
@@ -298,7 +359,11 @@ const Dashboard: React.FC = () => {
                                             <button className="p-2 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg" title="Visualizar">
                                                 <Eye size={18} />
                                             </button>
-                                            <button className="p-2 text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 transition-colors hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg" title="Editar">
+                                            <button 
+                                                onClick={() => openEditModal(doc)}
+                                                className="p-2 text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 transition-colors hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg" 
+                                                title="Editar"
+                                            >
                                                 <Edit2 size={18} />
                                             </button>
                                             <button 
@@ -343,10 +408,18 @@ const Dashboard: React.FC = () => {
                                             <button className="p-2 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg" title="Visualizar">
                                                 <Eye size={16} />
                                             </button>
-                                            <button className="p-2 text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 transition-colors hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg" title="Editar">
+                                            <button 
+                                                onClick={() => openEditModal(doc)}
+                                                className="p-2 text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 transition-colors hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg" 
+                                                title="Editar"
+                                            >
                                                 <Edit2 size={16} />
                                             </button>
-                                            <button className="p-2 text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg" title="Excluir">
+                                            <button 
+                                                onClick={() => deleteDoc(doc.id)}
+                                                className="p-2 text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg" 
+                                                title="Excluir"
+                                            >
                                                 <Trash2 size={16} />
                                             </button>
                                         </div>
@@ -379,6 +452,13 @@ const Dashboard: React.FC = () => {
                 setIsModalOpen(false);
             }}
             isLoading={isUploadProcessing}
+        />
+        <EditDocumentModal
+            isOpen={isEditModalOpen}
+            document={editingDocument}
+            onClose={closeEditModal}
+            onSave={handleEditDocument}
+            isLoading={isEditProcessing}
         />
         </div>
     );
