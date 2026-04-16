@@ -24,7 +24,7 @@ const Dashboard: React.FC = () => {
     const { user, loading: authLoading, error: authError } = useAuth();
 
     // Documents
-    const { documents, upload, delete: deleteDoc, update: updateDoc } = useDocuments();
+    const { documents, upload, delete: deleteDoc, update: updateDoc, list: listDocuments } = useDocuments();
 
     // Notifications
     const { unreadCount, create: createNotification } = useNotifications();
@@ -47,6 +47,11 @@ const Dashboard: React.FC = () => {
     });
     
     const [currentTime, setCurrentTime] = useState(() => Date.now());
+
+    // Load documents on mount
+    useEffect(() => {
+        listDocuments();
+    }, [listDocuments]);
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -214,6 +219,9 @@ const Dashboard: React.FC = () => {
                 type: 'success',
                 actionUrl: '/admin/transparency',
             });
+
+            // Reload documents list to sync changes
+            await listDocuments();
 
             closeEditModal();
         } catch (err) {

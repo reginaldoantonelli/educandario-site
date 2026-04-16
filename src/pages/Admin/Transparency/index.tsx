@@ -178,6 +178,7 @@ const TransparencyAdmin: React.FC = () => {
             const categoryName = updatedDocument.categoria || updatedDocument.category || '';
             
             await update(docIdToUpdate, {
+                name: updatedDocument.nome || updatedDocument.title || '',
                 public: updatedDocument.visibilidade === 'Público',
                 category: categoryName,  // Passa o nome da categoria (ex: 'Institucional')
                 tags: updatedDocument.ano ? [updatedDocument.ano] : []
