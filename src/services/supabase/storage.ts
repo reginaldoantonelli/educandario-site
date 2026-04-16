@@ -20,6 +20,23 @@ export class SupabaseStorageService {
   private bucketName = 'pdfs';
 
   /**
+   * Sanitize filename by removing accents, special characters, and spaces
+   * Supabase Storage is sensitive to these characters in file paths
+   */
+  private sanitizeFileName(fileName: string): string {
+    return fileName
+      // Normalize and remove accents/diacritics
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      // Replace common special characters and spaces
+      .replace(/[^\w.-]/g, '_')
+      // Replace multiple underscores with single one
+      .replace(/_+/g, '_')
+      // Remove leading/trailing underscores
+      .replace(/^_+|_+$/g, '');
+  }
+
+  /**
    * Upload a file to Supabase Storage
    */
   async uploadFile(
@@ -30,7 +47,9 @@ export class SupabaseStorageService {
     try {
       const folder = options?.folder || 'documents';
       const timestamp = Date.now();
-      const uniqueName = `${timestamp}-${fileName}`;
+      // Sanitize the filename before creating the unique name
+      const sanitizedFileName = this.sanitizeFileName(fileName);
+      const uniqueName = `${timestamp}-${sanitizedFileName}`;
       const filePath = `${folder}/${uniqueName}`;
 
       // Upload to Supabase Storage

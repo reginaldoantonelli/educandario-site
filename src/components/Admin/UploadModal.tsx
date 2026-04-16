@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { X, Upload, FileText, AlertCircle } from 'lucide-react';
+import { X, Upload, FileText, AlertCircle, HelpCircle } from 'lucide-react';
 
 interface UploadModalProps {
     isOpen: boolean;
@@ -17,7 +17,7 @@ interface Category {
 const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpload }) => {
     const [fileError, setFileError] = useState('');
     const [uploading, setUploading] = useState(false);
-    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+    const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
 
     const categories: Category[] = useMemo(() => [
         {
@@ -79,7 +79,7 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpload }) 
         // Validar tamanho do arquivo
         if (file.size > MAX_FILE_SIZE) {
             const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
-            setFileError(`❌ Arquivo muito grande (${fileSizeMB}MB). Máximo: 10MB`);
+            setFileError(`❌ Arquivo muito grande (${fileSizeMB}MB). Máximo: 20MB`);
             setFormData({ ...formData, arquivo: null });
             return;
         }
@@ -110,7 +110,7 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpload }) 
         }
 
         if (formData.arquivo.size > MAX_FILE_SIZE) {
-            setFileError('❌ Arquivo muito grande. Máximo: 10MB');
+            setFileError('❌ Arquivo muito grande. Máximo: 20MB');
             return;
         }
 
@@ -280,7 +280,7 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpload }) 
                                         ? 'text-red-500 dark:text-red-400' 
                                         : 'text-slate-500 dark:text-slate-400'
                                 }`}>
-                                    {fileError ? 'Tente novamente' : (formData.arquivo ? `${(formData.arquivo.size / 1024).toFixed(1)} KB` : 'Máximo 10 MB - Apenas PDF')}
+                                    {fileError ? 'Tente novamente' : (formData.arquivo ? `${(formData.arquivo.size / 1024).toFixed(1)} KB` : 'Máximo 20 MB - Apenas PDF')}
                                 </p>
                             </div>
                             <input
@@ -290,6 +290,17 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpload }) 
                                 className="hidden"
                             />
                         </label>
+                    </div>
+
+                    {/* Help Section */}
+                    <div className="p-3 sm:p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/30 rounded-lg">
+                        <div className="flex items-start gap-3">
+                            <HelpCircle size={16} className="text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                            <div className="flex-1 text-xs sm:text-sm text-blue-700 dark:text-blue-300">
+                                <p className="font-semibold mb-1">Arquivo muito grande?</p>
+                                <p>Use a ferramenta gratuita <a href="https://www.ilovepdf.com/compress_pdf" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-600 dark:hover:text-blue-200 font-semibold">ILovePDF</a> para comprimir seu PDF sem perder qualidade.</p>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Botões de Ação */}
@@ -305,7 +316,7 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpload }) 
                             type="submit"
                             disabled={uploading || !formData.arquivo || fileError !== ''}
                             className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-500 disabled:cursor-not-allowed text-white rounded-lg font-medium text-sm transition-all"
-                            title={fileError ? 'Selecione um arquivo PDF válido (máx 10MB)' : ''}
+                            title={fileError ? 'Selecione um arquivo PDF válido (máx 20MB)' : ''}
                         >
                             {uploading ? (
                                 <>

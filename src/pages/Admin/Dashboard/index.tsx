@@ -253,7 +253,7 @@ const Dashboard: React.FC = () => {
             <div className="flex flex-col sm:flex-row md:flex-row md:justify-between md:items-center gap-4">
                 <div className="min-w-0 flex-1">
                     <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white truncate">
-                        Visão Geral {user && `(${user.name})`}
+                        Visão Geral {user && user.name && `(${user.name})`}
                     </h1>
                     <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">
                         Bem-vindo ao painel administrativo.
