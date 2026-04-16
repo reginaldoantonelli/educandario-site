@@ -30,7 +30,9 @@ const RegimentoInterno: React.FC = () => {
                         Para consulta completa, disponibilizamos o documento oficial em formato PDF.
                     </p>
                     <a
-                        href="/docs/regimento-interno.pdf"
+                        href="https://educandarionsa.com.br/wordpress/wp-content/uploads/2020/03/Regimento-Interno-2020.pdf"
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="inline-flex items-center gap-2 w-fit bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-xl font-bold transition-colors"
                     >
                         <ScrollText size={18} /> Baixar regimento (PDF)
