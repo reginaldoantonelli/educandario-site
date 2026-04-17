@@ -29,12 +29,12 @@ import { firebaseAuthService } from '@/services/firebase/auth';
         try {
             if (savedProfile) {
                 const profile = JSON.parse(savedProfile);
-                return profile.displayName || 'Iago';
+                return profile.displayName || 'Admin';
             }
         } catch (error) {
             console.error('Erro ao carregar perfil:', error);
         }
-        return 'Iago';
+        return 'Admin';
     });
     const [userRole, setUserRole] = useState(() => {
         // Primeiro tenta usar dados do Firebase
@@ -75,6 +75,7 @@ import { firebaseAuthService } from '@/services/firebase/auth';
     useEffect(() => {
         // Atualizar displayName e userRole quando user muda
         if (user?.name) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setDisplayName(user.name);
         }
         if (user?.role) {
@@ -105,7 +106,7 @@ import { firebaseAuthService } from '@/services/firebase/auth';
             window.removeEventListener('profileUpdated', handleProfileUpdate);
             window.removeEventListener('avatarUpdated', handleAvatarUpdate);
         };
-    }, [user]);
+    }, [user?.name, user?.role]);
     // ---------------------------
 
     useEffect(() => {
