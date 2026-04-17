@@ -9,19 +9,15 @@ interface ProtectedRouteProps {
 /**
  * Componente para proteger rotas que exigem autenticação
  * Redireciona para /admin se não estiver autenticado
+ * 
+ * Importante: Aguarda loading=false antes de renderizar qualquer coisa
+ * Isso garante que o Firebase teve tempo de verificar a sessão persistida
  */
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const { user, loading } = useAuth();
-  const [isInitialized, setIsInitialized] = useState(false);
 
-  useEffect(() => {
-    // Aguarda Firebase verificar autenticação
-    if (!loading) {
-      setIsInitialized(true);
-    }
-  }, [loading]);
-
-  if (!isInitialized) {
+  // Enquanto Firebase está verificando sessão, mostra loading
+  if (loading) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
         <div className="flex flex-col items-center gap-4">
@@ -32,6 +28,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     );
   }
 
+  // Depois que Firebase respondeu (loading=false):
   // Se não estiver autenticado, redireciona para login
   if (!user) {
     return <Navigate to="/admin" replace />;

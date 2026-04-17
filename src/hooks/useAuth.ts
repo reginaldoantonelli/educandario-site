@@ -23,18 +23,26 @@ export const useAuth = (): UseAuthReturn => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<AuthError | null>(null);
+  const [firstAuthCheckDone, setFirstAuthCheckDone] = useState(false);
 
   // Listener para mudanças de auth
   useEffect(() => {
-    setLoading(true);
+    let isMounted = true;
     
     const unsubscribe = firebaseAuthService.onAuthStateChanged((authUser) => {
-      setUser(authUser);
-      setLoading(false);
-      setError(null);
+      if (isMounted) {
+        setUser(authUser);
+        setError(null);
+        // Marca que a primeira checagem do Firebase foi completa
+        setFirstAuthCheckDone(true);
+        setLoading(false);
+      }
     });
 
-    return unsubscribe;
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
   }, []);
 
   const login = async (email: string, password: string) => {
