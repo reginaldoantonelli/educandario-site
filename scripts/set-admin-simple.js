@@ -20,11 +20,16 @@
  * node scripts/set-admin-simple.js
  */
 
-const admin = require('firebase-admin');
+import admin from 'firebase-admin';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-// Carregar a chave de serviço
-// Se estiver recebendo erro, siga os passos acima
-const serviceAccount = require('../firebase-key.json');
+// Obter diretório do script para importar a chave
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const keyPath = path.join(__dirname, '../firebase-key.json');
+const serviceAccount = JSON.parse(fs.readFileSync(keyPath, 'utf8'));
 
 // Inicializar Firebase Admin
 admin.initializeApp({

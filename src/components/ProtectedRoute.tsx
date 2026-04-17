@@ -16,8 +16,11 @@ interface ProtectedRouteProps {
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const { user, loading } = useAuth();
 
+  console.log('🛡️ [DEBUG] ProtectedRoute renderizando. Loading:', loading, '| User:', user?.email || 'null');
+
   // Enquanto Firebase está verificando sessão, mostra loading
   if (loading) {
+    console.log('⏳ [DEBUG] Firebase ainda verificando sessão. Mostrando spinner...');
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
         <div className="flex flex-col items-center gap-4">
@@ -31,10 +34,12 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   // Depois que Firebase respondeu (loading=false):
   // Se não estiver autenticado, redireciona para login
   if (!user) {
+    console.log('❌ [DEBUG] Loading=false mas nenhum usuário. Redirecionando para /admin');
     return <Navigate to="/admin" replace />;
   }
 
   // Se estiver autenticado, renderiza o conteúdo
+  console.log('✅ [DEBUG] Usuário autenticado! Renderizando dashboard para:', user.email);
   return <>{children}</>;
 };
 

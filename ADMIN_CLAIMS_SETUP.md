@@ -6,20 +6,22 @@ Existem 3 formas de fazer isso. Escolha uma:
 
 ## **Forma 1: Firebase Console (Mais Fácil) ⭐**
 
-1. Abra https://console.firebase.google.com
+1. Abra <https://console.firebase.google.com>
 2. Selecione o projeto **educandario-site**
 3. Vá para **Authentication** → **Users**
-4. Encontre o usuário **admin@educandarionsa.com.br**
+4. Encontre o usuário **<admin@educandarionsa.com.br>**
 5. Clique nos 3 pontinhos (⋮) → **Edit user**
 6. Scroll até **Custom claims** (JSON)
 7. Cole isto:
+
 ```json
 {
   "admin": true
 }
 ```
-8. Clique **Save**
-9. ✅ Pronto! O usuário agora é admin
+
+1. Clique **Save**
+2. ✅ Pronto! O usuário agora é admin
 
 ---
 
@@ -27,7 +29,7 @@ Existem 3 formas de fazer isso. Escolha uma:
 
 ### Passo 1: Obter a Chave de Serviço do Firebase
 
-1. Vá a https://console.firebase.google.com
+1. Vá a <https://console.firebase.google.com>
 2. Selecione **educandario-site**
 3. Clique ⚙️ **Project Settings** (canto inferior esquerdo)
 4. Vá para aba **Service Accounts**
@@ -48,7 +50,8 @@ npm install firebase-admin
 node scripts/set-admin-simple.js
 ```
 
-#### Saída esperada:
+#### Saída esperada
+
 ```
 🔑 Iniciando definição de custom claims...
 
@@ -101,6 +104,7 @@ const ADMIN_EMAILS = [
 ```
 
 Depois execute:
+
 ```bash
 node scripts/set-admin-simple.js
 ```
@@ -110,15 +114,18 @@ node scripts/set-admin-simple.js
 ## **Troubleshooting**
 
 ### ❌ Erro: "firebase-key.json not found"
+
 - Certifique-se que o arquivo foi baixado
 - Coloque na **raiz do projeto** (onde está package.json)
 - Nome exato: `firebase-key.json`
 
 ### ❌ Erro: "auth/user-not-found"
+
 - Verifique se o email está correto
 - O usuário precisa ter feito login pelo menos uma vez
 
 ### ❌ Ainda retorna "isAdmin: false"
+
 - Faça **logout** e **login novamente**
 - Limpe o cache do navegador (Ctrl+Shift+Delete)
 - Feche abas do navegador e reabra

@@ -10,8 +10,6 @@ import {
   sendPasswordResetEmail,
   updateProfile,
   onAuthStateChanged,
-  setPersistence,
-  browserLocalPersistence,
   type User,
   updatePassword,
   reauthenticateWithCredential,
@@ -22,14 +20,6 @@ import { auth, firestore } from './config';
 import { AuthService, AuthUser, AuthError } from '@/services/api/auth';
 
 /**
- * Configurar persistência GLOBALMENTE ao carregar o módulo
- * Isso garante que o Firebase SDK está pronto para ler do cache no F5
- */
-setPersistence(auth, browserLocalPersistence).catch((error) => {
-  console.error('Erro ao configurar persistência Firebase:', error);
-});
-
-/**
  * Implementação Firebase do serviço de autenticação
  */
 export class FirebaseAuthService implements AuthService {
@@ -37,11 +27,17 @@ export class FirebaseAuthService implements AuthService {
    * Converter Firebase User para AuthUser
    */
   private async firebaseUserToAuthUser(firebaseUser: User): Promise<AuthUser> {
+    console.log('🔄 [DEBUG] Convertendo Firebase User para AuthUser:', firebaseUser.email);
+    
     // Já temos o token de admin no claims
     const idTokenResult = await firebaseUser.getIdTokenResult();
+    console.log('📋 [DEBUG] Token obtido. Verificando claims de admin...');
+    console.log('👤 [DEBUG] Custom claims:', idTokenResult.claims);
+    
     const isAdmin = idTokenResult.claims.admin === true;
+    console.log('🔐 [DEBUG] isAdmin:', isAdmin);
 
-    return {
+    const authUser = {
       id: firebaseUser.uid,
       email: firebaseUser.email!,
       name: firebaseUser.displayName || undefined,
@@ -50,6 +46,9 @@ export class FirebaseAuthService implements AuthService {
         ? new Date(firebaseUser.metadata.creationTime)
         : new Date(),
     };
+    
+    console.log('✅ [DEBUG] AuthUser criado:', authUser);
+    return authUser;
   }
 
   /**
@@ -57,10 +56,17 @@ export class FirebaseAuthService implements AuthService {
    */
   async login(email: string, password: string): Promise<AuthUser> {
     try {
+      console.log('🔑 [DEBUG] Tentando login com email:', email);
       // Persistência já foi configurada globalmente no carregamento do módulo
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      return this.firebaseUserToAuthUser(userCredential.user);
+      console.log('✅ [DEBUG] Login bem-sucedido para:', userCredential.user.email);
+      console.log('📝 [DEBUG] Usuário UID:', userCredential.user.uid);
+      console.log('⏱️ [DEBUG] Sessão será salva automaticamente pelo Firebase com persistência configurada');
+      const authUser = await this.firebaseUserToAuthUser(userCredential.user);
+      console.log('✅ [DEBUG] AuthUser criado:', { email: authUser.email, role: authUser.role });
+      return authUser;
     } catch (error: any) {
+      console.error('❌ [DEBUG] Erro no login:', error.code, error.message);
       // Traduzir erros Firebase
       const errorMap: Record<string, string> = {
         'auth/user-not-found': 'Usuário não encontrado',
@@ -80,8 +86,11 @@ export class FirebaseAuthService implements AuthService {
    */
   async logout(): Promise<void> {
     try {
+      console.log('🚪 [DEBUG] Executando logout...');
       await signOut(auth);
+      console.log('✅ [DEBUG] Logout bem-sucedido. Sessão foi limpa do Firebase');
     } catch (error: any) {
+      console.error('❌ [DEBUG] Erro ao fazer logout:', error);
       throw new AuthError(error.code, 'Erro ao fazer logout', error);
     }
   }
@@ -199,20 +208,28 @@ export class FirebaseAuthService implements AuthService {
   async changePassword(currentPassword: string, newPassword: string): Promise<void> {
     const firebaseUser = auth.currentUser;
     if (!firebaseUser || !firebaseUser.email) {
+      console.error('❌ [DEBUG] Usuário não autenticado para alterar senha');
       throw new AuthError('auth/not-authenticated', 'Usuário não autenticado');
     }
 
     try {
+      console.log('🔐 [DEBUG] Iniciando alteração de senha para:', firebaseUser.email);
       // Reauthenticar com a senha atual
       const credential = EmailAuthProvider.credential(
         firebaseUser.email,
         currentPassword
       );
+      console.log('🔑 [DEBUG] Criado credencial para reauthenticação');
+      
       await reauthenticateWithCredential(firebaseUser, credential);
+      console.log('✅ [DEBUG] Reauthenticação bem-sucedida');
 
       // Atualizar para nova senha
       await updatePassword(firebaseUser, newPassword);
+      console.log('✅ [DEBUG] Senha alterada com sucesso no Firebase!');
+      console.log('⏱️ [DEBUG] Logout será disparado em 3 segundos...');
     } catch (error: any) {
+      console.error('❌ [DEBUG] Erro ao alterar senha:', error.code, error.message);
       const errorMap: Record<string, string> = {
         'auth/wrong-password': 'Senha atual incorreta',
         'auth/weak-password': 'Nova senha muito fraca',
@@ -229,17 +246,27 @@ export class FirebaseAuthService implements AuthService {
    * Retorna função para desinscrever
    */
   onAuthStateChanged(callback: (user: AuthUser | null) => void): () => void {
+    console.log('🔍 [DEBUG] Listener onAuthStateChanged assinado.');
+    console.log('⏳ [DEBUG] Aguardando Firebase verificar sessão armazenada...');
+
     return onAuthStateChanged(auth, async (firebaseUser) => {
-      try {
-        if (firebaseUser) {
+      console.log('🔍 [DEBUG] Firebase retornou usuário:', firebaseUser ? `${firebaseUser.email}` : 'null');
+      console.log('🔍 [DEBUG] Timestamp:', new Date().toISOString());
+      
+      if (firebaseUser) {
+        try {
           const authUser = await this.firebaseUserToAuthUser(firebaseUser);
+          console.log('✅ [DEBUG] Conversão para AuthUser concluída:', { email: authUser.email, role: authUser.role });
           callback(authUser);
-        } else {
+        } catch (e) {
+          console.error('❌ [DEBUG] Erro na conversão de usuário:', e);
           callback(null);
         }
-      } catch (error) {
-        // Se falhar na conversão, ainda assim avisa que não há usuário
-        console.error('Erro ao converter usuário Firebase:', error);
+      } else {
+        console.log('⚠️ [DEBUG] Nenhum usuário encontrado. Possíveis causas:');
+        console.log('   1. Usuário não fez login ainda');
+        console.log('   2. Sessão expirou');
+        console.log('   3. IndexedDB está vazio/corrompido');
         callback(null);
       }
     });

@@ -27,19 +27,27 @@ export const useAuth = (): UseAuthReturn => {
 
   // Listener para mudanças de auth
   useEffect(() => {
+    console.log('🔍 [DEBUG] Hook useAuth montado. Loading inicial:', loading);
     let isMounted = true;
     
     const unsubscribe = firebaseAuthService.onAuthStateChanged((authUser) => {
+      console.log('🔍 [DEBUG] useAuth recebeu novo estado de usuário:', authUser?.email || 'null');
+      console.log('🔍 [DEBUG] isMounted:', isMounted);
+      
       if (isMounted) {
         setUser(authUser);
         setError(null);
         // Marca que a primeira checagem do Firebase foi completa
         setFirstAuthCheckDone(true);
         setLoading(false);
+        console.log('✅ [DEBUG] Estado do hook atualizado. Loading agora = false');
+      } else {
+        console.log('⚠️ [DEBUG] Componente foi desmontado, ignorando atualização');
       }
     });
 
     return () => {
+      console.log('🔍 [DEBUG] useAuth limpando (cleanup). Desinscrever do listener.');
       isMounted = false;
       unsubscribe();
     };
