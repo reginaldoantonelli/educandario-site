@@ -22,6 +22,14 @@ import { auth, firestore } from './config';
 import { AuthService, AuthUser, AuthError } from '@/services/api/auth';
 
 /**
+ * Configurar persistência GLOBALMENTE ao carregar o módulo
+ * Isso garante que o Firebase SDK está pronto para ler do cache no F5
+ */
+setPersistence(auth, browserLocalPersistence).catch((error) => {
+  console.error('Erro ao configurar persistência Firebase:', error);
+});
+
+/**
  * Implementação Firebase do serviço de autenticação
  */
 export class FirebaseAuthService implements AuthService {
@@ -49,10 +57,7 @@ export class FirebaseAuthService implements AuthService {
    */
   async login(email: string, password: string): Promise<AuthUser> {
     try {
-      // Persistir login localmente
-      await setPersistence(auth, browserLocalPersistence);
-
-      // Sign in
+      // Persistência já foi configurada globalmente no carregamento do módulo
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       return this.firebaseUserToAuthUser(userCredential.user);
     } catch (error: any) {
@@ -225,10 +230,16 @@ export class FirebaseAuthService implements AuthService {
    */
   onAuthStateChanged(callback: (user: AuthUser | null) => void): () => void {
     return onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        const authUser = await this.firebaseUserToAuthUser(firebaseUser);
-        callback(authUser);
-      } else {
+      try {
+        if (firebaseUser) {
+          const authUser = await this.firebaseUserToAuthUser(firebaseUser);
+          callback(authUser);
+        } else {
+          callback(null);
+        }
+      } catch (error) {
+        // Se falhar na conversão, ainda assim avisa que não há usuário
+        console.error('Erro ao converter usuário Firebase:', error);
         callback(null);
       }
     });
