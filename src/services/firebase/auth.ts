@@ -15,7 +15,7 @@ import {
   reauthenticateWithCredential,
   EmailAuthProvider,
 } from 'firebase/auth';
-import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, firestore } from './config';
 import { AuthService, AuthUser, AuthError } from '@/services/api/auth';
 
@@ -48,7 +48,10 @@ export class FirebaseAuthService implements AuthService {
     };
     
     console.log('✅ [DEBUG] AuthUser criado:', authUser);
-    return authUser;
+    return {
+      ...authUser,
+      role: (authUser.role as 'admin' | 'user') || 'user',
+    };
   }
 
   /**
