@@ -4,7 +4,7 @@
  * Simples e direto - sem Context necessário para MVP
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { firebaseAuthService } from '@/services/firebase/auth';
 import { AuthUser, AuthError } from '@/services/api/auth';
 
@@ -24,6 +24,7 @@ export const useAuth = (): UseAuthReturn => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<AuthError | null>(null);
   const [firstAuthCheckDone, setFirstAuthCheckDone] = useState(false);
+  const logoutTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Listener para mudanças de auth
   useEffect(() => {
@@ -50,6 +51,13 @@ export const useAuth = (): UseAuthReturn => {
       console.log('🔍 [DEBUG] useAuth limpando (cleanup). Desinscrever do listener.');
       isMounted = false;
       unsubscribe();
+      
+      // Limpar timeout pendente de logout
+      if (logoutTimeoutRef.current) {
+        console.log('🧹 [DEBUG] Limpando timeout pendente de logout.');
+        clearTimeout(logoutTimeoutRef.current);
+        logoutTimeoutRef.current = null;
+      }
     };
   }, []);
 
@@ -102,12 +110,15 @@ export const useAuth = (): UseAuthReturn => {
       
       // Se chegou aqui, a senha foi alterada com sucesso
       // Fazer logout automático após 3 segundos
-      setTimeout(() => {
+      console.log('⏱️ [DEBUG] Agendando logout automático em 3 segundos...');
+      logoutTimeoutRef.current = setTimeout(() => {
+        console.log('⏰ [DEBUG] Timeout de logout disparado. Executando logout...');
         firebaseAuthService.logout().then(() => {
           setUser(null);
           setLoading(false);
           // Redirecionar para login (será feito por quem chama changePassword)
         });
+        logoutTimeoutRef.current = null;
       }, 3000);
     } catch (err) {
       const authError = err instanceof AuthError ? err : new AuthError('unknown', String(err));
