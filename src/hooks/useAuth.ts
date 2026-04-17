@@ -15,6 +15,7 @@ interface UseAuthReturn {
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
+  changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
   isAdmin: boolean;
 }
 
@@ -77,6 +78,29 @@ export const useAuth = (): UseAuthReturn => {
     }
   };
 
+  const changePassword = async (currentPassword: string, newPassword: string) => {
+    try {
+      setError(null);
+      setLoading(true);
+      await firebaseAuthService.changePassword(currentPassword, newPassword);
+      
+      // Se chegou aqui, a senha foi alterada com sucesso
+      // Fazer logout automático após 3 segundos
+      setTimeout(() => {
+        firebaseAuthService.logout().then(() => {
+          setUser(null);
+          setLoading(false);
+          // Redirecionar para login (será feito por quem chama changePassword)
+        });
+      }, 3000);
+    } catch (err) {
+      const authError = err instanceof AuthError ? err : new AuthError('unknown', String(err));
+      setError(authError);
+      setLoading(false);
+      throw authError;
+    }
+  };
+
   return {
     user,
     loading,
@@ -84,6 +108,7 @@ export const useAuth = (): UseAuthReturn => {
     login,
     logout,
     resetPassword,
+    changePassword,
     isAdmin: user?.role === 'admin',
   };
 };

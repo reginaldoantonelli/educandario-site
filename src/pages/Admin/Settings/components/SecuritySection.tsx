@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import { Shield, Check, AlertCircle, Lock, Eye, EyeOff } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
 
 const SecuritySection: React.FC = () => {
+    const navigate = useNavigate();
+    const { changePassword } = useAuth();
     const [securityData, setSecurityData] = useState({
         twoFAEnabled: false,
         lastPasswordChange: '15 de março de 2026'
@@ -18,6 +22,7 @@ const SecuritySection: React.FC = () => {
     const [showNewPassword, setShowNewPassword] = useState(false);
     const [twoFASuccess, setTwoFASuccess] = useState('');
     const [twoFAMessage, setTwoFAMessage] = useState('');
+    const [isChangingPassword, setIsChangingPassword] = useState(false);
 
     const handleToggle2FA = () => {
         const newStatus = !securityData.twoFAEnabled;
@@ -37,7 +42,7 @@ const SecuritySection: React.FC = () => {
         setPasswordError('');
     };
 
-    const handleChangePassword = () => {
+    const handleChangePassword = async () => {
         if (!passwordForm.currentPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {
             setPasswordError('Todos os campos são obrigatórios');
             return;
@@ -53,10 +58,27 @@ const SecuritySection: React.FC = () => {
             return;
         }
 
-        setPasswordSuccess(true);
-        setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
-        setShowPasswordModal(false);
-        setTimeout(() => setPasswordSuccess(false), 3000);
+        setIsChangingPassword(true);
+        setPasswordError('');
+
+        try {
+            // Chamar a função de alterar senha do Firebase
+            await changePassword(passwordForm.currentPassword, passwordForm.newPassword);
+            
+            // Se chegou aqui, a senha foi alterada com sucesso
+            setPasswordSuccess(true);
+            setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+            setShowPasswordModal(false);
+            
+            // Aguardar e redirecionar para login após 3 segundos
+            // (o logout será feito automaticamente pelo hook)
+            setTimeout(() => {
+                navigate('/admin');
+            }, 3000);
+        } catch (err: any) {
+            setPasswordError(err.message || 'Erro ao alterar a senha');
+            setIsChangingPassword(false);
+        }
     };
 
     return (
@@ -252,16 +274,27 @@ const SecuritySection: React.FC = () => {
                             <div className="flex gap-3 pt-4 sm:pt-6 border-t border-slate-200 dark:border-slate-800">
                                 <button
                                     onClick={() => setShowPasswordModal(false)}
-                                    className="flex-1 px-4 py-2.5 text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg font-medium text-sm transition-colors"
+                                    disabled={isChangingPassword}
+                                    className="flex-1 px-4 py-2.5 text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg font-medium text-sm transition-colors disabled:opacity-50"
                                 >
                                     Cancelar
                                 </button>
                                 <button
                                     onClick={handleChangePassword}
-                                    className="flex-1 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-sm transition-all flex items-center justify-center gap-2"
+                                    disabled={isChangingPassword}
+                                    className="flex-1 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-500 text-white rounded-lg font-medium text-sm transition-all flex items-center justify-center gap-2"
                                 >
-                                    <Check size={16} />
-                                    Salvar
+                                    {isChangingPassword ? (
+                                        <>
+                                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                            Alterando...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Check size={16} />
+                                            Salvar
+                                        </>
+                                    )}
                                 </button>
                             </div>
                         </div>

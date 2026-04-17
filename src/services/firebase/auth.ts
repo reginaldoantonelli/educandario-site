@@ -13,6 +13,9 @@ import {
   setPersistence,
   browserLocalPersistence,
   type User,
+  updatePassword,
+  reauthenticateWithCredential,
+  EmailAuthProvider,
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, firestore } from './config';
@@ -181,6 +184,38 @@ export class FirebaseAuthService implements AuthService {
       );
     } catch (error: any) {
       throw new AuthError(error.code, 'Erro ao atualizar perfil', error);
+    }
+  }
+
+  /**
+   * Alterar senha do usuário autenticado
+   * Requer autenticação prévia com a senha atual
+   */
+  async changePassword(currentPassword: string, newPassword: string): Promise<void> {
+    const firebaseUser = auth.currentUser;
+    if (!firebaseUser || !firebaseUser.email) {
+      throw new AuthError('auth/not-authenticated', 'Usuário não autenticado');
+    }
+
+    try {
+      // Reauthenticar com a senha atual
+      const credential = EmailAuthProvider.credential(
+        firebaseUser.email,
+        currentPassword
+      );
+      await reauthenticateWithCredential(firebaseUser, credential);
+
+      // Atualizar para nova senha
+      await updatePassword(firebaseUser, newPassword);
+    } catch (error: any) {
+      const errorMap: Record<string, string> = {
+        'auth/wrong-password': 'Senha atual incorreta',
+        'auth/weak-password': 'Nova senha muito fraca',
+        'auth/requires-recent-login': 'Faça login novamente por segurança',
+      };
+
+      const message = errorMap[error.code] || error.message || 'Erro ao alterar senha';
+      throw new AuthError(error.code, message, error);
     }
   }
 
