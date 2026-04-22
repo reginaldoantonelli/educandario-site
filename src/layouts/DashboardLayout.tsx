@@ -148,9 +148,11 @@ import { firebaseAuthService } from '@/services/firebase/auth';
             <div className="h-full flex flex-col p-6">
             {/* Logo / Identidade */}
             <div className="flex items-center gap-3 mb-10 px-2">
-                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">
-                E
-                </div>
+                <img 
+                    src="/logo-educandario.webp" 
+                    alt="Educandário Logo" 
+                    className="w-8 h-8 object-contain"
+                />
                 <span className="font-bold text-slate-900 dark:text-white tracking-tight">Educandário Admin</span>
             </div>
 
