@@ -12,8 +12,8 @@ class UserProfileService {
     private readonly AVATAR_KEY = 'adminAvatar';
 
     private defaultProfile: UserProfileData = {
-        displayName: 'Iago',
-        email: 'iago@educandario.com.br',
+        displayName: 'Administrator',
+        email: 'educandarionsa.adm@gmail.com',
         avatar: null,
         role: 'Admin'
     };

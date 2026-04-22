@@ -31,6 +31,9 @@ export interface AuthService {
   // Reset de senha
   resetPassword(email: string): Promise<void>;
   
+  // Alterar senha do usuário autenticado
+  changePassword(currentPassword: string, newPassword: string): Promise<void>;
+  
   // Atualizar perfil
   updateProfile(updates: Partial<AuthUser>): Promise<void>;
   

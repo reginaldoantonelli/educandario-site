@@ -542,26 +542,46 @@ class FirebaseNotificationService implements NotificationService {
   onNotificationsChange(
     callback: (notifications: Notification[]) => void
   ): () => void {
-    const user = firebaseAuthService.getCurrentUser().then((u) => u?.id);
+    const user = firebaseAuthService
+      .getCurrentUser()
+      .then((u) => u?.id)
+      .catch((err) => {
+        console.error('❌ [Notifications] Erro ao obter usuário:', err);
+        return null;
+      });
 
     user.then((userId) => {
       if (!userId) return;
 
-      const q = query(
-        collection(firestore, this.notificationsCollection),
-        where('userId', '==', userId),
-        orderBy('createdAt', 'desc'),
-        limit(50)
-      );
-
-      const unsubscribe = onSnapshot(q, (snapshot) => {
-        const notifications = snapshot.docs.map((doc) =>
-          this.firebaseDocToNotification({ id: doc.id, ...doc.data() })
+      try {
+        const q = query(
+          collection(firestore, this.notificationsCollection),
+          where('userId', '==', userId),
+          orderBy('createdAt', 'desc'),
+          limit(50)
         );
-        callback(notifications);
-      });
 
-      this.notificationListeners.set(userId, unsubscribe);
+        const unsubscribe = onSnapshot(
+          q,
+          (snapshot) => {
+            const notifications = snapshot.docs.map((doc) =>
+              this.firebaseDocToNotification({ id: doc.id, ...doc.data() })
+            );
+            callback(notifications);
+          },
+          (error) => {
+            // ❌ Erro na query (ex: índice faltando)
+            console.error('❌ [Notifications] Erro no listener:', error);
+            // Retornar array vazio para não quebrar a app
+            callback([]);
+          }
+        );
+
+        this.notificationListeners.set(userId, unsubscribe);
+      } catch (error) {
+        console.error('❌ [Notifications] Erro ao criar query:', error);
+        callback([]);
+      }
     });
 
     // Return cleanup function
@@ -579,22 +599,41 @@ class FirebaseNotificationService implements NotificationService {
    * Subscribe to unread count changes
    */
   onUnreadCountChange(callback: (count: number) => void): () => void {
-    const user = firebaseAuthService.getCurrentUser().then((u) => u?.id);
+    const user = firebaseAuthService
+      .getCurrentUser()
+      .then((u) => u?.id)
+      .catch((err) => {
+        console.error('❌ [Notifications] Erro ao obter usuário (unread):', err);
+        return null;
+      });
 
     user.then((userId) => {
       if (!userId) return;
 
-      const q = query(
-        collection(firestore, this.notificationsCollection),
-        where('userId', '==', userId),
-        where('read', '==', false)
-      );
+      try {
+        const q = query(
+          collection(firestore, this.notificationsCollection),
+          where('userId', '==', userId),
+          where('read', '==', false)
+        );
 
-      const unsubscribe = onSnapshot(q, (snapshot) => {
-        callback(snapshot.size);
-      });
+        const unsubscribe = onSnapshot(
+          q,
+          (snapshot) => {
+            callback(snapshot.size);
+          },
+          (error) => {
+            // ❌ Erro na query
+            console.error('❌ [Notifications] Erro no listener de unread:', error);
+            callback(0); // Retornar 0 para não quebrar a app
+          }
+        );
 
-      this.unreadCountListeners.set(userId, unsubscribe);
+        this.unreadCountListeners.set(userId, unsubscribe);
+      } catch (error) {
+        console.error('❌ [Notifications] Erro ao criar query de unread:', error);
+        callback(0);
+      }
     });
 
     // Return cleanup function
