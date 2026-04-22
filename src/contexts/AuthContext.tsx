@@ -97,16 +97,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setLoading(true);
       await firebaseAuthService.changePassword(currentPassword, newPassword);
       
-      // Logout automático após 3 segundos
-      console.log('⏱️ [AuthContext] Agendando logout automático em 3 segundos...');
-      logoutTimeoutRef.current = setTimeout(() => {
-        console.log('⏰ [AuthContext] Executando logout automático...');
-        firebaseAuthService.logout().then(() => {
-          setUser(null);
-          setLoading(false);
-        });
-        logoutTimeoutRef.current = null;
-      }, 3000);
+      // ✅ MUDANÇA: Logout automático REMOVIDO
+      // O SecuritySection.tsx agora controla o countdown de 5 segundos e o logout
+      // Este aqui estava conflitando com o countdown do modal de sucesso
+      console.log('✅ [AuthContext] Senha alterada. SecuritySection controlará o logout com countdown');
+      setLoading(false);
     } catch (err) {
       const authError = err instanceof AuthError ? err : new AuthError('unknown', String(err));
       setError(authError);

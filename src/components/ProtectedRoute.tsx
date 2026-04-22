@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -16,11 +16,24 @@ interface ProtectedRouteProps {
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const { user, loading } = useAuth();
 
-  console.log('🛡️ [DEBUG] ProtectedRoute renderizando. Loading:', loading, '| User:', user?.email || 'null');
+  // TRAVA: Verifica se uma troca de senha está em andamento
+  // Se estiver, ignora o user === null temporariamente
+  const isPasswordChanging = sessionStorage.getItem('isPasswordChanging') === 'true';
+
+  console.log(`
+╔════════════════════════════════════════════════════════════╗
+║           🛡️ ProtectedRoute Render                         ║
+╠════════════════════════════════════════════════════════════╣
+║ Loading: ${String(loading).padEnd(50)}║
+║ User: ${(user?.email || 'null').padEnd(50)}║
+║ IsPasswordChanging: ${String(isPasswordChanging).padEnd(50)}║
+║ sessionStorage.getItem('isPasswordChanging'): ${String(sessionStorage.getItem('isPasswordChanging')).padEnd(20)}║
+╚════════════════════════════════════════════════════════════╝
+  `);
 
   // Enquanto Firebase está verificando sessão, mostra loading
   if (loading) {
-    console.log('⏳ [DEBUG] Firebase ainda verificando sessão. Mostrando spinner...');
+    console.log('⏳ [ProtectedRoute] Firebase ainda verificando sessão. Mostrando spinner...');
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
         <div className="flex flex-col items-center gap-4">
@@ -32,14 +45,20 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   }
 
   // Depois que Firebase respondeu (loading=false):
-  // Se não estiver autenticado, redireciona para login
-  if (!user) {
-    console.log('❌ [DEBUG] Loading=false mas nenhum usuário. Redirecionando para /admin');
+  // Se não estiver autenticado E não há mudança de senha em curso, redireciona
+  if (!user && !isPasswordChanging) {
+    console.log(`❌ [ProtectedRoute] SEM usuário E SEM troca de senha. REDIRECIONANDO para /admin`);
     return <Navigate to="/admin" replace />;
   }
 
+  // Se há mudança de senha em curso, permite continuar renderizando (modal de sucesso)
+  if (!user && isPasswordChanging) {
+    console.log(`⏱️ [ProtectedRoute] SEM usuário MAS com troca de senha em curso. RENDERIZANDO (aguardando modal)`);
+    return <>{children}</>;
+  }
+
   // Se estiver autenticado, renderiza o conteúdo
-  console.log('✅ [DEBUG] Usuário autenticado! Renderizando dashboard para:', user.email);
+  console.log(`✅ [ProtectedRoute] Usuário AUTENTICADO! Renderizando dashboard`);
   return <>{children}</>;
 };
 

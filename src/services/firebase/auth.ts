@@ -230,7 +230,6 @@ export class FirebaseAuthService implements AuthService {
       // Atualizar para nova senha
       await updatePassword(firebaseUser, newPassword);
       console.log('✅ [DEBUG] Senha alterada com sucesso no Firebase!');
-      console.log('⏱️ [DEBUG] Logout será disparado em 3 segundos...');
     } catch (error: any) {
       console.error('❌ [DEBUG] Erro ao alterar senha:', error.code, error.message);
       const errorMap: Record<string, string> = {

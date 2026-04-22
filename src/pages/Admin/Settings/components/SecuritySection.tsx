@@ -1,28 +1,134 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Shield, Check, AlertCircle, Lock, Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 
 const SecuritySection: React.FC = () => {
     const navigate = useNavigate();
-    const { changePassword } = useAuth();
+    const { changePassword, logout } = useAuth();
     const [securityData, setSecurityData] = useState({
         twoFAEnabled: false,
         lastPasswordChange: '15 de março de 2026'
     });
-    const [showPasswordModal, setShowPasswordModal] = useState(false);
+    const [showPasswordModal, setShowPasswordModal] = useState(() => {
+        const savedModal = sessionStorage.getItem('showPasswordModal') === 'true';
+        console.log(`🔄 [SecuritySection] INIT showPasswordModal: savedModal=${savedModal}`);
+        return savedModal;
+    });
+    // PERSISTÊNCIA: Restaura estado do modal do sessionStorage se trava está ativa
+    const [showSuccessModal, setShowSuccessModal] = useState(() => {
+        const isPasswordChanging = sessionStorage.getItem('isPasswordChanging') === 'true';
+        const savedModal = sessionStorage.getItem('showSuccessModal') === 'true';
+        console.log(`🔄 [SecuritySection] INIT: isPasswordChanging=${isPasswordChanging}, savedModal=${savedModal}`);
+        return isPasswordChanging && savedModal;
+    });
+    const [countdownSeconds, setCountdownSeconds] = useState(() => {
+        const isPasswordChanging = sessionStorage.getItem('isPasswordChanging') === 'true';
+        const saved = sessionStorage.getItem('countdownSeconds');
+        const value = isPasswordChanging && saved ? parseInt(saved, 10) : 5;
+        console.log(`⏱️ [SecuritySection] INIT: countdownSeconds=${value}`);
+        return value;
+    });
     const [passwordForm, setPasswordForm] = useState({
         currentPassword: '',
         newPassword: '',
         confirmPassword: ''
     });
-    const [passwordError, setPasswordError] = useState('');
+    const [passwordError, setPasswordError] = useState(() => {
+        const error = sessionStorage.getItem('passwordError');
+        console.log(`🔄 [SecuritySection] INIT passwordError:`, error || 'vazio');
+        return error || '';
+    });
     const [passwordSuccess, setPasswordSuccess] = useState(false);
     const [showCurrentPassword, setShowCurrentPassword] = useState(false);
     const [showNewPassword, setShowNewPassword] = useState(false);
     const [twoFASuccess, setTwoFASuccess] = useState('');
     const [twoFAMessage, setTwoFAMessage] = useState('');
     const [isChangingPassword, setIsChangingPassword] = useState(false);
+
+    // MONITOR: Quando showSuccessModal muda, registra no console E persiste no sessionStorage
+    useEffect(() => {
+        console.log(`📊 [SecuritySection] showSuccessModal mudou para:`, showSuccessModal);
+        // PERSISTÊNCIA: Salva no sessionStorage para resistir a remontagems
+        if (showSuccessModal) {
+            sessionStorage.setItem('showSuccessModal', 'true');
+            console.log(`💾 [SecuritySection] Salvou showSuccessModal=true no sessionStorage`);
+        } else {
+            sessionStorage.removeItem('showSuccessModal');
+            console.log(`🗑️ [SecuritySection] Limpou showSuccessModal do sessionStorage`);
+        }
+    }, [showSuccessModal]);
+
+    // MONITOR: Quando showPasswordModal muda, persiste no sessionStorage
+    useEffect(() => {
+        console.log(`📊 [SecuritySection] showPasswordModal mudou para:`, showPasswordModal);
+        if (showPasswordModal) {
+            sessionStorage.setItem('showPasswordModal', 'true');
+            console.log(`💾 [SecuritySection] Salvou showPasswordModal=true no sessionStorage`);
+        } else {
+            sessionStorage.removeItem('showPasswordModal');
+            console.log(`🗑️ [SecuritySection] Limpou showPasswordModal do sessionStorage`);
+        }
+    }, [showPasswordModal]);
+
+    // MONITOR: Quando countdownSeconds muda, registra no console E persiste
+    useEffect(() => {
+        console.log(`⏱️ [SecuritySection] Countdown: ${countdownSeconds} segundos`);
+        // PERSISTÊNCIA: Salva no sessionStorage
+        if (countdownSeconds > 0) {
+            sessionStorage.setItem('countdownSeconds', String(countdownSeconds));
+            console.log(`💾 [SecuritySection] Salvou countdownSeconds=${countdownSeconds} no sessionStorage`);
+        } else if (countdownSeconds === 0) {
+            sessionStorage.removeItem('countdownSeconds');
+            console.log(`🗑️ [SecuritySection] Limpou countdownSeconds do sessionStorage`);
+        }
+    }, [countdownSeconds]);
+
+    // MONITOR: Quando passwordError muda, persiste no sessionStorage
+    useEffect(() => {
+        console.log(`❌ [SecuritySection] passwordError mudou para:`, passwordError);
+        if (passwordError) {
+            sessionStorage.setItem('passwordError', passwordError);
+            console.log(`💾 [SecuritySection] Salvou passwordError="${passwordError}" no sessionStorage`);
+        } else {
+            sessionStorage.removeItem('passwordError');
+            console.log(`🗑️ [SecuritySection] Limpou passwordError do sessionStorage`);
+        }
+    }, [passwordError]);
+
+    // Countdown timer para modal de sucesso
+    useEffect(() => {
+        console.log(`🔄 [SecuritySection] Countdown useEffect disparado. showSuccessModal:`, showSuccessModal, 'countdownSeconds:', countdownSeconds);
+        
+        if (!showSuccessModal) {
+            console.log(`⏸️ [SecuritySection] Modal não está ativo, saindo do countdown`);
+            return;
+        }
+
+        if (countdownSeconds > 0) {
+            console.log(`⏳ [SecuritySection] Timer iniciado, reduzindo em 1 segundo...`);
+            const timer = setTimeout(() => {
+                setCountdownSeconds(countdownSeconds - 1);
+            }, 1000);
+            return () => clearTimeout(timer);
+        }
+        
+        if (countdownSeconds === 0) {
+            console.log(`✅ [SecuritySection] Countdown chegou a 0, iniciando logout`);
+            // 1. Limpa a trava de sessão
+            sessionStorage.removeItem('isPasswordChanging');
+            console.log(`🔓 [SecuritySection] Trava removida: isPasswordChanging`);
+            
+            // 2. Executa o redirecionamento e logout
+            console.log(`🚀 [SecuritySection] Navegando para /admin`);
+            navigate('/admin');
+            
+            setTimeout(() => {
+                console.log(`🚪 [SecuritySection] Executando logout...`);
+                logout();
+            }, 500);
+        }
+    }, [showSuccessModal, countdownSeconds, logout, navigate]);
 
     const handleToggle2FA = () => {
         const newStatus = !securityData.twoFAEnabled;
@@ -39,44 +145,85 @@ const SecuritySection: React.FC = () => {
     const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setPasswordForm(prev => ({ ...prev, [name]: value }));
+        // 🔄 MELHORIA: Limpa erro ao usuário começar a digitar
         setPasswordError('');
     };
 
     const handleChangePassword = async () => {
+        console.log(`🔑 [SecuritySection] handleChangePassword iniciado`);
+        
         if (!passwordForm.currentPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {
+            console.log(`⚠️ [SecuritySection] Validação falhou: campos vazios`);
             setPasswordError('Todos os campos são obrigatórios');
             return;
         }
 
         if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+            console.log(`⚠️ [SecuritySection] Validação falhou: senhas não coincidem`);
             setPasswordError('As senhas não coincidem');
             return;
         }
 
         if (passwordForm.newPassword.length < 8) {
+            console.log(`⚠️ [SecuritySection] Validação falhou: senha menor que 8 caracteres`);
             setPasswordError('A nova senha deve ter pelo menos 8 caracteres');
             return;
         }
 
+        console.log(`✅ [SecuritySection] Todas as validações passaram`);
         setIsChangingPassword(true);
         setPasswordError('');
 
         try {
-            // Chamar a função de alterar senha do Firebase
-            await changePassword(passwordForm.currentPassword, passwordForm.newPassword);
+            // 1. TRAVA: Ativa ANTES da mudança que invalida o token
+            // Isso sinaliza ao ProtectedRoute que uma troca de senha está em curso
+            sessionStorage.setItem('isPasswordChanging', 'true');
+            console.log(`🔐 [SecuritySection] Trava ativada: isPasswordChanging = true`);
+            console.log(`🔐 [SecuritySection] sessionStorage.getItem('isPasswordChanging'):`, sessionStorage.getItem('isPasswordChanging'));
             
-            // Se chegou aqui, a senha foi alterada com sucesso
+            // 2. Chamar a função de alterar senha do Firebase
+            console.log(`🌐 [SecuritySection] Chamando changePassword no Firebase...`);
+            const result = await changePassword(passwordForm.currentPassword, passwordForm.newPassword);
+            console.log(`✅ [SecuritySection] Senha alterada com sucesso no Firebase. Resultado:`, result);
+            
+            // 3. Prepara o Modal de Sucesso
+            console.log(`💾 [SecuritySection] Limpando formulário e fechando modal de entrada`);
             setPasswordSuccess(true);
             setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
             setShowPasswordModal(false);
+            setIsChangingPassword(false);
             
-            // Aguardar e redirecionar para login após 3 segundos
-            // (o logout será feito automaticamente pelo hook)
-            setTimeout(() => {
-                navigate('/admin');
-            }, 3000);
+            // 4. Mostrar modal de sucesso com countdown
+            console.log(`🎯 [SecuritySection] Setando showSuccessModal = true e countdownSeconds = 5`);
+            // PERSISTÊNCIA: Salva estado no sessionStorage ANTES de atualizar state
+            sessionStorage.setItem('showSuccessModal', 'true');
+            sessionStorage.setItem('countdownSeconds', '5');
+            console.log(`💾 [SecuritySection] Salvou estado inicial do modal no sessionStorage`);
+            setCountdownSeconds(5);
+            setShowSuccessModal(true);
+            console.log(`⏱️ [SecuritySection] Modal de sucesso ativado com countdown de 5 segundos`);
+            console.log(`📊 [SecuritySection] Estado atual:`, { showSuccessModal: true, countdownSeconds: 5 });
+            
         } catch (err: any) {
-            setPasswordError(err.message || 'Erro ao alterar a senha');
+            // Se houver erro, NÃO remove a trava para permitir que o modal persista
+            console.log(`❌ [SecuritySection] ERRO na alteração de senha:`, err.message, err.code);
+            // NÃO remove a trava: sessionStorage.removeItem('isPasswordChanging');
+            
+            // 🎯 MELHORIA: Mensagens de erro mais específicas e amigáveis
+            let userFriendlyError = 'Erro ao alterar a senha';
+            if (err.code === 'auth/invalid-credential') {
+                userFriendlyError = '❌ Senha atual incorreta. Verifique e tente novamente.';
+            } else if (err.code === 'auth/weak-password') {
+                userFriendlyError = '⚠️ A senha é muito fraca. Use letras maiúsculas, minúsculas, números e símbolos.';
+            } else if (err.code === 'auth/requires-recent-login') {
+                userFriendlyError = '⏱️ Você precisa fazer login novamente para alterar a senha.';
+            }
+            
+            // PERSISTE o erro IMEDIATAMENTE antes de qualquer remontagem
+            sessionStorage.setItem('passwordError', userFriendlyError);
+            console.log(`💾 [SecuritySection] Salvou passwordError="${userFriendlyError}" no sessionStorage IMEDIATAMENTE`);
+            
+            setPasswordError(userFriendlyError);
             setIsChangingPassword(false);
         }
     };
@@ -183,6 +330,61 @@ const SecuritySection: React.FC = () => {
                 </div>
             </div>
 
+            {/* Modal de Sucesso - Senha Alterada */}
+            {showSuccessModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+                    {/* Overlay */}
+                    <div className="absolute inset-0 bg-slate-900/50 dark:bg-slate-950/70 backdrop-blur-md" />
+
+                    {/* Modal Container */}
+                    <div className="relative bg-white dark:bg-slate-900 rounded-2xl sm:rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-2xl w-full max-w-md p-4 sm:p-8">
+                        {/* Ícone de Sucesso */}
+                        <div className="flex justify-center mb-4 sm:mb-6">
+                            <div className="flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-green-100 dark:bg-green-900/30 rounded-full">
+                                <Check className="text-green-600 dark:text-green-400" size={32} />
+                            </div>
+                        </div>
+
+                        {/* Título */}
+                        <h3 className="text-center text-lg sm:text-xl font-bold text-slate-900 dark:text-white mb-2 sm:mb-3">
+                            Senha Alterada com Sucesso!
+                        </h3>
+
+                        {/* Descrição */}
+                        <p className="text-center text-sm sm:text-base text-slate-600 dark:text-slate-300 mb-6 sm:mb-8">
+                            Sua senha foi alterada com segurança. Você será desconectado em breve.
+                        </p>
+
+                        {/* Contador */}
+                        <div className="flex justify-center items-center gap-2 mb-6 sm:mb-8">
+                            <div className="w-12 h-12 sm:w-14 sm:h-14 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+                                <span className="text-2xl sm:text-3xl font-bold text-blue-600 dark:text-blue-400">
+                                    {countdownSeconds}
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Texto do Countdown */}
+                        <p className="text-center text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-6 sm:mb-8">
+                            Redirecionando para login em {countdownSeconds} segundo{countdownSeconds !== 1 ? 's' : ''}...
+                        </p>
+
+                        {/* Botão para Desconectar Agora */}
+                        <button
+                            onClick={() => {
+                                navigate('/admin');
+                                setTimeout(() => {
+                                    logout();
+                                }, 500);
+                            }}
+                            className="w-full px-4 py-2.5 sm:py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium text-sm sm:text-base transition-all"
+                        >
+                            Desconectar Agora
+                        </button>
+                    </div>
+                </div>
+            )}
+
             {/* Modal de Alterar Senha */}
             {showPasswordModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
@@ -211,7 +413,11 @@ const SecuritySection: React.FC = () => {
                                         name="currentPassword"
                                         value={passwordForm.currentPassword}
                                         onChange={handlePasswordChange}
-                                        className="w-full px-4 py-2.5 pr-10 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                                        className={`w-full px-4 py-2.5 pr-10 bg-slate-50 dark:bg-slate-950/50 border rounded-lg text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 transition-all ${
+                                            passwordError 
+                                                ? 'border-red-400 dark:border-red-600 focus:ring-red-500' 
+                                                : 'border-slate-200 dark:border-slate-700 focus:ring-blue-500'
+                                        }`}
                                         placeholder="••••••••"
                                     />
                                     <button
@@ -262,10 +468,10 @@ const SecuritySection: React.FC = () => {
 
                             {/* Erro */}
                             {passwordError && (
-                                <div className="p-3 sm:p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/30 rounded-lg">
+                                <div className="p-3 sm:p-4 bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 rounded-lg animate-in fade-in-50 duration-200">
                                     <p className="text-xs sm:text-sm font-semibold text-red-700 dark:text-red-400 flex items-center gap-2">
-                                        <AlertCircle size={16} />
-                                        {passwordError}
+                                        <AlertCircle size={16} className="shrink-0" />
+                                        <span>{passwordError}</span>
                                     </p>
                                 </div>
                             )}
@@ -273,7 +479,11 @@ const SecuritySection: React.FC = () => {
                             {/* Botões */}
                             <div className="flex gap-3 pt-4 sm:pt-6 border-t border-slate-200 dark:border-slate-800">
                                 <button
-                                    onClick={() => setShowPasswordModal(false)}
+                                    onClick={() => {
+                                        setShowPasswordModal(false);
+                                        setPasswordError('');
+                                        setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+                                    }}
                                     disabled={isChangingPassword}
                                     className="flex-1 px-4 py-2.5 text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg font-medium text-sm transition-colors disabled:opacity-50"
                                 >
