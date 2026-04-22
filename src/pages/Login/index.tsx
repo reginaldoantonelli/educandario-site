@@ -114,14 +114,29 @@ const Login: React.FC = () => {
             localStorage.removeItem('rememberMeEmail');
             localStorage.removeItem('rememberMeChecked');
             
-            // Tratar erro de autenticação
-            if (err instanceof AuthError) {
-                setError(err.message);
-            } else {
-                setError(err?.message || 'Erro ao fazer login. Tente novamente.');
+            // Mapear erros do Firebase para mensagens amigáveis em português
+            let userFriendlyError = 'Erro ao fazer login. Tente novamente.';
+            
+            if (err?.code === 'auth/invalid-credential') {
+                userFriendlyError = '❌ E-mail ou senha incorretos. Verifique seus dados e tente novamente.';
+            } else if (err?.code === 'auth/user-not-found') {
+                userFriendlyError = '❌ Usuário não encontrado. Verifique seu e-mail.';
+            } else if (err?.code === 'auth/wrong-password') {
+                userFriendlyError = '❌ Senha incorreta. Tente novamente.';
+            } else if (err?.code === 'auth/too-many-requests') {
+                userFriendlyError = '⏱️ Muitas tentativas de login. Tente novamente mais tarde.';
+            } else if (err?.code === 'auth/user-disabled') {
+                userFriendlyError = '🔒 Esta conta foi desativada. Entre em contato com o suporte.';
+            } else if (err?.code === 'auth/invalid-email') {
+                userFriendlyError = '❌ E-mail inválido. Verifique o formato e tente novamente.';
+            } else if (err instanceof AuthError) {
+                userFriendlyError = err.message;
+            } else if (err?.message) {
+                userFriendlyError = err.message;
             }
             
-            console.error('❌ Erro ao fazer login:', err);
+            setError(userFriendlyError);
+            console.error('❌ Erro ao fazer login:', err?.code, err?.message);
         }
     };
 

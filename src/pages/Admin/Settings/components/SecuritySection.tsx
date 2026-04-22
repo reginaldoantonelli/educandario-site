@@ -15,11 +15,12 @@ const SecuritySection: React.FC = () => {
         console.log(`🔄 [SecuritySection] INIT showPasswordModal: savedModal=${savedModal}`);
         return savedModal;
     });
-    // PERSISTÊNCIA: Restaura estado do modal do sessionStorage se trava está ativa
+    // PERSISTÊNCIA: Restaura estado do modal do sessionStorage
     const [showSuccessModal, setShowSuccessModal] = useState(() => {
-        const isPasswordChanging = sessionStorage.getItem('isPasswordChanging') === 'true';
         const savedModal = sessionStorage.getItem('showSuccessModal') === 'true';
-        console.log(`🔄 [SecuritySection] INIT: isPasswordChanging=${isPasswordChanging}, savedModal=${savedModal}`);
+        const isPasswordChanging = sessionStorage.getItem('isPasswordChanging') === 'true';
+        console.log(`🔄 [SecuritySection] INIT: showSuccessModal=${savedModal}, isPasswordChanging=${isPasswordChanging}`);
+        // Só restaura sucesso se trava está ativa
         return isPasswordChanging && savedModal;
     });
     const [countdownSeconds, setCountdownSeconds] = useState(() => {
@@ -49,6 +50,7 @@ const SecuritySection: React.FC = () => {
     // MONITOR: Quando showSuccessModal muda, registra no console E persiste no sessionStorage
     useEffect(() => {
         console.log(`📊 [SecuritySection] showSuccessModal mudou para:`, showSuccessModal);
+        console.log(`📊 [SecuritySection] showPasswordModal está em:`, showPasswordModal);
         // PERSISTÊNCIA: Salva no sessionStorage para resistir a remontagems
         if (showSuccessModal) {
             sessionStorage.setItem('showSuccessModal', 'true');
@@ -57,7 +59,7 @@ const SecuritySection: React.FC = () => {
             sessionStorage.removeItem('showSuccessModal');
             console.log(`🗑️ [SecuritySection] Limpou showSuccessModal do sessionStorage`);
         }
-    }, [showSuccessModal]);
+    }, [showSuccessModal, showPasswordModal]);
 
     // MONITOR: Quando showPasswordModal muda, persiste no sessionStorage
     useEffect(() => {
@@ -176,40 +178,47 @@ const SecuritySection: React.FC = () => {
 
         try {
             // 1. TRAVA: Ativa ANTES da mudança que invalida o token
-            // Isso sinaliza ao ProtectedRoute que uma troca de senha está em curso
             sessionStorage.setItem('isPasswordChanging', 'true');
-            console.log(`🔐 [SecuritySection] Trava ativada: isPasswordChanging = true`);
-            console.log(`🔐 [SecuritySection] sessionStorage.getItem('isPasswordChanging'):`, sessionStorage.getItem('isPasswordChanging'));
+            console.log(`🔐 [SecuritySection] Trava ativada`);
             
             // 2. Chamar a função de alterar senha do Firebase
             console.log(`🌐 [SecuritySection] Chamando changePassword no Firebase...`);
-            const result = await changePassword(passwordForm.currentPassword, passwordForm.newPassword);
-            console.log(`✅ [SecuritySection] Senha alterada com sucesso no Firebase. Resultado:`, result);
+            await changePassword(passwordForm.currentPassword, passwordForm.newPassword);
+            console.log(`✅ [SecuritySection] Senha alterada com sucesso!`);
             
-            // 3. Prepara o Modal de Sucesso
-            console.log(`💾 [SecuritySection] Limpando formulário e fechando modal de entrada`);
-            setPasswordSuccess(true);
+            // 3. Preparar transição para modal de sucesso
+            console.log(`📝 [SecuritySection] STEP 1: Limpando formulário...`);
             setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
-            setShowPasswordModal(false);
-            setIsChangingPassword(false);
             
-            // 4. Mostrar modal de sucesso com countdown
-            console.log(`🎯 [SecuritySection] Setando showSuccessModal = true e countdownSeconds = 5`);
-            // PERSISTÊNCIA: Salva estado no sessionStorage ANTES de atualizar state
-            sessionStorage.setItem('showSuccessModal', 'true');
-            sessionStorage.setItem('countdownSeconds', '5');
-            console.log(`💾 [SecuritySection] Salvou estado inicial do modal no sessionStorage`);
+            console.log(`📝 [SecuritySection] STEP 2: Limpando erro...`);
+            setPasswordError('');
+            
+            // 4. Fechar modal de entrada (PRIMEIRO)
+            console.log(`📝 [SecuritySection] STEP 3: Fechando modal de entrada...`);
+            setShowPasswordModal(false);
+            sessionStorage.removeItem('showPasswordModal'); // Limpa IMEDIATAMENTE do storage
+            
+            // 5. Ativar modal de sucesso (DEPOIS)
+            console.log(`📝 [SecuritySection] STEP 4: Ativando modal de sucesso...`);
             setCountdownSeconds(5);
             setShowSuccessModal(true);
-            console.log(`⏱️ [SecuritySection] Modal de sucesso ativado com countdown de 5 segundos`);
-            console.log(`📊 [SecuritySection] Estado atual:`, { showSuccessModal: true, countdownSeconds: 5 });
+            
+            console.log(`📝 [SecuritySection] STEP 5: Salvando estado no sessionStorage...`);
+            sessionStorage.setItem('showSuccessModal', 'true');
+            sessionStorage.setItem('countdownSeconds', '5');
+            sessionStorage.removeItem('passwordError'); // Remove erro anterior se houver
+            
+            console.log(`📝 [SecuritySection] STEP 6: Marcando sucesso...`);
+            setPasswordSuccess(true);
+            
+            console.log(`📝 [SecuritySection] STEP 7: Finalizando...`);
+            setIsChangingPassword(false);
+            
+            console.log(`✅ [SecuritySection] TODOS OS PASSOS CONCLUÍDOS`);
             
         } catch (err: any) {
-            // Se houver erro, NÃO remove a trava para permitir que o modal persista
-            console.log(`❌ [SecuritySection] ERRO na alteração de senha:`, err.message, err.code);
-            // NÃO remove a trava: sessionStorage.removeItem('isPasswordChanging');
+            console.log(`❌ [SecuritySection] ERRO na alteração de senha:`, err.code, err.message);
             
-            // 🎯 MELHORIA: Mensagens de erro mais específicas e amigáveis
             let userFriendlyError = 'Erro ao alterar a senha';
             if (err.code === 'auth/invalid-credential') {
                 userFriendlyError = '❌ Senha atual incorreta. Verifique e tente novamente.';
@@ -219,7 +228,6 @@ const SecuritySection: React.FC = () => {
                 userFriendlyError = '⏱️ Você precisa fazer login novamente para alterar a senha.';
             }
             
-            // PERSISTE o erro IMEDIATAMENTE antes de qualquer remontagem
             sessionStorage.setItem('passwordError', userFriendlyError);
             console.log(`💾 [SecuritySection] Salvou passwordError="${userFriendlyError}" no sessionStorage IMEDIATAMENTE`);
             
@@ -480,9 +488,20 @@ const SecuritySection: React.FC = () => {
                             <div className="flex gap-3 pt-4 sm:pt-6 border-t border-slate-200 dark:border-slate-800">
                                 <button
                                     onClick={() => {
-                                        setShowPasswordModal(false);
-                                        setPasswordError('');
+                                        console.log(`🔓 [SecuritySection] Botão Cancelar clicado`);
+                                        // 1. Limpa o formulário
                                         setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+                                        setPasswordError('');
+                                        // 2. Fecha o modal de entrada
+                                        setShowPasswordModal(false);
+                                        // 3. Limpa COMPLETAMENTE o estado de sucesso se estiver ativo
+                                        setShowSuccessModal(false);
+                                        // 4. Remove a trava de sessão para permitir novo ciclo
+                                        sessionStorage.removeItem('isPasswordChanging');
+                                        sessionStorage.removeItem('showSuccessModal');
+                                        sessionStorage.removeItem('countdownSeconds');
+                                        sessionStorage.removeItem('passwordError');
+                                        console.log(`🔓 [SecuritySection] Limpado todo o estado do sessionStorage`);
                                     }}
                                     disabled={isChangingPassword}
                                     className="flex-1 px-4 py-2.5 text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg font-medium text-sm transition-colors disabled:opacity-50"

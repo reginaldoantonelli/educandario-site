@@ -1,10 +1,28 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Instagram, Facebook, Mail, Phone, MapPin, MessageCircle, Navigation, AlertCircle, Calendar, Package, HandHeart, Banknote } from 'lucide-react';
-import { usePortalSettings } from '@/hooks/usePortalSettings';
+import { usePortalSettingsContext } from '@/contexts/PortalSettingsContext';
 
 const Contact: React.FC = () => {
-    // Usar dados do portal
-    const { settings: portalSettings } = usePortalSettings();
+    // Usar dados do portal via Context global
+    const { settings: portalSettings, loading } = usePortalSettingsContext();
+
+    // Listener para mudanças nas configurações (debugging)
+    useEffect(() => {
+        console.log('🔄 [Contact Page] Configurações atualizadas:', portalSettings);
+    }, [portalSettings]);
+
+    // Se ainda está carregando, mostrar mensagem
+    if (loading) {
+        return (
+            <main className="pt-20 bg-slate-50 dark:bg-slate-950 min-h-screen transition-colors duration-300">
+                <section className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 py-16">
+                    <div className="max-w-7xl mx-auto px-4 text-center">
+                        <p className="text-lg text-slate-600 dark:text-slate-300">Carregando informações de contato...</p>
+                    </div>
+                </section>
+            </main>
+        );
+    }
 
     // Socialize links baseados nas configurações do portal
     const socialLinks = [

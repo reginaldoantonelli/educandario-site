@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { AlertCircle, Check } from 'lucide-react';
-import { usePortalSettings } from '@/hooks/usePortalSettings';
+import { usePortalSettingsContext } from '@/contexts/PortalSettingsContext';
 import { useAuditLogs } from '@/hooks/useAuditLogs';
 
 const PortalManagementSection: React.FC = () => {
-    const { settings: portalSettings, error: portalError, updateSettings, clearError: clearPortalError } = usePortalSettings();
+    const { settings: portalSettings, error: portalError, updateSettings, clearError: clearPortalError } = usePortalSettingsContext();
     const { fetchLogs } = useAuditLogs();
 
     const [editingPortal, setEditingPortal] = useState(false);
