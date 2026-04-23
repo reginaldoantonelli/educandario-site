@@ -9,6 +9,7 @@ import { useDocuments } from '@/hooks/useDocuments';
 import { useNotifications } from '@/hooks/useNotifications';
 //import { userNotificationsService } from '@/services/userNotificationsService';
 import { auditService } from '@/services/auditService';
+import PDFModal from '@/components/Admin/PDFModal';
 
 const TransparencyAdmin: React.FC = () => {
     // Hooks para gerenciar documentos e notificações
@@ -31,6 +32,11 @@ const TransparencyAdmin: React.FC = () => {
     const itemsPerPage = 6;
     const [deleteLoading, setDeleteLoading] = useState(false);
     const [deleteError, setDeleteError] = useState<string | null>(null);
+    const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+    const [selectedPdfUrl, setSelectedPdfUrl] = useState('');
+    const [selectedPdfTitle, setSelectedPdfTitle] = useState('');
+    
+    
     
     // Estado para rastrear o último upload (compartilhado com Dashboard)
     const [lastUploadTime, setLastUploadTime] = useState<number | null>(() => {
@@ -123,9 +129,14 @@ const TransparencyAdmin: React.FC = () => {
     };
 
     // Função para visualizar documento
-    const handleView = (docName: string) => {
-        const pdfUrl = `https://exemplo.com/pdfs/${encodeURIComponent(docName)}`;
-        window.open(pdfUrl, '_blank');
+    const handleView = (url: string, name: string) => {
+    if (!url) {
+            alert("Este documento não possui um link de visualização disponível.");
+            return;
+        }
+        setSelectedPdfUrl(url);
+        setSelectedPdfTitle(name);
+        setIsViewModalOpen(true);
     };
 
     // Função para abrir modal de confirmação de exclusão
@@ -223,6 +234,7 @@ const TransparencyAdmin: React.FC = () => {
             id: doc.id,
             nome: doc.name || '',
             title: doc.name || '',
+            url: doc.fileUrl || '',
             categoria: doc.category || '',
             ano: doc.tags?.[0] || '',
             year: doc.tags?.[0] || '',
@@ -509,7 +521,7 @@ const TransparencyAdmin: React.FC = () => {
                                 <Edit size={18}/>
                             </button>
                             <button 
-                                onClick={() => handleView(doc.nome)}
+                                onClick={() => handleView(doc.url, doc.nome)}
                                 className="p-2 text-slate-400 hover:text-blue-500 transition-colors" 
                                 title="Visualizar"
                             >
@@ -578,7 +590,7 @@ const TransparencyAdmin: React.FC = () => {
                                     Editar
                                 </button>
                                 <button 
-                                    onClick={() => handleView(doc.nome)}
+                                    onClick={() => handleView(doc.url, doc.nome)}
                                     className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors text-sm md:text-base font-semibold"
                                     title="Visualizar"
                                 >
@@ -714,6 +726,13 @@ const TransparencyAdmin: React.FC = () => {
             onClose={() => setShowEditConfirmation(false)}
             onCloseAll={() => setShowEditConfirmation(false)}
             isLoading={loading}
+        />
+
+        <PDFModal 
+            isOpen={isViewModalOpen}
+            onClose={() => setIsViewModalOpen(false)}
+            pdfUrl={selectedPdfUrl}
+            title={selectedPdfTitle}
         />
         </div>
     );
