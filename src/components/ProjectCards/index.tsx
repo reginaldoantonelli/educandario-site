@@ -5,11 +5,13 @@ import imgInclusaoDigital from '@/assets/project/img-inclusao_digital.webp';
 import imgJardinagem from '@/assets/project/img-oficina-jardinagem.webp';
 import imgBibliotecaAtiva from '@/assets/project/img-biblioteca-ativa.webp';
 import imgCapoeira from '@/assets/project/img-oficina-capoeira.webp';
+import ContentModal from '@/components/ContentModal';
 
 
 interface Project {
     title: string;
     description: string;
+    fulldescription: string; // Descrição completa para o modal
     image: string;
     tag: string;
 }
@@ -19,7 +21,7 @@ const CardSkeleton: React.FC = () => (
     <div className="absolute inset-0 bg-slate-50 dark:bg-slate-800 z-10">
         {/* Skeleton da imagem */}
         <div className="h-48 md:h-64 bg-slate-200 dark:bg-slate-700 overflow-hidden relative">
-            <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/40 dark:via-white/10 to-transparent" />
+            <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-linear-to-r from-transparent via-white/40 dark:via-white/10 to-transparent" />
             {/* Tag skeleton */}
             <div className="absolute top-4 left-4 w-16 h-5 bg-slate-300 dark:bg-slate-600 rounded-full" />
         </div>
@@ -27,23 +29,23 @@ const CardSkeleton: React.FC = () => (
         <div className="p-6 md:p-8 space-y-4">
             {/* Título */}
             <div className="h-6 md:h-7 bg-slate-200 dark:bg-slate-700 rounded-lg w-3/4 overflow-hidden relative">
-                <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/40 dark:via-white/10 to-transparent" />
+                <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-linear-to-r from-transparent via-white/40 dark:via-white/10 to-transparent" />
             </div>
             {/* Descrição linhas */}
             <div className="space-y-2">
                 <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-full overflow-hidden relative">
-                    <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/40 dark:via-white/10 to-transparent" />
+                    <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-linear-to-r from-transparent via-white/40 dark:via-white/10 to-transparent" />
                 </div>
                 <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-5/6 overflow-hidden relative">
-                    <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/40 dark:via-white/10 to-transparent" />
+                    <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-linear-to-r from-transparent via-white/40 dark:via-white/10 to-transparent" />
                 </div>
                 <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-2/3 overflow-hidden relative">
-                    <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/40 dark:via-white/10 to-transparent" />
+                    <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-linear-to-r from-transparent via-white/40 dark:via-white/10 to-transparent" />
                 </div>
             </div>
             {/* Botão */}
             <div className="h-5 bg-slate-200 dark:bg-slate-700 rounded w-24 mt-4 overflow-hidden relative">
-                <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/40 dark:via-white/10 to-transparent" />
+                <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-linear-to-r from-transparent via-white/40 dark:via-white/10 to-transparent" />
             </div>
         </div>
     </div>
@@ -76,36 +78,45 @@ const projects: Project[] = [
     {
         title: "Inclusão Digital",
         description: "Aulas de informática básica e avançada para preparar nossos alunos para o futuro tecnológico.",
+        fulldescription: "Oferecemos aulas de informática básica e avançada para preparar nossos alunos para o futuro tecnológico.",
         image: imgInclusaoDigital,
         tag: "Educação"
     },
     {
         title: "Oficina de Jardinagem",
         description: "Ensinamos o respeito à natureza e técnicas de cultivo sustentável em nossa própria horta.",
+        fulldescription: "Ensinamos o respeito à natureza e técnicas de cultivo sustentável em nossa própria horta, promovendo a conexão com o meio ambiente.",
         image: imgJardinagem,
         tag: "Meio Ambiente"
     },
     {
         title: "Biblioteca Ativa",
         description: "Incentivo à leitura com um acervo diversificado e atividades lúdicas de interpretação.",
+        fulldescription: "Incentivo à leitura com um acervo diversificado e atividades lúdicas de interpretação, despertando a imaginação e o amor pelos livros.",
         image: imgBibliotecaAtiva,
         tag: "Cultura"
     },
     {
         title: "Oficina de Capoeira",
         description: "Expressão cultural e disciplina através do esporte e da música ancestral.",
+        fulldescription: "Expressão cultural e disciplina através do esporte e da música ancestral, promovendo a valorização da cultura afro-brasileira.",
         image: imgCapoeira,
         tag: "Cultura"
     },
     {
         title: "Apoio Pedagógico",
         description: "Reforço escolar focado em alfabetização e raciocínio lógico no contraturno.",
+        fulldescription: "Reforço escolar focado em alfabetização e raciocínio lógico no contraturno, garantindo que nossos alunos tenham o suporte necessário para seu desenvolvimento acadêmico.",
         image: imgPedagogico,
         tag: "Educação"
     }
     ];
 
     const ProjectCards: React.FC = () => {
+
+    // Estado para controlar qual card está aberto
+    const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+
     const scrollRef = useRef<HTMLDivElement>(null);
 
     const scroll = (direction: 'left' | 'right') => {
@@ -179,15 +190,30 @@ const projects: Project[] = [
                     <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-sm md:text-base line-clamp-3">
                         {project.description}
                     </p>
-                    <button className="mt-4 md:mt-6 text-blue-700 dark:text-blue-400 font-bold flex items-center gap-2 text-sm md:text-base">
-                        Saiba mais <span>→</span>
+                    <button 
+                        onClick={() => setSelectedProject(project)}
+                        className="mt-4 md:mt-6 text-blue-700 dark:text-blue-400 font-bold flex items-center gap-2 text-sm md:text-base hover:underline transition-all"
+                    >
+                        Ver informações <ChevronRight size={16} />
                     </button>
                     </div>
                 </div>
                 ))}
             </div>
             </div>
-        </div>
+                {/* Modal de Conteúdo */}
+                <ContentModal 
+                isOpen={!!selectedProject}
+                onClose={() => setSelectedProject(null)}
+                data={selectedProject ? {
+                    title: selectedProject.title,
+                    description: selectedProject.description,
+                    fulldescription: selectedProject.fulldescription,
+                    image: selectedProject.image,
+                    category: selectedProject.tag
+                } : null}
+            />
+            </div>
         </section>
     );
 };
