@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, ArrowLeft, LogIn, Sun, Moon, AlertCircle, CheckCircle, Eye, EyeOff } from 'lucide-react';
 import { firebaseAuthService } from '@/services/firebase/auth';
 import { AuthError } from '@/services/api/auth';
+import ForgotPasswordModal from '@/components/Admin/ForgotPasswordModal';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -14,6 +15,7 @@ const Login: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
+    const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
     
     // Estado para controlar o tema localmente na página de login
     const [isDark, setIsDark] = useState(() => {
@@ -151,6 +153,16 @@ const Login: React.FC = () => {
         }
     };
 
+    const handleResetPassword = async (resetEmail: string) => {
+        try {
+            await firebaseAuthService.resetPassword(resetEmail);
+            console.log('✅ Email de reset enviado para:', resetEmail);
+        } catch (err: any) {
+            console.error('❌ Erro ao enviar email de reset:', err);
+            throw err;
+        }
+    };
+
     return (
         // O container principal agora reage à classe 'dark' e usa transições suaves
         <div className={`${isDark ? 'dark' : ''} min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 px-4 transition-colors duration-500 relative overflow-hidden font-sans`}>
@@ -225,9 +237,12 @@ const Login: React.FC = () => {
                 <div className="space-y-2">
                 <div className="flex justify-between items-center ml-1">
                     <label className="text-sm font-semibold text-slate-800 dark:text-slate-300">Senha</label>
-                    <a href="/forgot-password" className="text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors">
-                    Esqueceu a senha?
-                    </a>
+                    <button 
+                        type="button"
+                        onClick={() => setShowForgotPasswordModal(true)}
+                        className="text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors cursor-pointer">
+                        Esqueceu a senha?
+                    </button>
                 </div>
                 <div className="relative group">
                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={18} />
@@ -270,7 +285,9 @@ const Login: React.FC = () => {
                 <button 
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-500 disabled:cursor-not-allowed text-white font-bold py-4 rounded-2xl shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2 transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:scale-100 disabled:hover:scale-100 disabled:shadow-blue-500/20"
+                className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-500 disabled:cursor-not-allowed
+                    text-white font-bold py-4 rounded-2xl shadow-lg shadow-blue-500/30 flex items-center justify-center 
+                    gap-2 transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:scale-100 disabled:hover:scale-100 disabled:shadow-blue-500/20 cursor-pointer"
                 >
                 {isLoading ? (
                     <>
@@ -298,6 +315,13 @@ const Login: React.FC = () => {
             </div>
             </div>
         </div>
+
+        {/* Modal de Recuperação de Senha */}
+        <ForgotPasswordModal 
+            isOpen={showForgotPasswordModal}
+            onClose={() => setShowForgotPasswordModal(false)}
+            onReset={handleResetPassword}
+        />
         </div>
     );
 };

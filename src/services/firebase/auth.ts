@@ -14,6 +14,8 @@ import {
   updatePassword,
   reauthenticateWithCredential,
   EmailAuthProvider,
+  confirmPasswordReset,
+  verifyPasswordResetCode,
 } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, firestore } from './config';
@@ -68,8 +70,9 @@ export class FirebaseAuthService implements AuthService {
       const authUser = await this.firebaseUserToAuthUser(userCredential.user);
       console.log('✅ [DEBUG] AuthUser criado:', { email: authUser.email, role: authUser.role });
       return authUser;
-    } catch (error: any) {
-      console.error('❌ [DEBUG] Erro no login:', error.code, error.message);
+    } catch (error: unknown) {
+      const err = error as { code?: string; message?: string };
+      console.error('❌ [DEBUG] Erro no login:', err.code, err.message);
       // Traduzir erros Firebase
       const errorMap: Record<string, string> = {
         'auth/user-not-found': 'Usuário não encontrado',
@@ -79,8 +82,8 @@ export class FirebaseAuthService implements AuthService {
       };
 
       const message =
-        errorMap[error.code] || error.message || 'Erro ao fazer login';
-      throw new AuthError(error.code, message, error);
+        (err.code ? errorMap[err.code] : undefined) || err.message || 'Erro ao fazer login';
+      throw new AuthError(err.code || 'unknown', message, error);
     }
   }
 
@@ -92,9 +95,10 @@ export class FirebaseAuthService implements AuthService {
       console.log('🚪 [DEBUG] Executando logout...');
       await signOut(auth);
       console.log('✅ [DEBUG] Logout bem-sucedido. Sessão foi limpa do Firebase');
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as { code?: string; message?: string };
       console.error('❌ [DEBUG] Erro ao fazer logout:', error);
-      throw new AuthError(error.code, 'Erro ao fazer logout', error);
+      throw new AuthError(err.code || 'unknown', 'Erro ao fazer logout', error);
     }
   }
 
@@ -130,7 +134,8 @@ export class FirebaseAuthService implements AuthService {
 
       // Retornar usuário criado
       return this.firebaseUserToAuthUser(userCredential.user);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as { code?: string; message?: string };
       const errorMap: Record<string, string> = {
         'auth/email-already-in-use': 'Email já está em uso',
         'auth/weak-password': 'Senha muito fraca',
@@ -138,8 +143,8 @@ export class FirebaseAuthService implements AuthService {
       };
 
       const message =
-        errorMap[error.code] || error.message || 'Erro ao criar usuário';
-      throw new AuthError(error.code, message, error);
+        (err.code ? errorMap[err.code] : undefined) || err.message || 'Erro ao criar usuário';
+      throw new AuthError(err.code || 'unknown', message, error);
     }
   }
 
@@ -162,16 +167,74 @@ export class FirebaseAuthService implements AuthService {
 
   /**
    * Enviar email para resetar senha
+   * Por questões de segurança, nunca revela se um email existe ou não
+   * (mesma prática de Google, Microsoft, bancos, etc)
    */
   async resetPassword(email: string): Promise<void> {
     try {
       await sendPasswordResetEmail(auth, email);
-    } catch (error: any) {
-      const message =
-        error.code === 'auth/user-not-found'
-          ? 'Email não encontrado'
-          : 'Erro ao enviar email de reset';
-      throw new AuthError(error.code, message, error);
+      console.log('✅ [DEBUG] Email de reset enviado para:', email);
+    } catch (error: unknown) {
+      const err = error as { code?: string; message?: string };
+      
+      // Segurança: nunca revelar que o email não existe
+      if (err.code === 'auth/user-not-found') {
+        console.log('⚠️ [DEBUG] Email não cadastrado (ocultado do usuário por segurança):', email);
+        // Não relança o erro - retorna sucesso silenciosamente
+        return;
+      }
+      
+      // Para outros erros, relança
+      const message = err.message || 'Erro ao enviar email de reset';
+      throw new AuthError(err.code || 'unknown', message, error);
+    }
+  }
+
+  /**
+   * Verificar se o código de reset de senha é válido
+   * Retorna o email associado ao código
+   */
+  async verifyResetCode(code: string): Promise<string> {
+    try {
+      console.log('🔐 [DEBUG] Verificando código de reset de senha...');
+      const email = await verifyPasswordResetCode(auth, code);
+      console.log('✅ [DEBUG] Código válido para email:', email);
+      return email;
+    } catch (error: unknown) {
+      const err = error as { code?: string; message?: string };
+      console.error('❌ [DEBUG] Erro ao verificar código:', err.code, err.message);
+      const errorMap: Record<string, string> = {
+        'auth/expired-action-code': 'Link expirado. Solicite um novo email de recuperação.',
+        'auth/invalid-action-code': 'Link inválido. Solicite um novo email de recuperação.',
+        'auth/user-disabled': 'Usuário desativado.',
+      };
+
+      const message = (err.code ? errorMap[err.code] : undefined) || 'Código de reset inválido';
+      throw new AuthError(err.code || 'unknown', message, error);
+    }
+  }
+
+  /**
+   * Confirmar reset de senha com código e nova senha
+   * Usado quando o usuário clica no link do email e define uma nova senha
+   */
+  async confirmPasswordReset(code: string, newPassword: string): Promise<void> {
+    try {
+      console.log('🔐 [DEBUG] Confirmando reset de senha...');
+      await confirmPasswordReset(auth, code, newPassword);
+      console.log('✅ [DEBUG] Senha resetada com sucesso!');
+    } catch (error: unknown) {
+      const err = error as { code?: string; message?: string };
+      console.error('❌ [DEBUG] Erro ao resetar senha:', err.code, err.message);
+      const errorMap: Record<string, string> = {
+        'auth/expired-action-code': 'Link expirado. Solicite um novo email de recuperação.',
+        'auth/invalid-action-code': 'Link inválido. Solicite um novo email de recuperação.',
+        'auth/user-disabled': 'Usuário desativado.',
+        'auth/weak-password': 'Nova senha muito fraca. Use pelo menos 6 caracteres.',
+      };
+
+      const message = (err.code ? errorMap[err.code] : undefined) || 'Erro ao resetar senha';
+      throw new AuthError(err.code || 'unknown', message, error);
     }
   }
 
@@ -199,8 +262,9 @@ export class FirebaseAuthService implements AuthService {
         },
         { merge: true }
       );
-    } catch (error: any) {
-      throw new AuthError(error.code, 'Erro ao atualizar perfil', error);
+    } catch (error: unknown) {
+      const err = error as { code?: string; message?: string };
+      throw new AuthError(err.code || 'unknown', 'Erro ao atualizar perfil', error);
     }
   }
 
@@ -230,16 +294,17 @@ export class FirebaseAuthService implements AuthService {
       // Atualizar para nova senha
       await updatePassword(firebaseUser, newPassword);
       console.log('✅ [DEBUG] Senha alterada com sucesso no Firebase!');
-    } catch (error: any) {
-      console.error('❌ [DEBUG] Erro ao alterar senha:', error.code, error.message);
+    } catch (error: unknown) {
+      const err = error as { code?: string; message?: string };
+      console.error('❌ [DEBUG] Erro ao alterar senha:', err.code, err.message);
       const errorMap: Record<string, string> = {
         'auth/wrong-password': 'Senha atual incorreta',
         'auth/weak-password': 'Nova senha muito fraca',
         'auth/requires-recent-login': 'Faça login novamente por segurança',
       };
 
-      const message = errorMap[error.code] || error.message || 'Erro ao alterar senha';
-      throw new AuthError(error.code, message, error);
+      const message = (err.code ? errorMap[err.code] : undefined) || err.message || 'Erro ao alterar senha';
+      throw new AuthError(err.code || 'unknown', message, error);
     }
   }
 
